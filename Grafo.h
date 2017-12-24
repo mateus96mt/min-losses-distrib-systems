@@ -28,12 +28,12 @@ public:
     ~Grafo();//destrutor
 
     No* buscaNo(int id);
-    Arco *buscaArcoID(int id);
+    Arco *buscaArco(int id);
+    Arco *buscaArco(int idOrigem, int idDestino);
+
 
     void insereNo(int id, double potAtiva, double potReativa, double voltagem);
     void insereArco(int idOrigem, int idDestino, int id, double res, double reat, bool chave);
-
-    void desmarcaNos();//util em percursos
 
     void leEntrada(char nome[]);
 
@@ -57,10 +57,19 @@ public:
     double *soma_perdas();
     void calcula_fluxos_e_perdas(double tol);
 
+    double tensaoMinima();
+
+
+    void desmarcaNos();//util em percursos
+
     bool ehArvore();
     void auxehArvore(No *no, int &marcados, bool &ciclo);
 
-    double tensaoMinima();
+    void define_sentido_fluxos();
+    void auxDefine_sentido_fluxos(No *no, No *noAnterior);
+
+
+
 
 
 

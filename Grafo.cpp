@@ -30,10 +30,20 @@ No *Grafo::buscaNo(int id){
 
 }
 
-Arco *Grafo::buscaArcoID(int id){
+Arco *Grafo::buscaArco(int id){
     for(No *no=getListaNos(); no!=NULL; no=no->getProxNo()){
         for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
             if(a->getID() == id)
+                return a;
+        }
+    }
+    return NULL;
+}
+
+Arco *Grafo::buscaArco(int idOrigem, int idDestino){
+    for(No *no=getListaNos(); no!=NULL; no=no->getProxNo()){
+        for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+            if(a->getNoOrigem()->getID() == idOrigem && a->getNoDestino()->getID() == idDestino)
                 return a;
         }
     }
@@ -83,6 +93,7 @@ void Grafo::insereArco(int idOrigem, int idDestino, int id, double res, double r
 void Grafo::leEntrada(char nome[])
 {
 
+    int idArco = 0;
     double VB, PB, ZB, fator_MW = 1e-3;
     double carga, resistencia, reatancia, potencia_reativa, voltagem;
 
@@ -165,7 +176,11 @@ void Grafo::leEntrada(char nome[])
             entrada >> reatancia;
             reatancia /= ZB;
 //            cout << "      reat: " << reatancia << endl;;
-            insereArco(idOrig, idDest, this->numeroArcos + 1, resistencia, reatancia, true);
+            //insere arco i-j e j-i
+
+            idArco++;
+            insereArco(idOrig, idDest, idArco, resistencia, reatancia, true);
+            insereArco(idDest, idOrig, idArco, resistencia, reatancia, true);
         }
         else
             entrada >> aux;
@@ -268,7 +283,7 @@ void Grafo::Auxfoward(No *no, Arco *ak, int it){
             //----foward----
 
             //chute inicial para o fluxo nas arests que partem do no terminal
-            if(no==listaNos){
+            if(no==this->listaNos){
                 double carcasPerdasAtivRamo = cargasPerdasRamoAtiv(a->getNoDestino());
                 double carcasPerdasReativRamo = cargasPerdasRamoReAtiv(a->getNoDestino());
 
@@ -453,4 +468,38 @@ double Grafo::tensaoMinima(){
             tensao_mim = no->getVoltagem();
     }
     return tensao_mim;
+}
+
+void Grafo::define_sentido_fluxos(){
+    auxDefine_sentido_fluxos(this->listaNos, this->listaNos);
+    printf("\nsentido de fluxo das arestas definido!\n");
+}
+
+void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
+    if(no == NULL)
+        cout<<"\n No NULL \n"<<endl;
+    else{
+        for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+
+            //nao descer por arcos com chave aberta e descer no sentido correto
+            //a->getNoDestino()==no e o arco de volta do arco 'a' assim nao passamos por ele
+            while(a!=NULL && (a->getChave() == false || a->getNoDestino()==noAnterior) ){
+
+                //nao tem fluxo nem perda em arcos abertos
+                a->setFLuxoPAtiva(0.0);
+                a->setFLuxoPReativa(0.0);
+                a->setPerdaAtiva(0.0);
+                a->setPerdaReativa(0.0);
+
+                if(a->getNoDestino()==noAnterior)
+                    a->setChave(false);
+
+                a = a->getProxArco();
+            }
+            if(a==NULL)
+                break;
+
+            auxDefine_sentido_fluxos(a->getNoDestino(), no);
+        }
+    }
 }
