@@ -1,10 +1,6 @@
- % TITU                                                                       
- % ****   Sistema teste de 33 BARRAS - IEEE  ****                             
-%  No TB G (V)     (Ang)     (Pg)    (Qg)   (Qn)    (Qm)      (Pl)    (Ql)    (A(Cf)
-
-PERC = 100;
-
-DBAR = [
+Vb = 12.660
+PB = 100
+Zb = 1.602756
 
 num_nos 33
 
@@ -41,20 +37,6 @@ num_nos 33
   31 1 1 0.7723      .0       .0      .0  -999.9  9999.9     210.0    100.0     0.0     0
   32 1 1 0.7717      .0       .0      .0  -999.9  9999.9     60.0     40.0      0.0     0
   33 2 1 1.0         .0       .0      .0  -999.9  9999.9     0.0      0.0       0.0     0            
-  ];
-
-
-% Alimentador
-DBAR(:,14) = 1:33;
-
-
-% kW -> MW
-DBAR(:,10) = DBAR(:,10) .* 1e-3*PERC/100;
-DBAR(:,11) = DBAR(:,11) .* 1e-3*PERC/100;
-DBAR(:,12) = DBAR(:,12) .* 1e-3*PERC/100;
-
-
- DLIN = [
 
 num_arestas 37
 
@@ -95,75 +77,3 @@ num_arestas 37
    11   21   2.0000   2.0000      0.0      .000     .000     .000    .0     900     .0     7
    17   32   0.5000   0.5000      0.0      .000     .000     .000    .0     900     .0     7
    24   28   0.5000   0.5000      0.0      .000     .000     .000    .0     900     .0     7
-];
-
-Vb = 12.660
-PB = 100
-Zb = 1.602756
-
-Vb = 12.660;     %kV
-PB = 10;         %kW
-% PB = PB * 1E-03; %kW -> MW
-
-
-Zb = (Vb^2)/PB;
-DLIN(:,3) = DLIN(:,3) ./ Zb;
-DLIN(:,4) = DLIN(:,4) ./ Zb;
-DLIN(:,5) = DLIN(:,5) ./ Zb;
-
- 
- DTEN = [
-%  1   .7  1.10
- 1   .85  1.10
-];
-                                                                    
- 
- % Bar  minP  maxQ    cusP  cusQ
- DGER = [
-   33     .0  500.0    0.0   0.0   0
-                                 ];
-                             
-% Matriz dos fatores de peso devido a distancia da chave normalmente aberta
-
-% DFECH = [ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-% ];
-
-NLOOP = 5;
-
-%NCHAVES = 36;
-
-PARTIDA = [ 33 34 35 36 37 ];
-% PARTIDA = [  7  11 14 28 32 ];
-
-% ordem = [ 1 2 3 4 5 ];
-
-
-% ==========================================================================
-%                               FOBS E CONTROLES:
-% ==========================================================================
-% OBS: As strings utilizadas devem ter igual numero de caracters(4; 2; 3)
-
-DFOB = {
-        'OBJQA'  0
-        'OBJMP'  0
-%         0
-       };
-% Especificaçao de Funçao Objetivo:
-% OBJMP - Minimização de Perdas
-
-DMLC = { 0 };
-%Especificaçao de Restriçao:
-% MW - Limite de Carregamento de Circuitos em Potencia Ativa (MW)
-% VA - Limite de Carregamento de Circuitos em Potencia Aparente (MVA)
-
-DFX  = { % 'RET'  1 
-    'SIG'  1.0
-    };
-% Especificação da função utilziada para modelar a chave
-% SIG - sigmoide; PARAMETRO = expoente da sigmoide
-% RET - reta; PARAMETRO = inclinação da reta
-
-Ce = 0.06; % Tarifa de Energia (US$/kWh)
-T  = 8760; % Duracao do Periodo (horas)
-
-GERAR_RELAT=0;%gerar arquivo de relatorio

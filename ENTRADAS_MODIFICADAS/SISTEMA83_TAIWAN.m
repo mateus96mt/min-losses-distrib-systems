@@ -1,10 +1,6 @@
-
-% Sistema de distribuiçao real de TAIWAN POWER COMPANY de 11,4 KV, 11
-% alimentadores e 83 barras. E
-
-PERC = 100;
-
-DBAR = [
+Vb = 11.400
+PB = 100
+Zb = 1.2996
 
 num_nos 83
 
@@ -18,7 +14,7 @@ num_nos 83
    8       1        1        1       0       0        0     -999.90000    9999.90000      300      200       0       0
    9       1        1        1       0       0        0     -999.90000    9999.90000      300      230       0       0
    10      1        1        1       0       0        0     -999.90000    9999.90000      300      260       0       0
-   11      1        1        1       0       0        0     -999.90000    9999.90000     1200      800       0       0 
+   11      1        1        1       0       0        0     -999.90000    9999.90000     1200      800       0       0
    12      1        1        1       0       0        0     -999.90000    9999.90000     1200      800       0       0
    13      1        1        1       0       0        0     -999.90000    9999.90000      800      600       0       0
    14      1        1        1       0       0        0     -999.90000    9999.90000      700      500       0       0
@@ -91,25 +87,7 @@ num_nos 83
    81      1        1        1       0       0        0     -999.90000    9999.90000      500      360       0       0
    82      1        1        1       0       0        0     -999.90000    9999.90000      100       30       0       0
    83      1        1        1       0       0        0     -999.90000    9999.90000      400      360       0       0
-   84      2        1        1       0       0        0     -999.90000    9999.90000        0        0       0       0  % barra de geraçao
-];
-
-
-% Alimentador
-DBAR(1:46 ,14) = 2;
-DBAR(47:83,14) = 1;
-DBAR(84   ,14) = 2;
-
-
-% kW -> MW
-
-DBAR(:,10) = DBAR(:,10)*10^-3*PERC/100;
-DBAR(:,11) = DBAR(:,11)*10^-3*PERC/100;
-DBAR(:,12) = DBAR(:,12)*10^-3*PERC/100;
-
-
-%de   para      r(ohm)   x(ohm)    
-DLIN = [
+   84      2        1        1       0       0        0     -999.90000    9999.90000        0        0       0       0
 
 num_arestas 96
 
@@ -209,79 +187,3 @@ num_arestas 96
  34      46     0.0262   0.0538    0       0        0          0             0          900       0          7
  40      42     0.1965   0.4035    0       0        0          0             0          900       0          7
  53      64     0.0393   0.0807    0       0        0          0             0          900       0          7
-];
-
-Vb = 11.400
-PB = 100
-Zb = 1.2996
-
-Vb = 11.400;     %kV
-PB = 100;        %MW
-% PB = PB * 1E-03; %kW -> MW
-
-
-Zb = (Vb^2)/PB;
-DLIN(:,3) = DLIN(:,3) ./ Zb;
-DLIN(:,4) = DLIN(:,4) ./ Zb;
-DLIN(:,5) = DLIN(:,5) ./ Zb;
-
-
-% -------------------- base 100 -------------------------------------------
-% DLIN(:,3) = DLIN(:,3).*(100/1);
-% DLIN(:,4) = DLIN(:,4).*(100/1);
-
-
-
-DTEN = [
-%  1   .95  1.05
-%  1   .8  1.2
-%  1   .8  1.01
- 1   .90  1.10
-%  1   .70  1.10
- ];
- 
-
-DGER = [
-% Bar   minP  maxQ    cusP  cusQ
-    84    .0 500.0     0.0   0.0   0.0
-                                 ];
-
-% DFECH = [ 0 0 0 0 0 0 0 0 9 0 0 0 0 0 0 0 
-% ];
-
-NLOOP = 13;
-
-PARTIDA = [ 84  85  86  87  88  89  90  91  92  93  94  95  96 ];
-
-% ordem = [ 1 2 3 ];
-
-
-% ==========================================================================
-%                               FOBS E CONTROLES:
-% ==========================================================================
-% OBS: As strings utilizadas devem ter igual numero de caracters(4; 2; 3)
-
-DFOB = {
-        'OBJQA'  0
-        'OBJMP'  0
-%         0
-       };
-% Especificaçao de Funçao Objetivo:
-% OBJMP - Minimização de Perdas
-
-DMLC = { 0 };
-%Especificaçao de Restriçao:
-% MW - Limite de Carregamento de Circuitos em Potencia Ativa (MW)
-% VA - Limite de Carregamento de Circuitos em Potencia Aparente (MVA)
-
-DFX  = { % 'RET'  1
-    'SIG'  1.0
-    };
-% Especificação da função utilizada para modelar a chave
-% SIG - sigmoide; PARAMETRO = expoente da sigmoide
-% RET - reta; PARAMETRO = inclinação da reta
-
-Ce = 0.06; % Tarifa de Energia (US$/kWh)
-T  = 8760; % Duracao do Periodo (horas)
-
-GERAR_RELAT=0;%gerar arquivo de relatorio
