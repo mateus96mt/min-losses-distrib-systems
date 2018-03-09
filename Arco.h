@@ -19,6 +19,8 @@ private:
     double resistencia, reatancia;
     double perdaAtiva, perdaReativa;//perda de potencia ativa e reativa no arco
 
+    bool modificavel;
+
 public:
     //funcoes do Arco:
     Arco(int id);//construtor
@@ -40,6 +42,7 @@ public:
     double getReatancia(){    return this->reatancia; };
     double getPerdaAtiva(){   return this->perdaAtiva; };
     double getPerdaReativa(){ return this->perdaReativa; };
+    bool getModificavel(){    return this->modificavel; };
 
     void setID(int id){                      this->id            = id; };
     void setProxArco(Arco *arc){             this->proxArco      = arc; };
@@ -52,6 +55,7 @@ public:
     void setReatancia(double reat){          this->reatancia     = reat; };
     void setPerdaAtiva(double perdaA){       this->perdaAtiva    = perdaA; };
     void setPerdaReativa(double perdaReat){  this->perdaReativa  = perdaReat; };
+    void setModificavel(bool modificavel){   this->modificavel   = modificavel; };
 };
 
 #endif // ARCO_H_INCLUDED

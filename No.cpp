@@ -18,6 +18,7 @@ No::No(int id){
 
     this->grauEntrada = 0;
     this->grauSaida = 0;
+    this->grauAux = 0;
 
 }
 
@@ -26,8 +27,8 @@ No::~No(){
 
 void No::imprime(){
     printf("------------------------------------------------------------------------\n");
-    printf("< No{%d}  grauS = %d  grauE = %d  pA = %.5f  pR = %.5f  vol = %.5f >",
-    this->id, this->grauSaida, this->grauEntrada, this->potAtiva, this->potReativa, this->voltagem);
+    printf("< No{%d}  grauS = %d  grauE = %d  grauAUX = %d  pA = %.5f  pR = %.5f  vol = %.5f >",
+    this->id, this->grauSaida, this->grauEntrada, this->grauAux, this->potAtiva, this->potReativa, this->voltagem);
 
     for(Arco *a = this->listaArcos; a!=NULL; a=a->getProxArco()){
         printf("\n\n");

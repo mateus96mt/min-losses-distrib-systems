@@ -20,6 +20,8 @@ Arco::Arco(int id){
     this->perdaAtiva = 0.0;
     this->perdaReativa = 0.0;
 
+    this->modificavel = true;
+
 }
 
 Arco::~Arco(){
@@ -27,7 +29,7 @@ Arco::~Arco(){
 }
 
 void Arco::imprime(){
-    printf("[ ( %d, %d ) A{%d} chave = %d  res = %.5f  reat = %.5f  fA = %.5f  fR = %.5f  pA = %.9f  pR = %.9f ]",
-    this->noOrigem->getID(), this->noDestino->getID(), this->id, this->chave, this->resistencia, this->reatancia,
+    printf("[ ( %d, %d ) A{%d} chave = %d  modif = %d res = %.5f  reat = %.5f  fA = %.5f  fR = %.5f  peA = %.9f  peR = %.9f ]",
+    this->noOrigem->getID(), this->noDestino->getID(), this->id, this->chave, this->modificavel, this->resistencia, this->reatancia,
     this->FLuxoPAtiva, this->FLuxoPReativa, this->perdaAtiva, this->perdaReativa);
 }

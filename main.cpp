@@ -1,22 +1,126 @@
 #include <stdio.h>
 #include "Grafo.h"
+#include "time.h"
+#include <algorithm>
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 #define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
-//#define configuracao "inicial"
+#define configuracao "inicial"
 //#define configuracao "literatura1"
-#define configuracao "ARSD"
+//#define configuracao "ARSD"
 
+void defineConfiguracao(Grafo *g);
+void testeDestrutor();
+void testeArestasModificaveis();
+void testeCopiaGrafo();
+void testePopulacaoAleatoria();
+void testeEntradas();
 
 int main(){
+
+    srand(time(NULL));
+
+    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+//    testeDestrutor();
+//    testeArestasModificaveis();
+//    testeCopiaGrafo();
+//    testePopulacaoAleatoria();
+}
+
+
+/**OBS: POPULACAO INICIAL ALEATORIA AINDA ESTA COM PROBLEMA, VOU CORRIGIR(ASS:MATEUS)**/
+void testePopulacaoAleatoria(){
+    char nome[] = arquivoEntrada;
+    Grafo *g;
+    g = new Grafo();
+    g->leEntrada(nome);
+
+    g->solucaoAleatoria();
+}
+
+void testeEntradas(){
+    char nome[] = arquivoEntrada;
+    Grafo *g = new Grafo();
+    g->leEntrada(nome);
+
+    defineConfiguracao(g);
+
+    g->define_sentido_fluxos();
+    g->calcula_fluxos_e_perdas(1e-8);
+
+
+    printf("\ntensao minima: %.5f (p.u)", g->tensaoMinima());
+    printf("\nperdaTotal: %.5f (kW)", 100*1000*g->soma_perdas()[0]);
+    printf("\neh arvore? %d\n\n\n", g->ehArvore());
+}
+
+void testeCopiaGrafo(){
+    char nome[] = arquivoEntrada;
+    Grafo *g, *h;
+    g = new Grafo();
+    g->leEntrada(nome);
+
+    defineConfiguracao(g);
+    g->define_sentido_fluxos();
+    g->calcula_fluxos_e_perdas(1e-8);
+
+
+    for(int i=0; true; i++){
+        h = g->retornaCopia();
+        h->calcula_fluxos_e_perdas(1e-8);
+
+        double *perda = h->soma_perdas();
+        printf("\ntensao minima: %.5f (p.u)", h->tensaoMinima());
+        printf("\nperdaTotal: %.5f (kW)", 100*1000*perda[0]);
+        printf("\neh arvore? %d\n\n\n", h->ehArvore());
+        delete perda;
+
+        delete h;
+    }
+}
+
+void testeArestasModificaveis(){
+    char nome[] = arquivoEntrada;
+    Grafo *g;
+    g = new Grafo();
+    g->leEntrada(nome);
+
+    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
+
+    Arco *a = g->buscaArco(36);
+    No *noOrigem = a->getNoOrigem();
+    No *noDestino = a->getNoDestino();
+    a->setChave(false);
+    a = g->buscaArco(noDestino->getID(), noOrigem->getID());
+    a->setChave(false);
+
+    noOrigem->setGrauAux(noOrigem->getGrauAux()-1);
+    noDestino->setGrauAux(noDestino->getGrauAux()-1);
+
+
+    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
+
+//    g->imprime();
+    g->defineArestasModificaveis();
+    g->imprime();
+    printf("\neh arvore? %d\n\n\n", g->ehArvore());
+
+}
+
+void testeDestrutor(){
     char nome[] = arquivoEntrada;
 
-    Grafo *g = new Grafo();
+    while(true){
+        Grafo *g;
+        g = new Grafo();
+        g->leEntrada(nome);
+        delete g;
+    }
+}
 
-    g->leEntrada(nome);
+void defineConfiguracao(Grafo *g){
 
     if(arquivoEntrada=="ENTRADAS_MODIFICADAS/sist33barras_Yang.m"){
 
@@ -109,12 +213,4 @@ int main(){
             a->setChave(false);
         }
     }
-
-
-    g->define_sentido_fluxos();
-    g->calcula_fluxos_e_perdas(1e-8);
-
-    printf("\ntensao minima: %.5f (p.u)", g->tensaoMinima());
-    printf("\nperdaTotal: %.5f (kW)", 100*1000*g->soma_perdas()[0]);
-    printf("\neh arvore? %d\n\n\n", g->ehArvore());
 }

@@ -1,6 +1,8 @@
 #include "Grafo.h"
 #include <fstream>
 #include <math.h>
+#include "time.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -15,7 +17,15 @@ Grafo::Grafo(){
 }
 
 Grafo::~Grafo(){
-//implementar destrutor
+    No *aux = new No(0);
+    for(No *no=this->listaNos; no!=NULL; no=no->getProxNo()){
+        delete aux;
+        for(Arco *arco=no->getListaArcos(); arco!=NULL; arco=arco->getProxArco()){
+            delete arco;
+        }
+        aux = no;
+    }
+    delete aux;
 }
 
 No *Grafo::buscaNo(int id){
@@ -84,6 +94,10 @@ void Grafo::insereArco(int idOrigem, int idDestino, int id, double res, double r
 
     noOrigem->setGrauSaida(noOrigem->getGrauSaida()+1);
     noDestino->setGrauEntrada(noDestino->getGrauEntrada()+1);
+
+    noOrigem->setGrauAux(max(noOrigem->getGrauEntrada(), noDestino->getGrauEntrada()));
+    noDestino->setGrauAux(max(noOrigem->getGrauEntrada(), noDestino->getGrauEntrada()));
+
 
 
 
@@ -502,4 +516,98 @@ void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
             auxDefine_sentido_fluxos(a->getNoDestino(), no);
         }
     }
+}
+
+void Grafo::defineArestasModificaveis(){
+
+    int n=1;
+    for(int i=0; i<n; i++){
+
+
+        //procura arcos que conectam nos folha, esses arcos nao sao modificaveis(nao podem ser abertos)
+        for(No *no=this->listaNos; no!=NULL; no=no->getProxNo()){
+            for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+
+                if(a->getNoDestino()->getGrauAux()==1 && a->getChave()==true){
+
+                    a->setModificavel(false);
+                    Arco *aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+                    aVolta->setModificavel(false);
+
+                    a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
+                    a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+
+                    n++;
+                }
+            }
+        }
+    }
+}
+
+Grafo *Grafo::retornaCopia(){
+    Grafo *g = new Grafo();
+    int idOrig, idDest, idArco, idNo;
+    double resistencia, reatancia, potAtiva, potReativa, voltagem;
+
+    for(No *no=this->listaNos->getProxNo(); no!=NULL; no=no->getProxNo()){
+        idNo = no->getID();
+        potAtiva = no->getPotAtiva();
+        potReativa = no->getPotReativa();
+        voltagem = no->getVoltagem();
+
+        g->insereNo(idNo, potAtiva, potReativa, voltagem);
+    }
+
+    //inserindo no fonte por ultimo pos a funcao que insere nos insere sempre no inicio da lista, assim o no fonte fica no inicio da lista
+    No *noFonte = this->listaNos;
+    g->insereNo(noFonte->getID(), noFonte->getPotAtiva(), noFonte->getPotReativa(), noFonte->getVoltagem());
+
+    for(No *no=this->listaNos; no!=NULL; no=no->getProxNo()){
+         for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+            idOrig = a->getNoOrigem()->getID();
+            idDest = a->getNoDestino()->getID();
+            idArco = a->getID();
+            resistencia = a->getResistencia();
+            reatancia = a->getReatancia();
+
+            g->insereArco(idOrig, idDest, idArco, resistencia, reatancia, a->getChave());
+        }
+    }
+
+    return g;
+}
+
+void Grafo::solucaoAleatoria(){
+    int idArco = rand() % this->numeroArcos/2;
+    while(this->buscaArco(idArco)->getModificavel()==false){
+        idArco = rand() % this->numeroArcos/2;
+    }
+    Arco *a = this->buscaArco(idArco), *aVolta;
+    a->setChave(false);
+    aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+    aVolta->setChave(false);
+
+    a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
+    a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+
+    this->defineArestasModificaveis();
+
+
+    while(!this->ehArvore()){
+        idArco = rand() % this->numeroArcos/2;
+
+        while(this->buscaArco(idArco)->getModificavel()==false){
+            idArco = rand() % this->numeroArcos/2;
+        }
+        Arco *a = this->buscaArco(idArco), *aVolta;
+        a->setChave(false);
+        aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+        aVolta->setChave(false);
+        a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
+        a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+
+        this->defineArestasModificaveis();
+    }
+
+    this->define_sentido_fluxos();
 }

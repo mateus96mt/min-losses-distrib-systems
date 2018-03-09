@@ -68,9 +68,11 @@ public:
     void define_sentido_fluxos();
     void auxDefine_sentido_fluxos(No *no, No *noAnterior);
 
+    void defineArestasModificaveis();
 
+    Grafo *retornaCopia();
 
-
+    void solucaoAleatoria();
 
 
 
