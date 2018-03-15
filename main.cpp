@@ -3,14 +3,15 @@
 #include "time.h"
 #include <algorithm>
 
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
 //#define configuracao "ARSD"
 
+void abreChaves(Grafo *g, int *ids, int n);
 void defineConfiguracao(Grafo *g);
 void testeDestrutor();
 void testeArestasModificaveis();
@@ -22,22 +23,28 @@ int main(){
 
     srand(time(NULL));
 
-    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+//    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
 //    testeDestrutor();
 //    testeArestasModificaveis();
 //    testeCopiaGrafo();
-//    testePopulacaoAleatoria();
+    testePopulacaoAleatoria();
 }
 
 
 /**OBS: POPULACAO INICIAL ALEATORIA AINDA ESTA COM PROBLEMA, VOU CORRIGIR(ASS:MATEUS)**/
 void testePopulacaoAleatoria(){
     char nome[] = arquivoEntrada;
-    Grafo *g;
-    g = new Grafo();
+    Grafo *g = new Grafo(), *h;
     g->leEntrada(nome);
 
-    g->solucaoAleatoria();
+    int n_individuos = 500;
+    for(int i=0; i<n_individuos; i++){
+        printf("\nsolucao  %d", i);
+        h = g->retornaCopia();
+        h->solucaoAleatoria();
+        h->define_sentido_fluxos();
+        delete h;
+    }
 }
 
 void testeEntradas(){
@@ -53,6 +60,7 @@ void testeEntradas(){
 
     printf("\ntensao minima: %.5f (p.u)", g->tensaoMinima());
     printf("\nperdaTotal: %.5f (kW)", 100*1000*g->soma_perdas()[0]);
+    printf("\neh Conexo? %d", g->ehConexo());
     printf("\neh arvore? %d\n\n\n", g->ehArvore());
 }
 
@@ -86,26 +94,42 @@ void testeArestasModificaveis(){
     Grafo *g;
     g = new Grafo();
     g->leEntrada(nome);
-
-    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
-
-    Arco *a = g->buscaArco(36);
-    No *noOrigem = a->getNoOrigem();
-    No *noDestino = a->getNoDestino();
-    a->setChave(false);
-    a = g->buscaArco(noDestino->getID(), noOrigem->getID());
-    a->setChave(false);
-
-    noOrigem->setGrauAux(noOrigem->getGrauAux()-1);
-    noDestino->setGrauAux(noDestino->getGrauAux()-1);
-
-
-    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
-
+    g->resetaGrausAuxiliares();
 //    g->imprime();
-    g->defineArestasModificaveis();
+
+    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
+
+//    int ids[] = {36, 34, 2, 25, 33};
+    int ids[] = {32, 10, 20, 4, 12};
+
+    for(int i=0; i<2; i++){
+
+        printf("\nabriu A{%d}", ids[i]);
+
+        Arco *a = g->buscaArco(ids[i]);
+
+        No *noOrigem = a->getNoOrigem();
+        No *noDestino = a->getNoDestino();
+
+        a->setChave(false);
+        a->setModificavel(false);
+        a = g->buscaArco(noDestino->getID(), noOrigem->getID());
+        a->setChave(false);
+        a->setModificavel(false);
+
+        printf("modif = %d", a->getModificavel());
+
+        noOrigem->setGrauAux(noOrigem->getGrauAux()-1);
+        noDestino->setGrauAux(noDestino->getGrauAux()-1);
+
+        g->defineArestasModificaveis();
+
+    }
     g->imprime();
-    printf("\neh arvore? %d\n\n\n", g->ehArvore());
+
+    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
+
+
 
 }
 
@@ -139,13 +163,14 @@ void defineConfiguracao(Grafo *g){
             ids[0] = 7; ids[1] = 9; ids[2] = 14; ids[3] = 32; ids[4] = 37;
         }
 
-        Arco *a;
-        for(int i=0; i<5; i++){
-            a = g->buscaArco(ids[i]);
-            a->setChave(false);
-            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-            a->setChave(false);
-        }
+        abreChaves(g, ids, 5);
+//        Arco *a;
+//        for(int i=0; i<5; i++){
+//            a = g->buscaArco(ids[i]);
+//            a->setChave(false);
+//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+//            a->setChave(false);
+//        }
     }
 
     if(arquivoEntrada=="ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"){
@@ -165,13 +190,14 @@ void defineConfiguracao(Grafo *g){
             ids[0] = 7; ids[1] = 10; ids[2] = 14; ids[3] = 16; ids[4] = 28;
         }
 
-        Arco *a;
-        for(int i=0; i<5; i++){
-            a = g->buscaArco(ids[i]);
-            a->setChave(false);
-            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-            a->setChave(false);
-        }
+        abreChaves(g, ids, 5);
+//        Arco *a;
+//        for(int i=0; i<5; i++){
+//            a = g->buscaArco(ids[i]);
+//            a->setChave(false);
+//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+//            a->setChave(false);
+//        }
     }
 
     if(arquivoEntrada=="ENTRADAS_MODIFICADAS/SISTEMA119s2.m"){
@@ -205,12 +231,23 @@ void defineConfiguracao(Grafo *g){
         for(int i=0; i<15; i++)
             ids[i]--;
 
-        Arco *a;
-        for(int i=0; i<15; i++){
-            a = g->buscaArco(ids[i]);
-            a->setChave(false);
-            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-            a->setChave(false);
-        }
+        abreChaves(g, ids, 15);
+//        Arco *a;
+//        for(int i=0; i<15; i++){
+//            a = g->buscaArco(ids[i]);
+//            a->setChave(false);
+//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+//            a->setChave(false);
+//        }
+    }
+}
+
+void abreChaves(Grafo *g, int *ids, int n){
+    Arco *a;
+    for(int i=0; i<n; i++){
+        a = g->buscaArco(ids[i]);
+        a->setChave(false);
+        a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+        a->setChave(false);
     }
 }

@@ -65,6 +65,9 @@ public:
     bool ehArvore();
     void auxehArvore(No *no, int &marcados, bool &ciclo);
 
+    bool ehConexo();
+    void auxehConexo(No *no, int &n_marcados);
+
     void define_sentido_fluxos();
     void auxDefine_sentido_fluxos(No *no, No *noAnterior);
 
@@ -74,13 +77,15 @@ public:
 
     void solucaoAleatoria();
 
+    void resetaGrausAuxiliares();
+
 
 
 
     //GETS e SETS:
     No *getListaNos(){    return this->listaNos; };
     int getNumeroNos(){   return this->numeroNos; };
-    int getNUmeroArcos(){ return this->numeroArcos; };
+    int getNumeroArcos(){ return this->numeroArcos; };
     int getN_marcados(){  return this->n_marcados; };
 
     void setListaNos(No *no){ this->listaNos = no; };

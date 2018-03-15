@@ -95,12 +95,6 @@ void Grafo::insereArco(int idOrigem, int idDestino, int id, double res, double r
     noOrigem->setGrauSaida(noOrigem->getGrauSaida()+1);
     noDestino->setGrauEntrada(noDestino->getGrauEntrada()+1);
 
-    noOrigem->setGrauAux(max(noOrigem->getGrauEntrada(), noDestino->getGrauEntrada()));
-    noDestino->setGrauAux(max(noOrigem->getGrauEntrada(), noDestino->getGrauEntrada()));
-
-
-
-
     this->numeroArcos++;
 }
 
@@ -204,7 +198,7 @@ void Grafo::leEntrada(char nome[])
 }
 
 void Grafo::imprime(){
-    printf("GRAFO  num_Nos: %d    num_arcos: %d \n\n\n", this->numeroNos, this->numeroArcos);
+    printf("\n\n\nGRAFO  num_Nos: %d    num_arcos: %d \n\n\n", this->numeroNos, this->numeroArcos);
     for(No *no = this->listaNos; no!=NULL; no = no->getProxNo())
         no->imprime();
 }
@@ -430,6 +424,41 @@ void Grafo::desmarcaNos(){
     this->n_marcados = 0;
 }
 
+bool Grafo::ehConexo(){
+    this->desmarcaNos();
+    int n_marcados = 0;
+    auxehConexo(this->listaNos, n_marcados);
+
+    if(n_marcados == this->numeroNos)
+        return true;
+    else
+        return false;
+}
+
+void Grafo::auxehConexo(No *no, int &n_marcados){
+    if(no == NULL)
+        cout<<"\n No NULL \n"<<endl;
+    else{
+        if(no->getMarcado() == false){
+            no->setMarcado(true);
+            n_marcados++;
+
+            for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+
+                //nao descer por arcos com chave aberta
+                while(a!=NULL && a->getChave() == false){
+                    a = a->getProxArco();
+                }
+
+                if(a==NULL)
+                    break;
+
+                auxehConexo(a->getNoDestino(), n_marcados);
+            }
+        }
+    }
+}
+
 bool Grafo::ehArvore(){
     desmarcaNos();
 
@@ -513,6 +542,7 @@ void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
             if(a==NULL)
                 break;
 
+//            printf("\nno{%d}", no->getID());
             auxDefine_sentido_fluxos(a->getNoDestino(), no);
         }
     }
@@ -521,14 +551,16 @@ void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
 void Grafo::defineArestasModificaveis(){
 
     int n=1;
-    for(int i=0; i<n; i++){
+    for(int i=0; i<this->numeroArcos/2; i++){
 
 
         //procura arcos que conectam nos folha, esses arcos nao sao modificaveis(nao podem ser abertos)
         for(No *no=this->listaNos; no!=NULL; no=no->getProxNo()){
             for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
 
-                if(a->getNoDestino()->getGrauAux()==1 && a->getChave()==true){
+                if(a->getNoDestino()->getGrauAux()==1 && a->getChave()==true && a->getModificavel()==true){
+
+//                    printf("\ndefinindo como nao modif A{%d}...", a->getID());
 
                     a->setModificavel(false);
                     Arco *aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
@@ -537,11 +569,14 @@ void Grafo::defineArestasModificaveis(){
                     a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
                     a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
 
+//                    printf("done!");
+
                     n++;
                 }
             }
         }
     }
+//    printf("\ndefiniu arestas modificaveis!");
 }
 
 Grafo *Grafo::retornaCopia(){
@@ -577,37 +612,45 @@ Grafo *Grafo::retornaCopia(){
     return g;
 }
 
+/*descobri que isso nunca iria funcionar poias as arestas definidas como modificaveis(que nao estao em "galhos")
+nao sao necessariamente removiveis, sua remocao pode aumentar o numero de componentes conexas*/
 void Grafo::solucaoAleatoria(){
-    int idArco = rand() % this->numeroArcos/2;
-    while(this->buscaArco(idArco)->getModificavel()==false){
-        idArco = rand() % this->numeroArcos/2;
-    }
-    Arco *a = this->buscaArco(idArco), *aVolta;
-    a->setChave(false);
-    aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-    aVolta->setChave(false);
-
-    a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
-    a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
-
+    this->resetaGrausAuxiliares();
     this->defineArestasModificaveis();
 
+    int id, n = this->numeroArcos/2 - (this->numeroNos-1);
+    Arco *arc, *arcVolta;
 
-    while(!this->ehArvore()){
-        idArco = rand() % this->numeroArcos/2;
+    //abrir somente o numero necessario de arcos
+    for(int i=0; i<n; i++){
+        id = (rand() % this->numeroArcos/2) + 1;
+        arc = this->buscaArco(id);
 
-        while(this->buscaArco(idArco)->getModificavel()==false){
-            idArco = rand() % this->numeroArcos/2;
+        while(arc->getChave()==false || arc->getModificavel()==false){
+            id = (rand() % this->numeroArcos/2) + 1;
+            arc = this->buscaArco(id);
         }
-        Arco *a = this->buscaArco(idArco), *aVolta;
-        a->setChave(false);
-        aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-        aVolta->setChave(false);
-        a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
-        a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+        arc->setChave(false);
+        arcVolta = this->buscaArco(arc->getNoDestino()->getID(), arc->getNoOrigem()->getID());
+        arcVolta->setChave(false);
+
+        arc->getNoOrigem()->setGrauAux(arc->getNoOrigem()->getGrauAux()-1);
+        arc->getNoDestino()->setGrauAux(arc->getNoDestino()->getGrauAux()-1);
 
         this->defineArestasModificaveis();
+//        printf("\nabriu A{%d}", id);
     }
+}
 
-    this->define_sentido_fluxos();
+void Grafo::resetaGrausAuxiliares(){
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            No *orig, *dest;
+            orig = a->getNoOrigem();
+            dest = a->getNoDestino();
+
+            orig->setGrauAux(orig->getGrauEntrada());
+            dest->setGrauAux(dest->getGrauEntrada());
+        }
+    }
 }
