@@ -415,7 +415,7 @@ void Grafo::calcula_fluxos_e_perdas(double tol){
 
     }
 
-    printf("fluxos e perdas calculados!\n");
+//    printf("fluxos e perdas calculados!\n");
 }
 
 void Grafo::desmarcaNos(){
@@ -515,7 +515,7 @@ double Grafo::tensaoMinima(){
 
 void Grafo::define_sentido_fluxos(){
     auxDefine_sentido_fluxos(this->listaNos, this->listaNos);
-    printf("\nsentido de fluxo das arestas definido!\n");
+//    printf("\nsentido de fluxo das arestas definido!\n");
 }
 
 void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
@@ -612,34 +612,45 @@ Grafo *Grafo::retornaCopia(){
     return g;
 }
 
-/*descobri que isso nunca iria funcionar poias as arestas definidas como modificaveis(que nao estao em "galhos")
-nao sao necessariamente removiveis, sua remocao pode aumentar o numero de componentes conexas*/
+/*Algoritmo de Kruskal randomizado*/
 void Grafo::solucaoAleatoria(){
-    this->resetaGrausAuxiliares();
-    this->defineArestasModificaveis();
-
-    int id, n = this->numeroArcos/2 - (this->numeroNos-1);
-    Arco *arc, *arcVolta;
-
-    //abrir somente o numero necessario de arcos
-    for(int i=0; i<n; i++){
-        id = (rand() % this->numeroArcos/2) + 1;
-        arc = this->buscaArco(id);
-
-        while(arc->getChave()==false || arc->getModificavel()==false){
-            id = (rand() % this->numeroArcos/2) + 1;
-            arc = this->buscaArco(id);
+    vector<Arco*> vetArcos;
+    for(No *no = this->getListaNos(); no!=NULL; no = no->getProxNo()){
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            a->setChave(false);
+            vetArcos.push_back(a);
         }
-        arc->setChave(false);
-        arcVolta = this->buscaArco(arc->getNoDestino()->getID(), arc->getNoOrigem()->getID());
-        arcVolta->setChave(false);
-
-        arc->getNoOrigem()->setGrauAux(arc->getNoOrigem()->getGrauAux()-1);
-        arc->getNoDestino()->setGrauAux(arc->getNoDestino()->getGrauAux()-1);
-
-        this->defineArestasModificaveis();
-//        printf("\nabriu A{%d}", id);
     }
+
+    random_shuffle(vetArcos.begin(), vetArcos.end());
+
+    int n_arc_inseridos = 0, n_arcos_inserir = this->numeroNos-1;
+    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
+
+        if( (vetArcos.at(i)->getNoOrigem()->getIdArv() != vetArcos.at(i)->getNoDestino()->getIdArv()) && vetArcos.at(i)->getChave()==false){
+
+            int id = vetArcos.at(i)->getNoOrigem()->getIdArv();
+            for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+                if(no->getIdArv()==id)
+                    no->setIdArv(vetArcos.at(i)->getNoDestino()->getIdArv());
+            }
+
+            vetArcos.at(i)->setChave(true);
+            this->buscaArco(vetArcos.at(i)->getNoDestino()->getID(), vetArcos.at(i)->getNoOrigem()->getID())->setChave(true);
+
+            n_arc_inseridos++;
+        }
+
+    }
+
+    printf("  Aberto:{");
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            if(a->getChave()==false)
+                printf("%d,", a->getID());
+        }
+    }
+    printf("  }");
 }
 
 void Grafo::resetaGrausAuxiliares(){

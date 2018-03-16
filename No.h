@@ -14,6 +14,7 @@ private:
     Arco *listaArcos;
     int grauSaida, grauEntrada;
     int grauAux;
+    int idArv;
 
     //informacoes necessarias para o problema de minimizacao de perdas:
     double potAtiva, potReativa;//demandas
@@ -41,6 +42,7 @@ public:
     int getGrauEntrada(){   return this->grauEntrada; };
     bool getMarcado(){      return this->marcado; };
     int getGrauAux(){       return this->grauAux; };
+    int getIdArv(){         return this->idArv;};
 
     void setID(int id){                 this->id          = id; };
     void setProxNo(No *no){             this->proxNo      = no; };
@@ -52,6 +54,7 @@ public:
     void setGrauEntrada(int grau){      this->grauEntrada = grau; };
     void setMarcado(bool marca){        this->marcado     = marca; };
     void setGrauAux(int grau){          this->grauAux     = grau;};
+    void setIdArv(int idArv){           this->idArv       = idArv;};
 
 };
 

@@ -6,6 +6,7 @@
 
 #include "No.h"
 #include "Arco.h"
+#include <vector>
 
 using namespace std;
 

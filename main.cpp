@@ -2,10 +2,11 @@
 #include "Grafo.h"
 #include "time.h"
 #include <algorithm>
+#include <math.h>
 
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
@@ -18,6 +19,7 @@ void testeArestasModificaveis();
 void testeCopiaGrafo();
 void testePopulacaoAleatoria();
 void testeEntradas();
+bool ordenacao(Grafo *g1, Grafo *g2);
 
 int main(){
 
@@ -31,19 +33,31 @@ int main(){
 }
 
 
-/**OBS: POPULACAO INICIAL ALEATORIA AINDA ESTA COM PROBLEMA, VOU CORRIGIR(ASS:MATEUS)**/
 void testePopulacaoAleatoria(){
     char nome[] = arquivoEntrada;
-    Grafo *g = new Grafo(), *h;
+    Grafo *g = new Grafo();
+
     g->leEntrada(nome);
 
     int n_individuos = 500;
+    vector<Grafo*> h;
+
     for(int i=0; i<n_individuos; i++){
-        printf("\nsolucao  %d", i);
-        h = g->retornaCopia();
-        h->solucaoAleatoria();
-        h->define_sentido_fluxos();
-        delete h;
+
+        double *perda;
+        printf("\n\nsolucao  %d:", i);
+        h.push_back(g->retornaCopia());
+        h.at(i)->solucaoAleatoria();
+        h.at(i)->define_sentido_fluxos();
+        h.at(i)->calcula_fluxos_e_perdas(1e-8);
+        perda = h.at(i)->soma_perdas();
+
+        printf("\nvalida? %d", h.at(i)->ehArvore());
+        printf("  tensao minima: %.5f (p.u)", h.at(i)->tensaoMinima());
+        printf("  perdaTotal: %.5f (kW)", 100*1000*perda[0]);
+
+        delete perda;
+
     }
 }
 
@@ -127,10 +141,6 @@ void testeArestasModificaveis(){
     }
     g->imprime();
 
-    //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
-
-
-
 }
 
 void testeDestrutor(){
@@ -164,13 +174,6 @@ void defineConfiguracao(Grafo *g){
         }
 
         abreChaves(g, ids, 5);
-//        Arco *a;
-//        for(int i=0; i<5; i++){
-//            a = g->buscaArco(ids[i]);
-//            a->setChave(false);
-//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-//            a->setChave(false);
-//        }
     }
 
     if(arquivoEntrada=="ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"){
@@ -191,13 +194,6 @@ void defineConfiguracao(Grafo *g){
         }
 
         abreChaves(g, ids, 5);
-//        Arco *a;
-//        for(int i=0; i<5; i++){
-//            a = g->buscaArco(ids[i]);
-//            a->setChave(false);
-//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-//            a->setChave(false);
-//        }
     }
 
     if(arquivoEntrada=="ENTRADAS_MODIFICADAS/SISTEMA119s2.m"){
@@ -232,13 +228,6 @@ void defineConfiguracao(Grafo *g){
             ids[i]--;
 
         abreChaves(g, ids, 15);
-//        Arco *a;
-//        for(int i=0; i<15; i++){
-//            a = g->buscaArco(ids[i]);
-//            a->setChave(false);
-//            a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-//            a->setChave(false);
-//        }
     }
 }
 
