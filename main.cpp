@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include "Grafo.h"
+#include "Random_keys.h"
 #include "time.h"
 #include <algorithm>
 #include <math.h>
 
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
@@ -21,6 +22,8 @@ void testePopulacaoAleatoria();
 void testeEntradas();
 bool ordenacao(Grafo *g1, Grafo *g2);
 
+void testeRandomKeys();
+
 int main(){
 
     srand(time(NULL));
@@ -29,9 +32,39 @@ int main(){
 //    testeDestrutor();
 //    testeArestasModificaveis();
 //    testeCopiaGrafo();
-    testePopulacaoAleatoria();
+//    testePopulacaoAleatoria();
+    testeRandomKeys();
 }
 
+void testeRandomKeys(){
+    char nome[] = arquivoEntrada;
+    Grafo *g = new Grafo();
+
+    g->leEntrada(nome);
+
+    double *perdas;
+
+
+    vector<cromossomo*> s1 = geraSolucaoAleatoria(g);
+    double *perdaTotal1 = perdaTotalSolucao(s1, g);
+    cout << "s1 eh valida? " << g->ehArvore() << endl;
+    cout << "s1 perdaTotal: ( " << 100*1000*perdaTotal1[0] << " , " << 100*1000*perdaTotal1[1] << " )" << endl;
+
+    cout << "\n+\n";
+
+    vector<cromossomo*> s2 = geraSolucaoAleatoria(g);
+    double *perdaTotal2 = perdaTotalSolucao(s2, g);
+    cout << "s2 eh valida? " << g->ehArvore() << endl;
+    cout << "s2 perdaTotal: ( " << 100*1000*perdaTotal2[0] << " , " << 100*1000*perdaTotal2[1] << " )" << endl;
+
+    cout << "\n=\n";
+
+    vector<cromossomo*> filho = cruzamentoMedia(s1, s2);
+    double *perdaTotalfilho = perdaTotalSolucao(filho, g);
+    cout << "filho eh valida? " << g->ehArvore() << endl;
+    cout << "filho perdaTotal: ( " << 100*1000*perdaTotalfilho[0] << " , " << 100*1000*perdaTotalfilho[1] << " )" << endl;
+
+}
 
 void testePopulacaoAleatoria(){
     char nome[] = arquivoEntrada;

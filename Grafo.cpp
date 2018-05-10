@@ -665,3 +665,9 @@ void Grafo::resetaGrausAuxiliares(){
         }
     }
 }
+
+void Grafo::resetaIdArv(){
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+        no->setIdArv(no->getID());
+    }
+}

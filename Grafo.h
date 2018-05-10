@@ -79,6 +79,7 @@ public:
     void solucaoAleatoria();
 
     void resetaGrausAuxiliares();
+    void resetaIdArv();
 
 
 
