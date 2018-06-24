@@ -36,8 +36,12 @@
 		<Unit filename="Arco.h" />
 		<Unit filename="Grafo.cpp" />
 		<Unit filename="Grafo.h" />
+		<Unit filename="Individuo.cpp" />
+		<Unit filename="Individuo.h" />
 		<Unit filename="No.cpp" />
 		<Unit filename="No.h" />
+		<Unit filename="Random_key.cpp" />
+		<Unit filename="Random_keys.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

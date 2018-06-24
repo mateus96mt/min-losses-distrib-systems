@@ -671,3 +671,14 @@ void Grafo::resetaIdArv(){
         no->setIdArv(no->getID());
     }
 }
+
+void Grafo::zeraFluxosEPerdas(){
+    for(No *no=this->listaNos; no!=NULL; no=no->getProxNo()){
+        for(Arco *a=no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+            a->setFLuxoPAtiva(0.0);
+            a->setFLuxoPReativa(0.0);
+            a->setPerdaAtiva(0.0);
+            a->setPerdaReativa(0.0);
+        }
+    }
+}

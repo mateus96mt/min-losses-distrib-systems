@@ -7,6 +7,7 @@
 #include "No.h"
 #include "Arco.h"
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -80,7 +81,7 @@ public:
 
     void resetaGrausAuxiliares();
     void resetaIdArv();
-
+    void zeraFluxosEPerdas();
 
 
 

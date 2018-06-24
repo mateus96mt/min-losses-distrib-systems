@@ -21,6 +21,7 @@ void testeCopiaGrafo();
 void testePopulacaoAleatoria();
 void testeEntradas();
 bool ordenacao(Grafo *g1, Grafo *g2);
+void testeMemLeakRandomKeys();
 
 void testeRandomKeys();
 
@@ -29,10 +30,17 @@ int main(){
     srand(time(NULL));
 
 //    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+
 //    testeDestrutor();
+
 //    testeArestasModificaveis();
+
 //    testeCopiaGrafo();
+
 //    testePopulacaoAleatoria();
+
+//    testeMemLeakRandomKeys();
+
     testeRandomKeys();
 }
 
@@ -42,28 +50,59 @@ void testeRandomKeys(){
 
     g->leEntrada(nome);
 
-    double *perdas;
+    /** numero de individuos da populacao/numero de geracaoes **/
+    Random_keys *rd = new Random_keys(100, 100);
+
+    /** populacao inicial gerada de forma aleatoria **/
+    rd->geraPopAleatoria(g);
+
+    /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
+    rd->avancaGeracoes(g);
+
+    /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
+    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+
+    /** abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo**/
+    best->calculaFuncaoObjetivo(g);
+
+    printf("\n\n\nMELHOR INDIVIDUO FINAL:");
+    printf("\nAberto:{");
+    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            Arco *volta = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+            if(a->getChave()==false && volta->getChave()==false)
+                printf("%d,", a->getID());
+        }
+    }
+    printf("  }\n");
+    printf("PerdaAtiva: %f (kw)\n\n\n", 100*1000*best->getPerdaAtiva());
 
 
-    vector<cromossomo*> s1 = geraSolucaoAleatoria(g);
-    double *perdaTotal1 = perdaTotalSolucao(s1, g);
-    cout << "s1 eh valida? " << g->ehArvore() << endl;
-    cout << "s1 perdaTotal: ( " << 100*1000*perdaTotal1[0] << " , " << 100*1000*perdaTotal1[1] << " )" << endl;
+    /** so para conferir mesmo  e ter certeza da perda do individuo **/
+    g->zeraFluxosEPerdas();
+    g->calcula_fluxos_e_perdas(1e-5);
+    printf("(olhando pro grafo so pra ter certeza do calculo)\nPerdaAtiva: %f (kw)\n\n\n", 100*1000*g->soma_perdas()[0]);
 
-    cout << "\n+\n";
 
-    vector<cromossomo*> s2 = geraSolucaoAleatoria(g);
-    double *perdaTotal2 = perdaTotalSolucao(s2, g);
-    cout << "s2 eh valida? " << g->ehArvore() << endl;
-    cout << "s2 perdaTotal: ( " << 100*1000*perdaTotal2[0] << " , " << 100*1000*perdaTotal2[1] << " )" << endl;
+}
 
-    cout << "\n=\n";
+/** pequeno vazamento de memoria na funcao "calculaFuncaoObjetivo" do individuo novamente no vector **/
+void testeMemLeakRandomKeys(){
+    char nome[] = arquivoEntrada;
+    Grafo *g = new Grafo();
 
-    vector<cromossomo*> filho = cruzamentoMedia(s1, s2);
-    double *perdaTotalfilho = perdaTotalSolucao(filho, g);
-    cout << "filho eh valida? " << g->ehArvore() << endl;
-    cout << "filho perdaTotal: ( " << 100*1000*perdaTotalfilho[0] << " , " << 100*1000*perdaTotalfilho[1] << " )" << endl;
+    g->leEntrada(nome);
 
+    printf("\n num nos: %d         num arcos: %d", g->getNumeroNos(), g->getNumeroArcos());
+
+    Individuo *i = new Individuo(g->getNumeroArcos());
+
+    i->geraPesosAleatorios();
+    while(true){
+        i->calculaFuncaoObjetivo(g);
+        printf("\n\nperdaAtiv: %f kw,  perdaReativ: %f kw      eh arvore? %d",
+        1000*100*i->getPerdaAtiva(), 1000*100*i->getPerdaReativa(), g->ehArvore());
+    }
 }
 
 void testePopulacaoAleatoria(){

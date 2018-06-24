@@ -1,106 +1,70 @@
-#include <algorithm>
-
 #include "Random_keys.h"
-#include "time.h"
 
-bool ordenacaoCromossomo(cromossomo *c1, cromossomo *c2){return c1->peso > c2->peso;}
+using namespace std;
 
-vector<cromossomo*> geraSolucaoAleatoria(Grafo *g){
+bool ordenacaoIndividuo(Individuo *i1, Individuo *i2){return i1->getPerdaAtiva() > i2->getPerdaAtiva();}
 
-    vector<cromossomo*> solucao;
+Random_keys::Random_keys(int tamPop, int numGeracoes){
+    this->tamPop = tamPop;
+    this->numGeracoes = numGeracoes;
+}
 
-    cromossomo *c;
+void Random_keys::geraPopAleatoria(Grafo *g){
 
-    for(No *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
+    Individuo *ind;
+    for(int i=0; i<this->tamPop; i++){
 
-        for(Arco *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
+        ind = new Individuo(g->getNumeroArcos());
+        ind->geraPesosAleatorios();
 
-            c = new cromossomo();
-            c->peso = rand() % 1000; //peso de cada cromossomo eh um valor aleatorio
-            c->a = a;
+        popAtual.push_back(ind);
+    }
+    popAnterior = popAtual;
+}
 
-            solucao.push_back(c);
+/** ordena populacao em ordem decrescente por valor da funcao objetivo
+dado que queremos minimizar a perda os piores individuos ficam no inicio(perda maior)
+queremos os melhore (menor perda, fim da lista) **/
+void Random_keys::ordenaPopulacaoAtual(Grafo *g){
+    for(int i=0; i<popAtual.size(); i++)
+        popAtual.at(i)->calculaFuncaoObjetivo(g);
+
+    sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
+}
+
+void Random_keys::avancaGeracoes(Grafo *g){
+
+    for(int k=0; k<this->numGeracoes; k++){
+
+        /** calcula a funcao criterio para cada individuo
+        e ordena a populacao da maior perda(pior individuo)
+        pra menor perda(melhor individuo), perdaAtiva**/
+        this->ordenaPopulacaoAtual(g);
+
+        Individuo *best = popAtual.at(this->tamPop-1);
+
+        printf("\ngeracao (%d)  melhor individuo: %f kw",
+        k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+
+        popAnterior = popAtual;
+
+        int num_piores = 0.05*this->tamPop;
+        int num_melhores = 0.1*this->tamPop;
+
+        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+
+            /** cruzamento entre pai1 e pai2 entre os
+            individuos aleatorios da populacao anterior
+            modificar por uma escolha em roleta no futuro**/
+            int pai1 = rand() % this->tamPop;
+            int pai2 = rand() % this->tamPop;
+
+            while(pai2==pai1)
+                pai2 = rand() % this->tamPop;
+
+            popAnterior.at(pai1)->cruzamentoMedia(popAnterior.at(pai2), popAtual.at(i));
+            popAtual.at(i)->mutacao();
         }
     }
-    return solucao;
+
 }
-
-double *perdaTotalSolucao(vector<cromossomo*> solucao, Grafo *g){
-
-    //abrir todas as chaves, cada no fica em uma componente conexa
-    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco())
-            a->setChave(false);
-    }
-    g->resetaIdArv(); // reseta os ids de componente conexa
-
-    //ordenar somente a copia para nao alterar a ordem dos cromossomos do individuo
-    vector<cromossomo*> solucaoCP = solucao;
-
-    //ordena os cromossomos em ordem decrescente de peso
-    sort(solucaoCP.begin(), solucaoCP.end(), ordenacaoCromossomo);
-
-    int n_arc_inseridos = 0, n_arcos_inserir = g->getNumeroNos()-1;
-
-    //percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal)
-    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
-
-        if( (solucaoCP.at(i)->a->getNoOrigem()->getIdArv() != solucaoCP.at(i)->a->getNoDestino()->getIdArv()) && solucaoCP.at(i)->a->getChave()==false){
-
-            int id = solucaoCP.at(i)->a->getNoOrigem()->getIdArv();
-            for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-                if(no->getIdArv()==id)
-                    no->setIdArv(solucaoCP.at(i)->a->getNoDestino()->getIdArv());
-            }
-
-            solucaoCP.at(i)->a->setChave(true);
-            g->buscaArco(solucaoCP.at(i)->a->getNoDestino()->getID(), solucaoCP.at(i)->a->getNoOrigem()->getID())->setChave(true);
-
-            n_arc_inseridos++;
-        }
-
-    }
-
-    printf("\n\nAberto:{");
-    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
-            if(a->getChave()==false)
-                printf("%d,", a->getID());
-        }
-    }
-    printf("  }\n\n");
-
-    g->define_sentido_fluxos();
-    g->calcula_fluxos_e_perdas(1e-5);
-
-    return g->soma_perdas();
-}
-
-
-vector<cromossomo*> cruzamentoMedia(vector<cromossomo*> s1, vector<cromossomo*> s2){
-
-    vector<cromossomo*> filho;
-
-    cromossomo *c;
-
-    for(int i=0; i<s1.size(); i++){
-        c = new cromossomo();
-        c->a = s1.at(i)->a;
-        c->peso = (s1.at(i)->peso + s2.at(i)->peso)/2.0;
-
-        filho.push_back(c);
-    }
-
-    return filho;
-}
-
-void mutacao1(vector<cromossomo*> &solucao, int chance){
-    int i = rand() % 100;
-
-    if(i<=chance){
-
-        int j = rand() % solucao.size();
-        solucao.at(j)->peso = rand() % 1000;
-    }
-}
-
