@@ -4,10 +4,11 @@
 #include "time.h"
 #include <algorithm>
 #include <math.h>
+#include <string.h>
 
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
@@ -27,7 +28,10 @@ void testeRandomKeys();
 
 int main(){
 
-    srand(time(NULL));
+    unsigned long int semente = time(NULL);
+    semente = 1530715368;//melhor semente para 119 barras
+    semente  = 1530715848;//melhor semente para 33 barras modificado
+    srand(semente);
 
 //    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
 
@@ -42,6 +46,8 @@ int main(){
 //    testeMemLeakRandomKeys();
 
     testeRandomKeys();
+
+    printf("semente: %lu", semente);
 }
 
 void testeRandomKeys(){
@@ -51,7 +57,7 @@ void testeRandomKeys(){
     g->leEntrada(nome);
 
     /** numero de individuos da populacao/numero de geracaoes **/
-    Random_keys *rd = new Random_keys(100, 100);
+    Random_keys *rd = new Random_keys(100, 1000);
 
     /** populacao inicial gerada de forma aleatoria **/
     rd->geraPopAleatoria(g);
@@ -75,12 +81,13 @@ void testeRandomKeys(){
         }
     }
     printf("  }\n");
-    printf("PerdaAtiva: %f (kw)\n\n\n", 100*1000*best->getPerdaAtiva());
+    printf("PerdaAtiva: %f (kw)\n", 100*1000*best->getPerdaAtiva());
+    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 
 
     /** so para conferir mesmo  e ter certeza da perda do individuo **/
     g->zeraFluxosEPerdas();
-    g->calcula_fluxos_e_perdas(1e-5);
+    g->calcula_fluxos_e_perdas(1e-8);
     printf("(olhando pro grafo so pra ter certeza do calculo)\nPerdaAtiva: %f (kw)\n\n\n", 100*1000*g->soma_perdas()[0]);
 
 
@@ -228,7 +235,7 @@ void testeDestrutor(){
 
 void defineConfiguracao(Grafo *g){
 
-    if(arquivoEntrada=="ENTRADAS_MODIFICADAS/sist33barras_Yang.m"){
+    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/sist33barras_Yang.m")==0){
 
         int ids[5];
 

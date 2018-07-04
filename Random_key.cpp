@@ -26,7 +26,7 @@ void Random_keys::geraPopAleatoria(Grafo *g){
 dado que queremos minimizar a perda os piores individuos ficam no inicio(perda maior)
 queremos os melhore (menor perda, fim da lista) **/
 void Random_keys::ordenaPopulacaoAtual(Grafo *g){
-    for(int i=0; i<popAtual.size(); i++)
+    for(unsigned int i=0; i<popAtual.size(); i++)
         popAtual.at(i)->calculaFuncaoObjetivo(g);
 
     sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
@@ -57,7 +57,22 @@ void Random_keys::avancaGeracoes(Grafo *g){
             individuos aleatorios da populacao anterior
             modificar por uma escolha em roleta no futuro**/
             int pai1 = rand() % this->tamPop;
-            int pai2 = rand() % this->tamPop;
+//            int pai2 = rand() % this->tamPop; //aleatorio
+
+            /**torneio com 3**/
+            int cand1, cand2, cand3;
+            cand1 = rand() % this->tamPop;
+            cand2 = rand() % this->tamPop;
+            cand3 = rand() % this->tamPop;
+
+            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
+                cand2=cand1;
+            }
+            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
+                cand3=cand2;
+            }
+
+            int pai2 = cand3;
 
             while(pai2==pai1)
                 pai2 = rand() % this->tamPop;
@@ -65,6 +80,10 @@ void Random_keys::avancaGeracoes(Grafo *g){
             popAnterior.at(pai1)->cruzamentoMedia(popAnterior.at(pai2), popAtual.at(i));
             popAtual.at(i)->mutacao();
         }
+
+        /**aleatorio ao inves de manter piores**/
+        for(int i=0; i<num_piores; i++)
+            popAtual.at(i)->geraPesosAleatorios();
     }
 
 }

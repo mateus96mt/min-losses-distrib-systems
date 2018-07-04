@@ -1,4 +1,5 @@
 #include "Individuo.h"
+#define RANGEPESO 100
 
 using namespace std;
 
@@ -11,7 +12,7 @@ Individuo::Individuo(int numArcos){
 
 void Individuo::geraPesosAleatorios(){
     for(int i=0; i<this->numArcos; i++)
-        this->pesos[i] = rand() % 10000;
+        this->pesos[i] = rand() % RANGEPESO;
 }
 
 void Individuo::cruzamentoMedia(Individuo *pai, Individuo *filho){
@@ -23,8 +24,18 @@ void Individuo::mutacao(){
     int i = rand() % 100;
     if(i<=5){
         int j = rand() % this->numArcos;
-        double peso = rand() % 10000;
+        double peso = rand() % RANGEPESO;
         this->pesos[j] = peso;
+    }
+    else{
+        if(i<=15){
+            int j = rand() % this->numArcos;
+            int k = rand() % this->numArcos;
+            double peso1 = rand() % RANGEPESO;
+            double peso2 = rand() % RANGEPESO;
+            this->pesos[j] = peso1;
+            this->pesos[k] = peso2;
+        }
     }
 }
 
@@ -85,7 +96,7 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
     }
 
     g->define_sentido_fluxos();
-    g->calcula_fluxos_e_perdas(1e-5); /** calcula fluxos e perda com erro de 1e-5 **/
+    g->calcula_fluxos_e_perdas(1e-8); /** calcula fluxos e perda com erro de 1e-5 **/
 
     double *perdas = g->soma_perdas();/** soma as perdas ativas e reativas em todos os arcos e retorna um double* **/
 
