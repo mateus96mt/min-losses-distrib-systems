@@ -12,17 +12,18 @@
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
-
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
 
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
+
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
 
-#define configuracao "inicial"
+//#define configuracao "inicial"
 //#define configuracao "literatura1"
-//#define configuracao "ARSD"
+//#define configuracao "literatura2"
+#define configuracao "ARSD"
 
 void abreChaves(Grafo *g, int *ids, int n);
 void defineConfiguracao(Grafo *g);
@@ -39,11 +40,13 @@ void testeRandomKeys();
 int main(){
 
     unsigned long int semente = time(NULL);
-    semente = 1530715368;//melhor semente para 119 barras
-//    semente  = 1530715848;//melhor semente para 33 barras modificado
+//    semente = 1530715368; //melhor semente para 119 barras
+//    semente  = 1530715848; //melhor semente para 33 barras modificado
+    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
+//    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
     srand(semente);
 
-    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+//    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
 
 //    testeDestrutor();
 
@@ -55,7 +58,7 @@ int main(){
 
 //    testeMemLeakRandomKeys();
 
-//    testeRandomKeys();
+    testeRandomKeys();
 
     printf("semente: %lu", semente);
 }
@@ -66,7 +69,7 @@ void testeRandomKeys(){
 
     g->leEntrada(nome);
 
-    /** numero de individuos da populacao/numero de geracaoes **/
+    /** numero de individuos da populacao,numero de geracaoes **/
     Random_keys *rd = new Random_keys(100, 1000);
 
     /** populacao inicial gerada de forma aleatoria **/
@@ -81,26 +84,31 @@ void testeRandomKeys(){
     /** abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo**/
     best->calculaFuncaoObjetivo(g);
 
+
+    /**Para imprimir as chaves abertas de forma ordenada, sem repeticao de arcos**/
+    vector<int> chavesAbertas;
     printf("\n\n\nMELHOR INDIVIDUO FINAL:");
     printf("\nAberto:{");
     for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
         for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
             Arco *volta = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
             if(a->getChave()==false && volta->getChave()==false)
-                printf("%d,", a->getID());
+                chavesAbertas.push_back(a->getID());
         }
     }
+    sort(chavesAbertas.begin(), chavesAbertas.end());
+    for(unsigned int i=0; i<chavesAbertas.size();i+=2)
+        printf("%d,", chavesAbertas.at(i));
+
+
     printf("  }\n");
     printf("PerdaAtiva: %f (kw)\n", 100*1000*best->getPerdaAtiva());
     printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 
-
-    /** so para conferir mesmo  e ter certeza da perda do individuo **/
-    g->zeraFluxosEPerdas();
-    g->calcula_fluxos_e_perdas(1e-8);
-    printf("(olhando pro grafo so pra ter certeza do calculo)\nPerdaAtiva: %f (kw)\n\n\n", 100*1000*g->soma_perdas()[0]);
-
-
+//    /** so para conferir mesmo  e ter certeza da perda do individuo **/
+//    g->zeraFluxosEPerdas();
+//    g->calcula_fluxos_e_perdas(1e-8);
+//    printf("(olhando pro grafo so pra ter certeza do calculo)\nPerdaAtiva: %f (kw)\n\n\n", 100*1000*g->soma_perdas()[0]);
 }
 
 /** pequeno vazamento de memoria na funcao "calculaFuncaoObjetivo" do individuo novamente no vector **/
@@ -332,6 +340,35 @@ void defineConfiguracao(Grafo *g){
         if(configuracao == "literatura1"){
             ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 39; ids[4] = 42;
             ids[5] = 55; ids[6] = 62; ids[7] = 72; ids[8] = 83; ids[9] = 86;
+            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        }
+
+        abreChaves(g, ids, 13);
+    }
+    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m")==0){
+
+        int ids[13];
+
+        //CONFIGURACAO INICIAL
+        if(configuracao == "inicial"){
+            ids[0] = 84; ids[1] = 85; ids[2] = 86; ids[3] = 87; ids[4] = 88;
+            ids[5] = 89; ids[6] = 90; ids[7] = 91; ids[8] = 92; ids[9] = 93;
+            ids[10] = 94; ids[11] = 95; ids[12] = 96;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if(configuracao == "literatura1"){
+            ids[0] = 7; ids[1] = 13; ids[2] = 33; ids[3] = 38; ids[4] = 42;
+            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
+            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        }
+        if(configuracao == "literatura2"){
+            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 38; ids[4] = 42;
+            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
+            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        }
+        if(configuracao == "ARSD"){
+            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 39; ids[4] = 42;
+            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
             ids[10] = 89; ids[11] = 90; ids[12] = 92;
         }
 
