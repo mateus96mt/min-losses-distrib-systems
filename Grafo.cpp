@@ -183,12 +183,13 @@ void Grafo::leEntrada(char nome[])
         else if(i % n_col_arestas == 4){
             entrada >> reatancia;
             reatancia /= ZB;
-//            cout << "      reat: " << reatancia << endl;;
+//            cout << "      reat: " << reatancia;
             //insere arco i-j e j-i
 
             idArco++;
             insereArco(idOrig, idDest, idArco, resistencia, reatancia, true);
             insereArco(idDest, idOrig, idArco, resistencia, reatancia, true);
+//            cout << "  inseriu arco!" << endl;
         }
         else
             entrada >> aux;

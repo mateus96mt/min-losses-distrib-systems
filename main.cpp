@@ -7,8 +7,18 @@
 #include <string.h>
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
+
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
+
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
+
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
+
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
@@ -30,10 +40,10 @@ int main(){
 
     unsigned long int semente = time(NULL);
     semente = 1530715368;//melhor semente para 119 barras
-    semente  = 1530715848;//melhor semente para 33 barras modificado
+//    semente  = 1530715848;//melhor semente para 33 barras modificado
     srand(semente);
 
-//    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
 
 //    testeDestrutor();
 
@@ -45,7 +55,7 @@ int main(){
 
 //    testeMemLeakRandomKeys();
 
-    testeRandomKeys();
+//    testeRandomKeys();
 
     printf("semente: %lu", semente);
 }
@@ -307,6 +317,25 @@ void defineConfiguracao(Grafo *g){
             ids[i]--;
 
         abreChaves(g, ids, 15);
+    }
+    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m")==0){
+
+        int ids[13];
+
+        //CONFIGURACAO INICIAL
+        if(configuracao == "inicial"){
+            ids[0] = 84; ids[1] = 85; ids[2] = 86; ids[3] = 87; ids[4] = 88;
+            ids[5] = 89; ids[6] = 90; ids[7] = 91; ids[8] = 92; ids[9] = 93;
+            ids[10] = 94; ids[11] = 95; ids[12] = 96;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if(configuracao == "literatura1"){
+            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 39; ids[4] = 42;
+            ids[5] = 55; ids[6] = 62; ids[7] = 72; ids[8] = 83; ids[9] = 86;
+            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        }
+
+        abreChaves(g, ids, 13);
     }
 }
 
