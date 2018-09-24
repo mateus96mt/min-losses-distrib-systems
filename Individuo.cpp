@@ -46,10 +46,15 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
     for(No *no = g->getListaNos(); no!=NULL; no=no->getProxNo()){
 
         for(Arco *a = no->getListaArcos(); a!=NULL; a=a->getProxArco()){
-            c = new Cromossomo();
-            c->arco = a;
-            c->peso = 0;
-            cromossomos.push_back(c);
+
+            /**individuo possui somente arcos modificaveis e em um sentido
+            (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
+            if(a->getModificavel()==true && a->getMarcado()==true){
+                c = new Cromossomo();
+                c->arco = a;
+                c->peso = 0;
+                cromossomos.push_back(c);
+            }
         }
 
     }
@@ -60,12 +65,18 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
 
     sort(cromossomos.begin(), cromossomos.end(), ordenacaoCromossomo);
 
-    int n_arc_inseridos = 0, n_arcos_inserir = g->getNumeroNos()-1;
+    int n_arc_inseridos = 0, n_arcos_inserir = g->getNumeroNos() - 1 - g->getN_naoModificaveis();
 
     /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
     for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
         for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
-            a->setChave(false);
+
+            //arcos nao modificaveis ficam sempre fechados
+            if(a->getModificavel()==false)
+                a->setChave(true);
+            else
+                a->setChave(false);
+
             a->setFLuxoPAtiva(0.0);
             a->setFLuxoPReativa(0.0);
             a->setPerdaAtiva(0.0);
@@ -113,4 +124,36 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
     delete perdas;
 
     cromossomos.clear();///deletar vetor de cromossomos(nao esta deletando memoria)
+}
+
+void Individuo::resetaPesos(float valor){
+    for(int i=0; i<this->numArcos; i++)
+        this->pesos[i] = valor;
+}
+
+void Individuo::geraPesosConfInicial(int *idsAbertos, int n, Grafo *g){
+    this->resetaPesos(1.0);
+    int j=0;
+    for(No *no = g->getListaNos(); no!=NULL; no=no->getProxNo()){
+
+        for(Arco *a = no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+
+            if(a->getModificavel()==true && a->getMarcado()==true){
+                for(int i=0; i<n; i++){
+                    if(a->getID()==idsAbertos[i]){
+                        this->pesos[j] = 0.0;
+                    }
+                }
+                j++;
+            }
+
+        }
+    }
+}
+
+void Individuo::imprimePesos(){
+    printf("pesos {");
+    for(int i=0; i<this->numArcos; i++)
+        printf("%.2f, ", this->pesos[i]);
+    printf("}\n");
 }

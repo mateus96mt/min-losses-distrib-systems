@@ -24,6 +24,7 @@ class Random_keys{
 
 
         void geraPopAleatoria(Grafo *g);
+        void geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int n);
 
         ~Random_keys(){}
 

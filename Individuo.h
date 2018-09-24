@@ -26,10 +26,16 @@ class Individuo{
 
         void geraPesosAleatorios();
 
+        void geraPesosConfInicial(int *idsAbertos, int n, Grafo *g);
+
         void cruzamentoMedia(Individuo *pai, Individuo *filho);
 
         void mutacao();
 
+        void resetaPesos(float valor);
+
         void calculaFuncaoObjetivo(Grafo *g);
+
+        void imprimePesos();
 };
 #endif // INDIVIDUO_H_INCLUDED

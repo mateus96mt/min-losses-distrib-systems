@@ -20,6 +20,7 @@ private:
     double perdaAtiva, perdaReativa;//perda de potencia ativa e reativa no arco
 
     bool modificavel;
+    bool marcado;
 
 public:
     //funcoes do Arco:
@@ -43,6 +44,7 @@ public:
     double getPerdaAtiva(){   return this->perdaAtiva; };
     double getPerdaReativa(){ return this->perdaReativa; };
     bool getModificavel(){    return this->modificavel; };
+    bool getMarcado(){        return this->marcado;};
 
     void setID(int id){                      this->id            = id; };
     void setProxArco(Arco *arc){             this->proxArco      = arc; };
@@ -56,6 +58,7 @@ public:
     void setPerdaAtiva(double perdaA){       this->perdaAtiva    = perdaA; };
     void setPerdaReativa(double perdaReat){  this->perdaReativa  = perdaReat; };
     void setModificavel(bool modificavel){   this->modificavel   = modificavel; };
+    void setMarcado(bool marca){             this->marcado       = marca;};
 };
 
 #endif // ARCO_H_INCLUDED

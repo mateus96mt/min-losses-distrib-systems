@@ -21,7 +21,7 @@ Arco::Arco(int id){
     this->perdaReativa = 0.0;
 
     this->modificavel = true;
-
+    this->marcado = true;
 }
 
 Arco::~Arco(){

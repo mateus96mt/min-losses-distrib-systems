@@ -551,7 +551,8 @@ void Grafo::auxDefine_sentido_fluxos(No *no, No *noAnterior){
 
 void Grafo::defineArestasModificaveis(){
 
-    int n=1;
+    this->resetaModificaveis();//define todos os arcos como sendo modificaveis
+    int n = 0;
     for(int i=0; i<this->numeroArcos/2; i++){
 
 
@@ -577,6 +578,7 @@ void Grafo::defineArestasModificaveis(){
             }
         }
     }
+    this->n_naoModificaveis = n;
 //    printf("\ndefiniu arestas modificaveis!");
 }
 
@@ -680,6 +682,55 @@ void Grafo::zeraFluxosEPerdas(){
             a->setFLuxoPReativa(0.0);
             a->setPerdaAtiva(0.0);
             a->setPerdaReativa(0.0);
+        }
+    }
+}
+
+void Grafo::fechaArcosNaoModificaveis(){
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            if(a->getModificavel() == false){
+                a->setChave(true);
+            }
+        }
+
+    }
+}
+
+void Grafo::resetaModificaveis(){
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            a->setModificavel(true);
+        }
+    }
+}
+
+void Grafo::resetaArcosMarcados(){
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            a->setMarcado(false);
+        }
+    }
+}
+
+/** percorre todos os arcos do grafo e marca somente os arcos em um sentido
+(funcao necessaria para otimizar o AG utilizando metade do numero de arcos) **/
+void Grafo::marcaUmsentidoArcos(){
+    this->resetaArcosMarcados();
+    Arco *aux;
+    for(No *no = this->listaNos; no!=NULL; no = no->getProxNo()){
+
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+
+            if(a->getMarcado()==false){
+                a->setMarcado(false);
+                aux = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+                aux->setMarcado(true);
+            }
+
         }
     }
 }

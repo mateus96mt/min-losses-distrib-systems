@@ -23,6 +23,7 @@ private:
 
     //informacoes uteis:
     int n_marcados; //contador de nos marcados, util em percursos em profundidade
+    int n_naoModificaveis;
 
 public:
     //funcoes do grafo:
@@ -83,13 +84,19 @@ public:
     void resetaIdArv();
     void zeraFluxosEPerdas();
 
+    void fechaArcosNaoModificaveis();
+    void resetaModificaveis();
+
+    void resetaArcosMarcados();
+    void marcaUmsentidoArcos();
 
 
     //GETS e SETS:
-    No *getListaNos(){    return this->listaNos; };
-    int getNumeroNos(){   return this->numeroNos; };
-    int getNumeroArcos(){ return this->numeroArcos; };
-    int getN_marcados(){  return this->n_marcados; };
+    No *getListaNos(){          return this->listaNos; };
+    int getNumeroNos(){         return this->numeroNos; };
+    int getNumeroArcos(){       return this->numeroArcos; };
+    int getN_marcados(){        return this->n_marcados; };
+    int getN_naoModificaveis(){ return this->n_naoModificaveis;};
 
     void setListaNos(No *no){ this->listaNos = no; };
 };

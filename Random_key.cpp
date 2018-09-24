@@ -11,11 +11,31 @@ Random_keys::Random_keys(int tamPop, int numGeracoes){
 
 void Random_keys::geraPopAleatoria(Grafo *g){
 
+    g->marcaUmsentidoArcos();
     Individuo *ind;
     for(int i=0; i<this->tamPop; i++){
 
-        ind = new Individuo(g->getNumeroArcos());
+        ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
         ind->geraPesosAleatorios();
+
+        popAtual.push_back(ind);
+    }
+    popAnterior = popAtual;
+}
+
+void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int n){
+
+    g->marcaUmsentidoArcos();
+    Individuo *ind;
+    for(int i=0; i<this->tamPop; i++){
+
+        ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+        if(i==0){
+            ind->geraPesosConfInicial(idsAbertos, n, g);
+        }
+        else{
+            ind->geraPesosAleatorios();
+        }
 
         popAtual.push_back(ind);
     }
