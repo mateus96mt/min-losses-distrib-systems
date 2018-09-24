@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 Grafo::Grafo(){
 
     this->listaNos = NULL;
@@ -14,6 +15,8 @@ Grafo::Grafo(){
     this->perdaAtivaTotal = 0.0;
     this->perdaReativaTotal = 0.0;
     this->n_marcados = 0;
+    this->maxBancosBarra = 0;
+    this->maxCapSistema = 0;
 }
 
 Grafo::~Grafo(){
@@ -183,13 +186,12 @@ void Grafo::leEntrada(char nome[])
         else if(i % n_col_arestas == 4){
             entrada >> reatancia;
             reatancia /= ZB;
-//            cout << "      reat: " << reatancia;
+//            cout << "      reat: " << reatancia << endl;;
             //insere arco i-j e j-i
 
             idArco++;
             insereArco(idOrig, idDest, idArco, resistencia, reatancia, true);
             insereArco(idDest, idOrig, idArco, resistencia, reatancia, true);
-//            cout << "  inseriu arco!" << endl;
         }
         else
             entrada >> aux;

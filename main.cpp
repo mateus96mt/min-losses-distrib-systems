@@ -7,18 +7,14 @@
 #include <string.h>
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
-
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
-
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
-
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
-
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
-
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist69barras.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/Caract_Sistem_85.m"
 
 //#define configuracao "inicial"
 //#define configuracao "literatura1"
@@ -40,10 +36,10 @@ void testeRandomKeys();
 int main(){
 
     unsigned long int semente = time(NULL);
-//    semente = 1530715368; //melhor semente para 119 barras
+    semente = 1530715368; //melhor semente para 119 barras
 //    semente  = 1530715848; //melhor semente para 33 barras modificado
-    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
-//    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
+//    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
+//    semente = 1536861169; //melhor semente para 94 barras modificado (491,96 kw)
     srand(semente);
 
 //    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
@@ -373,6 +369,14 @@ void defineConfiguracao(Grafo *g){
         }
 
         abreChaves(g, ids, 13);
+    }
+    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/sist69barras.m")==0){
+
+        int ids[5];
+
+        ids[0] = 69; ids[1] = 70; ids[2] = 71; ids[3] = 72; ids[4] = 73;
+
+        abreChaves(g, ids, 5);
     }
 }
 

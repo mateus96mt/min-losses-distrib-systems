@@ -1,7 +1,50 @@
 #ifndef NO_H_INCLUDED
 #define NO_H_INCLUDED
 
+#include <vector>
+
+//baixei os arquivos na tarde do dia 22/agosto
+
 using namespace std;
+
+enum TipoCapacitor {
+    FIXO,
+    CHAVEADO
+};
+
+class Capacitor { // características do capacitor (dados de entrada)
+private:
+    int id;                  // identificador
+    TipoCapacitor tipo;
+    double custo;            // custo do capacitor
+    vector<int> steps;       // fluxos de potencia = (0, f1, f2, ... , fmax) ou (0, fmax)
+    int maxCapacitoresBarra; // núm. máx de capacitores alocados em uma mesma barra
+
+public:
+    //gets e sets
+
+};
+
+class AlocacaoCapacitor {
+private:
+    Capacitor* capacitor; // tipo de capacitor alocado
+    int numChaveamentos;  // numero de vezes que o capacitor é chaveado ao longo do dia
+    vector<int> step;     // fluxos de potencia utilizados nesta alocacao ao longo do dia
+                          // sendo que cada periodo do dia ocupa uma posicao do vetor.
+                          // Caso não seja utilizado chaveamento, o fluxo de potencia
+                          // utilizado ficará na posicão 0 do vetor
+
+public:
+    int getStep(int periodo=0);
+};
+
+
+/*
+Funcao objetivo:
+- custo da perda
+- custo do capacitor
+- reconfiguração (chaveamento)
+/**/
 
 class Arco;
 
@@ -15,6 +58,7 @@ private:
     int grauSaida, grauEntrada;
     int grauAux;
     int idArv;
+    vector<AlocacaoCapacitor> capacitores; // vetor de capacitores alocados no nó
 
     //informacoes necessarias para o problema de minimizacao de perdas:
     double potAtiva, potReativa;//demandas
@@ -36,13 +80,15 @@ public:
     No *getProxNo(){        return this->proxNo; };
     Arco *getListaArcos(){  return this->listaArcos; };
     double getPotAtiva(){   return this->potAtiva; };
-    double getPotReativa(){ return this->potReativa; };
+    double getPotReativa();
     double getVoltagem(){   return this->voltagem; };
     int getGrauSaida(){     return this->grauSaida; };
     int getGrauEntrada(){   return this->grauEntrada; };
     bool getMarcado(){      return this->marcado; };
     int getGrauAux(){       return this->grauAux; };
     int getIdArv(){         return this->idArv;};
+
+    vector<AlocacaoCapacitor>* getCapacitores() { return &capacitores; }
 
     void setID(int id){                 this->id          = id; };
     void setProxNo(No *no){             this->proxNo      = no; };

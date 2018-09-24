@@ -24,6 +24,10 @@ private:
     //informacoes uteis:
     int n_marcados; //contador de nos marcados, util em percursos em profundidade
 
+    //Limites para o uso de capacitores
+    int maxBancosBarra; // núm. máx de capacitores em cada barra
+    int maxCapSistema;  // núm. máx de capacitores em toda a rede
+
 public:
     //funcoes do grafo:
     Grafo();//construtor
@@ -86,12 +90,16 @@ public:
 
 
     //GETS e SETS:
-    No *getListaNos(){    return this->listaNos; };
-    int getNumeroNos(){   return this->numeroNos; };
-    int getNumeroArcos(){ return this->numeroArcos; };
-    int getN_marcados(){  return this->n_marcados; };
+    No *getListaNos(){      return this->listaNos; };
+    int getNumeroNos(){     return this->numeroNos; };
+    int getNumeroArcos(){   return this->numeroArcos; };
+    int getN_marcados(){    return this->n_marcados; };
+    int getMaxBancosBarra(){return this->maxBancosBarra;};
+    int getMaxCapSistema(){ return this->maxCapSistema;};
 
-    void setListaNos(No *no){ this->listaNos = no; };
+    void setListaNos(No *no){     this->listaNos = no; };
+    void setMaxBancosBarra(int m){this->maxBancosBarra = m;};
+    void setMaxCapSistema(int m){ this->maxCapSistema = m;};
 };
 
 #endif // DIGRAFO_H_INCLUDED
