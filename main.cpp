@@ -8,10 +8,10 @@
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
 
 #define configuracao "inicial"
@@ -37,7 +37,7 @@ void testeConfInicial();
 int main(){
 
     unsigned long int semente = time(NULL);
-    semente = 1537808177; //melhor semente para 119 barras
+//    semente = 1537845961; //melhor semente para 119 barras
 //    semente = 1530715848; //melhor semente para 33 barras modificado
 //    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
 //    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
@@ -79,7 +79,9 @@ void testeRandomKeys(){
     rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
 
     /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
-    rd->avancaGeracoes(g);
+//    rd->avancaGeracoes(g);
+    rd->avancaGeracoes2(g);
+
 
     /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
     Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);

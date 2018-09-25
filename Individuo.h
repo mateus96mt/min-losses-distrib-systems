@@ -30,6 +30,8 @@ class Individuo{
 
         void cruzamentoMedia(Individuo *pai, Individuo *filho);
 
+        void cruzamentoMedia2(Individuo *pai, Individuo *filho);
+
         void mutacao();
 
         void resetaPesos(float valor);

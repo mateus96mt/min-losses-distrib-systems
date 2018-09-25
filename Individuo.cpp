@@ -157,3 +157,19 @@ void Individuo::imprimePesos(){
         printf("%.2f, ", this->pesos[i]);
     printf("}\n");
 }
+
+
+void Individuo::cruzamentoMedia2(Individuo *pai, Individuo *filho){
+    for(int i=0; i<this->numArcos; i++){
+        int j = rand() % 1000;
+        if (j>=800){
+            filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i])*2.0;
+        }else{
+            if (j >= 100){
+                filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i])/2.0;
+            }else{
+                filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i]) * 0.75;
+            }
+        }
+    }
+}

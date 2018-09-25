@@ -31,6 +31,8 @@ class Random_keys{
         void ordenaPopulacaoAtual(Grafo *g);
 
         void avancaGeracoes(Grafo *g);
+        void avancaGeracoes2(Grafo *g);
+
 
 };
 #endif // RANDOM_KEYS_H_INCLUDED
