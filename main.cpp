@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <math.h>
 #include <string.h>
+#include <ctime>
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
@@ -31,12 +32,19 @@ bool ordenacao(Grafo *g1, Grafo *g2);
 void testeMemLeakRandomKeys();
 int *configuracaoInicial();
 
-void testeRandomKeys();
+void testeRandomKeys(char *arqIn);
 void testeConfInicial();
 
-int main(){
+int main(int c, char *argv[]){
 
     unsigned long int semente = time(NULL);
+
+    if(c!=2){
+        printf("\n\n  Erro ao chamar o programa! Formato: minLoss <arqivo_Entrada");
+        return 1;
+    }
+    char *arqIn =argv[1];
+
 //    semente = 1537845961; //melhor semente para 119 barras
 //    semente = 1530715848; //melhor semente para 33 barras modificado
 //    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
@@ -57,18 +65,21 @@ int main(){
 
 //    testeMemLeakRandomKeys();
 
-    testeRandomKeys();
+
+    clock_t inicio = clock();
+    testeRandomKeys(arqIn);
+    clock_t fim = clock();
 
 //    testeConfInicial();
 
     printf("semente: %lu", semente);
+    printf("\n\ntempo:  %f\n\n\n", (float)(fim-inicio)/CLOCKS_PER_SEC);
 }
 
-void testeRandomKeys(){
-    char nome[] = arquivoEntrada;
+void testeRandomKeys(char arqIn[]){
     Grafo *g = new Grafo();
 
-    g->leEntrada(nome);
+    g->leEntrada(arqIn);
     g->defineArestasModificaveis();
 
     /** numero de individuos da populacao,numero de geracaoes **/

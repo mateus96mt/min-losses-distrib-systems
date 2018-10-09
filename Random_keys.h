@@ -24,14 +24,14 @@ class Random_keys{
 
 
         void geraPopAleatoria(Grafo *g);
-        void geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int n);
+        void geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int nAbertos);
 
         ~Random_keys(){}
 
         void ordenaPopulacaoAtual(Grafo *g);
 
-        void avancaGeracoes(Grafo *g);
-        void avancaGeracoes2(Grafo *g);
+        int avancaGeracoes(Grafo *g);
+        int avancaGeracoes2(Grafo *g);
 
 
 };

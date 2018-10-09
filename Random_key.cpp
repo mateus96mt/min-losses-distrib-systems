@@ -23,7 +23,7 @@ void Random_keys::geraPopAleatoria(Grafo *g){
     popAnterior = popAtual;
 }
 
-void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int n){
+void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int nAbertos){
 
     g->marcaUmsentidoArcos();
     Individuo *ind;
@@ -31,7 +31,7 @@ void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int n){
 
         ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
         if(i==0){
-            ind->geraPesosConfInicial(idsAbertos, n, g);
+            ind->geraPesosConfInicial(idsAbertos, nAbertos, g);
         }
         else{
             ind->geraPesosAleatorios();
@@ -52,8 +52,12 @@ void Random_keys::ordenaPopulacaoAtual(Grafo *g){
     sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
 }
 
-void Random_keys::avancaGeracoes(Grafo *g){
+int Random_keys::avancaGeracoes(Grafo *g){
 
+    int melhorGeracao = 0;
+    Individuo *best = popAtual.at(this->tamPop-1);
+    this->ordenaPopulacaoAtual(g);
+    double perda = 100*1000*best->getPerdaAtiva();
     for(int k=0; k<this->numGeracoes; k++){
 
         /** calcula a funcao criterio para cada individuo
@@ -62,9 +66,11 @@ void Random_keys::avancaGeracoes(Grafo *g){
         this->ordenaPopulacaoAtual(g);
 
         Individuo *best = popAtual.at(this->tamPop-1);
-
-        printf("\ngeracao (%d)  melhor individuo: %f kw",
-        k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+        if (100*1000*best->getPerdaAtiva() < perda){
+            perda = 100*1000*best->getPerdaAtiva();
+            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+            melhorGeracao = k;
+        }
 
         popAnterior = popAtual;
 
@@ -105,11 +111,12 @@ void Random_keys::avancaGeracoes(Grafo *g){
         for(int i=0; i<num_piores; i++)
             popAtual.at(i)->geraPesosAleatorios();
     }
-
+    return melhorGeracao;
 }
 
-void Random_keys::avancaGeracoes2(Grafo *g){
+int Random_keys::avancaGeracoes2(Grafo *g){
 
+    int melhorGeracao = 0;
     Individuo *best = popAtual.at(this->tamPop-1);
     this->ordenaPopulacaoAtual(g);
     double perda = 100*1000*best->getPerdaAtiva();
@@ -124,6 +131,7 @@ void Random_keys::avancaGeracoes2(Grafo *g){
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
             printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+            melhorGeracao = k;
         }
 
         popAnterior = popAtual;
@@ -168,5 +176,5 @@ void Random_keys::avancaGeracoes2(Grafo *g){
         for(int i=0; i<num_piores; i++)
             popAtual.at(i)->geraPesosAleatorios();
     }
-
+    return melhorGeracao;
 }
