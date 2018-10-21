@@ -7,9 +7,11 @@
 #include <string.h>
 #include <ctime>
 
+//bool ordenaCromossomoPorIdArco(Cromossomo *c1, Cromossomo *c2){ return c1->arco->getID() < c2->arco->getID(); }
+
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis33.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
@@ -21,7 +23,7 @@
 //#define configuracao "ARSD"
 
 void abreChaves(Grafo *g, int *ids, int n);
-void defineConfiguracao(Grafo *g);
+void defineConfiguracao(Grafo *g, char *arqIn);
 void testeDestrutor();
 void testeArestasModificaveis();
 void testeArestasModificaveis2();
@@ -30,10 +32,11 @@ void testePopulacaoAleatoria();
 void testeEntradas();
 bool ordenacao(Grafo *g1, Grafo *g2);
 void testeMemLeakRandomKeys();
-int *configuracaoInicial();
+int *configuracaoInicial(char *arqIn);
 
 void testeRandomKeys(char *arqIn);
-void testeConfInicial();
+void testeConfInicial(char *arqIn);
+void testeFuncaoObjetivoOtimizada();
 
 int main(int c, char *argv[]){
 
@@ -44,12 +47,19 @@ int main(int c, char *argv[]){
         return 1;
     }
     char *arqIn =argv[1];
+//    char *arqIn = arquivoEntrada;
 
+
+//    semente = 1539184195;
 //    semente = 1537845961; //melhor semente para 119 barras
 //    semente = 1530715848; //melhor semente para 33 barras modificado
 //    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
 //    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
+
+//    semente = 1539185071;
     srand(semente);
+
+
 
 //    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
 
@@ -70,10 +80,11 @@ int main(int c, char *argv[]){
     testeRandomKeys(arqIn);
     clock_t fim = clock();
 
-//    testeConfInicial();
+//    testeConfInicial(arqIn);
 
-    printf("semente: %lu", semente);
-    printf("\n\ntempo:  %f\n\n\n", (float)(fim-inicio)/CLOCKS_PER_SEC);
+    printf("       %.2lf    &       %lu    \n",  (float)(fim-inicio)/CLOCKS_PER_SEC, semente);
+
+//    testeFuncaoObjetivoOtimizada();
 }
 
 void testeRandomKeys(char arqIn[]){
@@ -81,44 +92,50 @@ void testeRandomKeys(char arqIn[]){
 
     g->leEntrada(arqIn);
     g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    Individuo::criaCromossomos(g);
+//    unsigned int tam = Individuo::cromossomos.size();
+//    cout << "tamanho vector<cromossomos> : " << tam << endl;
+//    cout << "numero de arcos nao modificaveis: " << g->getN_naoModificaveis() << endl;
 
     /** numero de individuos da populacao,numero de geracaoes **/
     Random_keys *rd = new Random_keys(100, 1000);
 
     /** populacao inicial gerada de forma aleatoria **/
 //    rd->geraPopAleatoria(g);
-    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
+    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
 
     /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
-//    rd->avancaGeracoes(g);
-    rd->avancaGeracoes2(g);
+//    int melhorGeracao = rd->avancaGeracoes(g);
+    int melhorGeracao = rd->avancaGeracoes2(g);
 
 
     /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
     Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
 
-    /** abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo**/
-    best->calculaFuncaoObjetivo(g);
+//    /**Para imprimir as chaves abertas de forma ordenada, sem repeticao de arcos**/
+//    vector<int> chavesAbertas;
+//    printf("\n\n\nMELHOR INDIVIDUO FINAL:");
+//    printf("\nAberto:{");
+//    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
+//        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+//            Arco *volta = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
+//            if(a->getChave()==false && volta->getChave()==false)
+//                chavesAbertas.push_back(a->getID());
+//        }
+//    }
+//    sort(chavesAbertas.begin(), chavesAbertas.end());
+//    for(unsigned int i=0; i<chavesAbertas.size();i+=2)
+//        printf("%d,", chavesAbertas.at(i));
+//    printf("  }\n");
+//
+//    printf("PerdaAtiva: %f (kw)\n", 100*1000*best->getPerdaAtiva());
+//    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 
-
-    /**Para imprimir as chaves abertas de forma ordenada, sem repeticao de arcos**/
-    vector<int> chavesAbertas;
-    printf("\n\n\nMELHOR INDIVIDUO FINAL:");
-    printf("\nAberto:{");
-    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
-            Arco *volta = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-            if(a->getChave()==false && volta->getChave()==false)
-                chavesAbertas.push_back(a->getID());
-        }
-    }
-    sort(chavesAbertas.begin(), chavesAbertas.end());
-    for(unsigned int i=0; i<chavesAbertas.size();i+=2)
-        printf("%d,", chavesAbertas.at(i));
-    printf("  }\n");
-
-    printf("PerdaAtiva: %f (kw)\n", 100*1000*best->getPerdaAtiva());
-    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
+    printf("        %.3f  &  ", 100*1000*best->getPerdaAtiva());
+    printf("        %.3f  &   ", g->tensaoMinima());
+    printf("        %d    &   ", melhorGeracao);
 
 //    /** so para conferir mesmo  e ter certeza da perda do individuo **/
 //    g->zeraFluxosEPerdas();
@@ -173,12 +190,12 @@ void testePopulacaoAleatoria(){
     }
 }
 
-void testeEntradas(){
+void testeEntradas(char *arqIn){
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
     g->leEntrada(nome);
 
-    defineConfiguracao(g);
+    defineConfiguracao(g, arqIn);
 
     g->define_sentido_fluxos();
     g->calcula_fluxos_e_perdas(1e-8);
@@ -190,13 +207,13 @@ void testeEntradas(){
     printf("\neh arvore? %d\n\n\n", g->ehArvore());
 }
 
-void testeCopiaGrafo(){
+void testeCopiaGrafo(char *arqIn){
     char nome[] = arquivoEntrada;
     Grafo *g, *h;
     g = new Grafo();
-    g->leEntrada(nome);
+    g->leEntrada(arqIn);
 
-    defineConfiguracao(g);
+    defineConfiguracao(g, arqIn);
     g->define_sentido_fluxos();
     g->calcula_fluxos_e_perdas(1e-8);
 
@@ -295,15 +312,15 @@ void testeDestrutor(){
     }
 }
 
-void defineConfiguracao(Grafo *g){
+void defineConfiguracao(Grafo *g, char *arqIn){
 
-    int *ids = configuracaoInicial(), n = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
+    int *ids = configuracaoInicial(arqIn), n = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
     abreChaves(g, ids, n);
 }
 
-int *configuracaoInicial(){
+int *configuracaoInicial(char *arqIn){
     int *ids;
-    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/sist33barras_Yang.m")==0){
+    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis33.m")==0){
 
         ids = new int[5];
 
@@ -323,7 +340,7 @@ int *configuracaoInicial(){
         return ids;
     }
 
-    if( strcmp(arquivoEntrada, "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m") == 0 ){
+    if( strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33modif.m") == 0 ){
 
         ids = new int[5];
 
@@ -343,7 +360,7 @@ int *configuracaoInicial(){
         return ids;
     }
 
-    if( strcmp(arquivoEntrada, "ENTRADAS_MODIFICADAS/SISTEMA119s2.m") == 0 ){
+    if( strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis119.m") == 0 ){
 
         ids = new int[15];
         //CONFIGURACAO INICIAL
@@ -374,7 +391,7 @@ int *configuracaoInicial(){
 
         return ids;
     }
-    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m")==0){
+    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis83.m")==0){
 
         ids = new int[13];
 
@@ -393,7 +410,7 @@ int *configuracaoInicial(){
 
         return ids;
     }
-    if(strcmp(arquivoEntrada,"ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m")==0){
+    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis83modif.m")==0){
 
         ids = new int[13];
 
@@ -438,7 +455,29 @@ void abreChaves(Grafo *g, int *ids, int n){
     }
 }
 
-void testeConfInicial(){
+void testeConfInicial(char *arqIn){
+    Grafo *g = new Grafo();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    Individuo::criaCromossomos(g);
+    unsigned int tam = Individuo::cromossomos.size();
+
+    Individuo *ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+
+    int nAbertos = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
+
+    int *abertos = configuracaoInicial(arqIn);
+    ind->geraPesosConfInicial(abertos, nAbertos, g);
+    ind->calculaFuncaoObjetivoOtimizado(g);
+
+    printf("PerdaAtiva: %f (kw)\n", 100*1000*ind->getPerdaAtiva());
+    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
+}
+
+void testeFuncaoObjetivoOtimizada(){
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
@@ -446,13 +485,15 @@ void testeConfInicial(){
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
+    Individuo::criaCromossomos(g);
+
+    int num = 10;
 
     Individuo *ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
 
-    int n = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
-
-    ind->geraPesosConfInicial(configuracaoInicial(), n, g);
-    ind->calculaFuncaoObjetivo(g);
-
-    printf("\n\n\npedaToral: %f\n\n", 100*1000*ind->getPerdaAtiva());
+    for(int i=0; i<10000; i++){
+        ind->geraPesosAleatorios();
+        ind->calculaFuncaoObjetivoOtimizado(g);
+        printf("perda: %lf\n", 100*1000*ind->getPerdaAtiva());
+    }
 }

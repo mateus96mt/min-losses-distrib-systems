@@ -58,6 +58,12 @@ public:
     void Auxbackward(No *no);
 
     double *soma_perdas();
+
+    /** funcao que soma as perdas e reseta os arcos
+    utilizada para o calculo de funcao objetivo otimizado do individuo
+    **/
+    double *soma_perdasResetando();
+
     void calcula_fluxos_e_perdas(double tol);
 
     double tensaoMinima();

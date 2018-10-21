@@ -8,6 +8,7 @@
 struct Cromossomo{
     Arco *arco;
     double peso;
+    int posicao;
 };
 
 class Individuo{
@@ -15,6 +16,7 @@ class Individuo{
         int numArcos;
         double *pesos, perdaAtiva, perdaReativa;
     public:
+        static vector<Cromossomo*> cromossomos;
         Individuo(int numArcos);
         ~Individuo(){delete[] pesos;}
 
@@ -38,6 +40,10 @@ class Individuo{
 
         void calculaFuncaoObjetivo(Grafo *g);
 
+        void calculaFuncaoObjetivoOtimizado(Grafo *g);
+
         void imprimePesos();
+
+        static void criaCromossomos(Grafo *g);
 };
 #endif // INDIVIDUO_H_INCLUDED

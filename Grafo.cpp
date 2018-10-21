@@ -187,15 +187,15 @@ void Grafo::leEntrada(char nome[])
             //insere arco i-j e j-i
 
             idArco++;
-            insereArco(idOrig, idDest, idArco, resistencia, reatancia, true);
-            insereArco(idDest, idOrig, idArco, resistencia, reatancia, true);
+            insereArco(idOrig, idDest, idArco, resistencia, reatancia, false);
+            insereArco(idDest, idOrig, idArco, resistencia, reatancia, false);
 //            cout << "  inseriu arco!" << endl;
         }
         else
             entrada >> aux;
     }
 
-    cout << "\n" << nome << " lida!" << endl;
+//    cout << "\n" << nome << " lida!" << endl;
 }
 
 void Grafo::imprime(){
@@ -389,6 +389,29 @@ double *Grafo::soma_perdas(){
     return perda;
 }
 
+double *Grafo::soma_perdasResetando(){
+    double *perda = new double[2]; perda[0] = perda[1] = 0.0;
+    for(No *no=listaNos; no!=NULL; no = no->getProxNo()){
+        no->setIdArv(no->getID());
+        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+            perda[0] += a->getPerdaAtiva();
+            perda[1] += a->getPerdaReativa();
+
+            //arcos nao modificaveis ficam sempre fechados
+            if(a->getModificavel()==false)
+                a->setChave(true);
+            else
+                a->setChave(false);
+
+            a->setFLuxoPAtiva(0.0);
+            a->setFLuxoPReativa(0.0);
+            a->setPerdaAtiva(0.0);
+            a->setPerdaReativa(0.0);
+        }
+    }
+    return perda;
+}
+
 void Grafo::calcula_fluxos_e_perdas(double tol){
 
     double *perdas_total_anterior, *perdas_total_atual, erro = 1.0;
@@ -565,11 +588,16 @@ void Grafo::defineArestasModificaveis(){
 //                    printf("\ndefinindo como nao modif A{%d}...", a->getID());
 
                     a->setModificavel(false);
+                    a->setChave(true);//nao modificavel: chave sempre fechad
+
                     Arco *aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
                     aVolta->setModificavel(false);
 
                     a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
                     a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+
+                    //arcos nao modificaveis ficam sempre fechados
+
 
 //                    printf("done!");
 

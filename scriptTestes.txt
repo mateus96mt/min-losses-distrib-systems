@@ -1,0 +1,38 @@
+#Individuo reduzido & configuracaoInicial & modificacoesCrossover
+#			0					0				0
+#			0					0				1
+#			0					1				0
+#			0					1				1
+#			1					0				0
+#			1					0				1
+#			1					1 				0
+#			1					1				1
+
+for arq in ENTRADAS_MODIFICADAS/sis*;
+do
+	echo arquivo $arq
+	for indRed in `seq 0 1 1`;
+	do
+		for confIni in `seq 0 1 1`;
+		do
+			for mdfCrossOver in `seq 0 1 1`;
+			do
+				aux=$(echo $arq | cut -d "/" -f 2)
+				numBarras=$(echo $aux | tr -dc '0-9')  
+				saida=$(echo $numBarras"barras")
+				if [[ $aux == *"modif"* ]]; then
+					saida=$(echo $saida"_modif")
+				fi
+				num="$indRed$confIni$mdfCrossOver"
+				mkdir -p r"$num"
+				echo " Perda Ativa (kw)  &  Tensao Minima (pu)     &    Geração  &  Tempo (s)       &      Semente   " >>  r"$num"/"$saida"
+				for x in `seq 1 1 30`;
+				do
+					echo execucao $x "("codigo"$num"")"
+					./codigo"$num" "$arq" >> r"$num"/"$saida"
+				done;
+			done;
+		done;	
+	done;
+done;
+  

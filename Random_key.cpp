@@ -47,7 +47,8 @@ dado que queremos minimizar a perda os piores individuos ficam no inicio(perda m
 queremos os melhore (menor perda, fim da lista) **/
 void Random_keys::ordenaPopulacaoAtual(Grafo *g){
     for(unsigned int i=0; i<popAtual.size(); i++)
-        popAtual.at(i)->calculaFuncaoObjetivo(g);
+        popAtual.at(i)->calculaFuncaoObjetivoOtimizado(g);
+//        popAtual.at(i)->calculaFuncaoObjetivo(g);
 
     sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
 }
@@ -68,7 +69,7 @@ int Random_keys::avancaGeracoes(Grafo *g){
         Individuo *best = popAtual.at(this->tamPop-1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
-            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
             melhorGeracao = k;
         }
 
@@ -130,7 +131,7 @@ int Random_keys::avancaGeracoes2(Grafo *g){
         Individuo *best = popAtual.at(this->tamPop-1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
-            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
             melhorGeracao = k;
         }
 
