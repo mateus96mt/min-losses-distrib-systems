@@ -32,6 +32,10 @@ class Random_keys{
 
         int avancaGeracoes(Grafo *g);
         int avancaGeracoes2(Grafo *g);
+        int avancaGeracoesPRS(Grafo *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
+
+        void prsEvolutivo(vector<Individuo*> pool, vector<Individuo*> &populacao, Grafo *g);//path relinking simples evolutivo
+        int avancaGeracoesPRSEvolutivoFinal(Grafo *g);
 
 
 };

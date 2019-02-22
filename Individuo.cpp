@@ -213,8 +213,6 @@ void Individuo::criaCromossomos(Grafo *g){
 
 void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
 
-//    cout << "\ncomecando a calcular funcao objetivo otimizada..." << endl;
-
     /** colocar os cromossomos na ordem correta em que aparecem no grafo antes de associar os pesos **/
     sort(cromossomos.begin(), cromossomos.end(), ordenaPosicaoCromossomo);
 
@@ -224,42 +222,12 @@ void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
 
     sort(cromossomos.begin(), cromossomos.end(), ordenacaoCromossomo);
 
-//    cout << "\n\n\n";
-//    for(unsigned int i=0; i<cromossomos.size(); i++)
-//        cout << "cromossomo.at(" << i << "){A" << cromossomos.at(i)->arco->getID() << "}[" << cromossomos.at(i)->arco->getChave() << "]" << endl;
-
     int n_arc_inseridos = 0, n_arcos_inserir = g->getNumeroNos() - 1 - g->getN_naoModificaveis();
 
-
-//    cout << "\ncolocou cromossomos na ordem, associou pesos e ordenou por pesos" << endl;
-
-    /** RESETAR O GRAFO NO FINAL DO CALCULO DA FUNCAO OBJETIVO **/
-//    /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
-//    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-//        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
-//
-//            //arcos nao modificaveis ficam sempre fechados
-//            if(a->getModificavel()==false)
-//                a->setChave(true);
-//            else
-//                a->setChave(false);
-//
-//            a->setFLuxoPAtiva(0.0);
-//            a->setFLuxoPReativa(0.0);
-//            a->setPerdaAtiva(0.0);
-//            a->setPerdaReativa(0.0);
-//        }
-//    }
-//
-//    /** reseta os ids de componentes conexas **/
-//    g->resetaIdArv();
 
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
 
-//        cout << "\ni: " << i << endl;
-//        Arco *a = cromossomos.at(i)->arco;
-//        cout << "chave: " << a->getChave() << "   marcado" << a->getMarcado() <<"   idarv(origem): " << a->getNoOrigem()->getIdArv() << "idarv(destino): " << a->getNoDestino()->getIdArv() << endl;
         if( (cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && cromossomos.at(i)->arco->getChave()==false){
 
             int id = cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
@@ -269,7 +237,6 @@ void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
             }
 
             cromossomos.at(i)->arco->setChave(true);
-//            cout << "cromossomo.at(" << i << "){A" << cromossomos.at(i)->arco->getID() << "}[" << cromossomos.at(i)->arco->getChave() << "]" << endl;
             g->buscaArco(cromossomos.at(i)->arco->getNoDestino()->getID(), cromossomos.at(i)->arco->getNoOrigem()->getID())->setChave(true);
 
             n_arc_inseridos++;
@@ -277,11 +244,6 @@ void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
 
     }
 
-//    cout << "\n\n\n";
-//    for(unsigned int i=0; i<cromossomos.size(); i++)
-//        cout << "cromossomo.at(" << i << "){A" << cromossomos.at(i)->arco->getID() << "}[" << cromossomos.at(i)->arco->getChave() << "]" << endl;
-//    cout << "inseriu arcos: " << n_arc_inseridos << endl;
-//    cout << "n_a_inserir: " << n_arcos_inserir << endl;
 
     g->define_sentido_fluxos();
     g->calcula_fluxos_e_perdas(1e-8); /** calcula fluxos e perda com erro de 1e-5 **/
@@ -299,9 +261,58 @@ void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
         this->perdaReativa = 9999999999;
 
     delete perdas;
+}
 
-//    sort(Individuo::cromossomos.begin(), Individuo::cromossomos.end(), ordenaCromossomoPorIdArco);
-//    for(unsigned int i=0; i<Individuo::cromossomos.size(); i++)
-//        cout << "id: " << Individuo::cromossomos.at(i)->arco->getID() << endl;
-//    g->ehArvore();
+//path relinking "guloso", se nenhum individuo do path foi melhor que this e guia entao retorna um individuo aleatorio
+Individuo *Individuo::prs(Individuo *guia, Grafo *g, Individuo *indRef){
+
+    vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
+
+    Individuo *best = new Individuo(this->numArcos);
+    Individuo *aux = new Individuo(this->numArcos);
+
+    aux->calculaFuncaoObjetivoOtimizado(g);
+    best->calculaFuncaoObjetivoOtimizado(g);
+    guia->calculaFuncaoObjetivoOtimizado(g);
+    indRef->calculaFuncaoObjetivoOtimizado(g);//individuo de referencia, o path vai atualizando equanto obtem resultado melhor que o individuo de referencia
+
+    double bestPerdaAtiva = indRef->getPerdaAtiva();
+
+    for(int i=0; i<this->numArcos;i++){
+
+        candidatos.push_back(i);
+        best->getPesos()[i] = this->pesos[i];
+        aux->getPesos()[i] = this->pesos[i];
+
+    }
+
+    for(unsigned int i=0; i<candidatos.size(); i++){
+
+        aux->getPesos()[candidatos.at(i)] = guia->getPesos()[candidatos.at(i)];
+        aux->calculaFuncaoObjetivoOtimizado(g);
+
+        if(aux->getPerdaAtiva() < bestPerdaAtiva){
+
+            bestPerdaAtiva = aux->getPerdaAtiva();
+            path.push_back(candidatos.at(i));
+            candidatos.erase(candidatos.begin() + i);
+            i = 0;
+
+        }else{
+
+            aux->getPesos()[candidatos.at(i)] = this->getPesos()[candidatos.at(i)];
+
+        }
+
+    }
+
+
+    delete aux;
+
+    for(unsigned int i=0; i<path.size(); i++)
+        best->getPesos()[path.at(i)] = guia->getPesos()[path.at(i)];
+
+    best->calculaFuncaoObjetivoOtimizado(g);
+
+    return best;
 }

@@ -37,54 +37,70 @@ int *configuracaoInicial(char *arqIn);
 void testeRandomKeys(char *arqIn);
 void testeConfInicial(char *arqIn);
 void testeFuncaoObjetivoOtimizada();
+void testeprs();
+void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn);
 
 int main(int c, char *argv[]){
-
-    unsigned long int semente = time(NULL);
-
-    if(c!=2){
-        printf("\n\n  Erro ao chamar o programa! Formato: minLoss <arqivo_Entrada");
+    if(c!=5){
+        printf("\n\n  Erro ao chamar o programa! ./main <prs(0=sem, 1=prs_simples_a_cada_geracao 2=evolutivo)> <tamPop> <numGeracoes> <entrada>\n");
         return 1;
     }
-    char *arqIn =argv[1];
-//    char *arqIn = arquivoEntrada;
+    srand(time(NULL));
+//    testeprs();
+
+    int prs = strtol(argv[1], nullptr, 0);
+    int tamPop = strtol(argv[2], nullptr, 0);
+    int numGeracoes = strtol(argv[3], nullptr, 0);
+    char *arqIn =argv[4];
+
+    testeprsEvolutivo(prs, tamPop, numGeracoes, arqIn);//com path relinking evolutivo no final
 
 
-//    semente = 1539184195;
-//    semente = 1537845961; //melhor semente para 119 barras
-//    semente = 1530715848; //melhor semente para 33 barras modificado
-//    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
-//    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
-
-//    semente = 1539185071;
-    srand(semente);
-
-
-
-//    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
-
-//    testeDestrutor();
-
-//    testeArestasModificaveis();
-
-//    testeArestasModificaveis2();
-
-//    testeCopiaGrafo();
-
-//    testePopulacaoAleatoria();
-
-//    testeMemLeakRandomKeys();
-
-
-    clock_t inicio = clock();
-    testeRandomKeys(arqIn);
-    clock_t fim = clock();
-
-//    testeConfInicial(arqIn);
-
-    printf("       %.2lf    &       %lu    \n",  (float)(fim-inicio)/CLOCKS_PER_SEC, semente);
-
-//    testeFuncaoObjetivoOtimizada();
+//    unsigned long int semente = time(NULL);
+//
+//    if(c!=2){
+//        printf("\n\n  Erro ao chamar o programa! Formato: minLoss <arqivo_Entrada");
+//        return 1;
+//    }
+//    char *arqIn =argv[1];
+////    char *arqIn = arquivoEntrada;
+//
+//
+////    semente = 1539184195;
+////    semente = 1537845961; //melhor semente para 119 barras
+////    semente = 1530715848; //melhor semente para 33 barras modificado
+////    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
+////    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
+//
+////    semente = 1539185071;
+//    srand(semente);
+//
+//
+//
+////    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
+//
+////    testeDestrutor();
+//
+////    testeArestasModificaveis();
+//
+////    testeArestasModificaveis2();
+//
+////    testeCopiaGrafo();
+//
+////    testePopulacaoAleatoria();
+//
+////    testeMemLeakRandomKeys();
+//
+//
+//    clock_t inicio = clock();
+//    testeRandomKeys(arqIn);
+//    clock_t fim = clock();
+//
+////    testeConfInicial(arqIn);
+//
+//    printf("       %.2lf    &       %lu    \n",  (float)(fim-inicio)/CLOCKS_PER_SEC, semente);
+//
+////    testeFuncaoObjetivoOtimizada();
 }
 
 void testeRandomKeys(char arqIn[]){
@@ -495,5 +511,86 @@ void testeFuncaoObjetivoOtimizada(){
         ind->geraPesosAleatorios();
         ind->calculaFuncaoObjetivoOtimizado(g);
         printf("perda: %lf\n", 100*1000*ind->getPerdaAtiva());
+    }
+}
+
+void testeprs(){
+    char nome[] = arquivoEntrada;
+    Grafo *g = new Grafo();
+
+    g->leEntrada(nome);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    Individuo::criaCromossomos(g);
+
+    Individuo *i1 = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+    Individuo *i2 = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+    Individuo *indRef;
+
+
+    i1->geraPesosAleatorios();
+    i2->geraPesosAleatorios();
+
+    i1->calculaFuncaoObjetivo(g);
+    i2->calculaFuncaoObjetivo(g);
+
+    if(i1->getPerdaAtiva() > i2->getPerdaAtiva())
+        indRef = i1;
+    else
+        indRef = i2;
+
+    printf("i1->perdaAtiva: %lf\n", 100*1000*i1->getPerdaAtiva());
+    printf("i2->perdaAtiva: %lf\n\n\n", 100*1000*i2->getPerdaAtiva());
+
+    Individuo *path = i1->prs(i2, g, indRef);
+
+    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100*1000*path->getPerdaAtiva());
+}
+void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn){
+
+    clock_t inicio, fim;
+    Individuo *best;
+
+    {
+        inicio = clock();
+
+        char *nome = arqIn;
+        Grafo *g = new Grafo();
+
+        g->leEntrada(nome);
+        g->defineArestasModificaveis();
+        g->resetaArcosMarcados();
+        g->marcaUmsentidoArcos();
+        Individuo::criaCromossomos(g);
+
+        /** numero de individuos da populacao,numero de geracaoes **/
+        Random_keys *rd = new Random_keys(tamPop, numGeracoes);
+
+        /** populacao inicial gerada de forma aleatoria **/
+        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
+
+        /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
+
+        int melhorGeracao;
+        if(prs == 0)
+            melhorGeracao = rd->avancaGeracoes2(g);
+        if(prs == 1)
+            melhorGeracao = rd->avancaGeracoesPRS(g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
+        if(prs == 2)
+            melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
+
+        /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
+        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+
+        best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+        best->calculaFuncaoObjetivoOtimizado(g);
+
+        fim = clock();
+
+        printf("        %.2lf &  ",  (float)(fim-inicio)/CLOCKS_PER_SEC);
+        printf("        %.3f  &  ", 100*1000*best->getPerdaAtiva());
+        printf("        %.3f  &  ", g->tensaoMinima());
+        printf("        %d\n\n\n", melhorGeracao);
     }
 }

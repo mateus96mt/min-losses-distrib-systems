@@ -45,5 +45,7 @@ class Individuo{
         void imprimePesos();
 
         static void criaCromossomos(Grafo *g);
+
+        Individuo *prs(Individuo *guia, Grafo *g, Individuo *indRef);//path relinking simples path de this para guia
 };
 #endif // INDIVIDUO_H_INCLUDED
