@@ -47,5 +47,6 @@ class Individuo{
         static void criaCromossomos(Grafo *g);
 
         Individuo *prs(Individuo *guia, Grafo *g, Individuo *indRef);//path relinking simples path de this para guia
+        Individuo *prs2(Individuo *guia, Grafo *g);//path relinking com modificacoes sugeridas luciana
 };
 #endif // INDIVIDUO_H_INCLUDED

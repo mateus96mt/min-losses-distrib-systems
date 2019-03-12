@@ -316,3 +316,99 @@ Individuo *Individuo::prs(Individuo *guia, Grafo *g, Individuo *indRef){
 
     return best;
 }
+
+
+Individuo *Individuo::prs2(Individuo *guia, Grafo *g){
+
+    printf("Niveis:\n\n");
+
+    vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
+    vector<vector<int>> nivel;
+
+    int nivelBest, direcaoBest;//para cada nivel
+    int nivelBestGlobal, direcaoBestGlobal;
+
+    Individuo *aux = new Individuo(this->numArcos);
+    Individuo *best = new Individuo(this->numArcos);
+
+    aux->calculaFuncaoObjetivoOtimizado(g);
+    best->calculaFuncaoObjetivoOtimizado(g);
+    guia->calculaFuncaoObjetivoOtimizado(g);
+
+    double minPerdaNivel = 999999999999, minPerdaGlobal = 999999999999;
+
+    for(int i=0; i<this->numArcos;i++){
+
+        candidatos.push_back(i);
+        aux->getPesos()[i] = this->pesos[i];
+        best->getPesos()[i] = this->pesos[i];
+    }
+
+    int nv = 0;
+    while(candidatos.size()>0){
+
+        minPerdaNivel = 999999999999;
+
+        vector<int> v;
+        nivel.push_back(v);
+
+        //loop entre os candidatos do nivel
+        for(unsigned int i=0; i<candidatos.size(); i++){
+
+            aux->getPesos()[candidatos.at(i)] = guia->getPesos()[candidatos.at(i)];
+            aux->calculaFuncaoObjetivoOtimizado(g);
+
+            nivel.at(nv).push_back(candidatos.at(i));
+
+            printf("%d ", candidatos.at(i));
+
+            //melhor individuo no nivel
+            if(aux->getPerdaAtiva() < minPerdaNivel) {
+                minPerdaNivel = aux->getPerdaAtiva();
+                nivelBest = nv;
+                direcaoBest = i;
+            }
+
+            aux->getPesos()[candidatos.at(i)] = this->getPesos()[candidatos.at(i)];//desfaz alteracao para avaliar proxima
+
+        }
+
+        printf("{%d}  (nv %d)\n", candidatos.at(direcaoBest), nv);
+
+        aux->getPesos()[candidatos.at(direcaoBest)] = guia->getPesos()[candidatos.at(direcaoBest)];//caminha no path na direcao da melhor local
+
+        path.push_back(candidatos.at(direcaoBest));
+        candidatos.erase(candidatos.begin() + direcaoBest);
+
+        //verificar melhor individuo entre todos gerados ao longo do path
+        if(minPerdaNivel < minPerdaGlobal){
+            minPerdaGlobal = minPerdaNivel;
+            nivelBestGlobal = nivelBest;
+            direcaoBestGlobal = direcaoBest;
+        }
+
+        nv++;
+
+    }
+
+    printf("\n\nbest:\n");
+    //percorre caminho do path
+    for(int i=0; i<nivelBestGlobal; i++){
+        best->getPesos()[path.at(i)] = guia->getPesos()[path.at(i)];
+        printf("%d\n", path.at(i));
+    }
+    best->getPesos()[nivel.at(nivelBestGlobal).at(direcaoBestGlobal)] = guia->getPesos()[nivel.at(nivelBestGlobal).at(direcaoBestGlobal)];
+    printf("%d\n\n\n", nivel.at(nivelBestGlobal).at(direcaoBestGlobal));
+
+    best->calculaFuncaoObjetivoOtimizado(g);
+
+    printf("\n\nminPerdaGlobal: %f KW\n", 100*1000*minPerdaGlobal);
+    printf("best->getPerdaAtiva(): %f KW\n", 100*1000*best->getPerdaAtiva());
+    printf("nivelBestGLobal: %d \n", nivelBestGlobal);
+    printf("direcaoBestGLobal: %d \n", nivel.at(nivelBestGlobal).at(direcaoBestGlobal));
+
+    delete aux;
+
+    return best;
+
+}

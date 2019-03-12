@@ -23,37 +23,57 @@
 //#define configuracao "ARSD"
 
 void abreChaves(Grafo *g, int *ids, int n);
+
 void defineConfiguracao(Grafo *g, char *arqIn);
+
 void testeDestrutor();
+
 void testeArestasModificaveis();
+
 void testeArestasModificaveis2();
+
 void testeCopiaGrafo();
+
 void testePopulacaoAleatoria();
+
 void testeEntradas();
+
 bool ordenacao(Grafo *g1, Grafo *g2);
+
 void testeMemLeakRandomKeys();
+
 int *configuracaoInicial(char *arqIn);
 
 void testeRandomKeys(char *arqIn);
+
 void testeConfInicial(char *arqIn);
+
 void testeFuncaoObjetivoOtimizada();
+
 void testeprs();
+
+void testeprs2();
+
 void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn);
 
-int main(int c, char *argv[]){
-    if(c!=5){
+int main(int c, char *argv[]) {
+
+    srand(time(NULL));
+    testeprs2();
+
+    /*if (c != 5) {
         printf("\n\n  Erro ao chamar o programa! ./main <prs(0=sem, 1=prs_simples_a_cada_geracao 2=evolutivo)> <tamPop> <numGeracoes> <entrada>\n");
         return 1;
-    }
-    srand(time(NULL));
+    }*/
+    //srand(time(NULL));
 //    testeprs();
 
-    int prs = strtol(argv[1], nullptr, 0);
+    /*int prs = strtol(argv[1], nullptr, 0);
     int tamPop = strtol(argv[2], nullptr, 0);
-    int numGeracoes = strtol(argv[3], nullptr, 0);
-    char *arqIn =argv[4];
+    int numGeracoes = strtol(argv[3], nullptr, 0);*/
+    //char *arqIn = argv[4];
 
-    testeprsEvolutivo(prs, tamPop, numGeracoes, arqIn);//com path relinking evolutivo no final
+    //testeprsEvolutivo(prs, tamPop, numGeracoes, arqIn);//com path relinking evolutivo no final
 
 
 //    unsigned long int semente = time(NULL);
@@ -103,7 +123,7 @@ int main(int c, char *argv[]){
 ////    testeFuncaoObjetivoOtimizada();
 }
 
-void testeRandomKeys(char arqIn[]){
+void testeRandomKeys(char arqIn[]) {
     Grafo *g = new Grafo();
 
     g->leEntrada(arqIn);
@@ -120,7 +140,7 @@ void testeRandomKeys(char arqIn[]){
 
     /** populacao inicial gerada de forma aleatoria **/
 //    rd->geraPopAleatoria(g);
-    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
+    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
 
     /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
 //    int melhorGeracao = rd->avancaGeracoes(g);
@@ -128,7 +148,7 @@ void testeRandomKeys(char arqIn[]){
 
 
     /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
 
 //    /**Para imprimir as chaves abertas de forma ordenada, sem repeticao de arcos**/
 //    vector<int> chavesAbertas;
@@ -149,7 +169,7 @@ void testeRandomKeys(char arqIn[]){
 //    printf("PerdaAtiva: %f (kw)\n", 100*1000*best->getPerdaAtiva());
 //    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 
-    printf("        %.3f  &  ", 100*1000*best->getPerdaAtiva());
+    printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
     printf("        %.3f  &   ", g->tensaoMinima());
     printf("        %d    &   ", melhorGeracao);
 
@@ -160,7 +180,7 @@ void testeRandomKeys(char arqIn[]){
 }
 
 /** pequeno vazamento de memoria na funcao "calculaFuncaoObjetivo" do individuo novamente no vector **/
-void testeMemLeakRandomKeys(){
+void testeMemLeakRandomKeys() {
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
@@ -171,23 +191,23 @@ void testeMemLeakRandomKeys(){
     Individuo *i = new Individuo(g->getNumeroArcos());
 
     i->geraPesosAleatorios();
-    while(true){
+    while (true) {
         i->calculaFuncaoObjetivo(g);
         printf("\n\nperdaAtiv: %f kw,  perdaReativ: %f kw      eh arvore? %d",
-        1000*100*i->getPerdaAtiva(), 1000*100*i->getPerdaReativa(), g->ehArvore());
+               1000 * 100 * i->getPerdaAtiva(), 1000 * 100 * i->getPerdaReativa(), g->ehArvore());
     }
 }
 
-void testePopulacaoAleatoria(){
+void testePopulacaoAleatoria() {
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
     g->leEntrada(nome);
 
     int n_individuos = 500;
-    vector<Grafo*> h;
+    vector<Grafo *> h;
 
-    for(int i=0; i<n_individuos; i++){
+    for (int i = 0; i < n_individuos; i++) {
 
         double *perda;
         printf("\n\nsolucao  %d:", i);
@@ -199,14 +219,14 @@ void testePopulacaoAleatoria(){
 
         printf("\nvalida? %d", h.at(i)->ehArvore());
         printf("  tensao minima: %.5f (p.u)", h.at(i)->tensaoMinima());
-        printf("  perdaTotal: %.5f (kW)", 100*1000*perda[0]);
+        printf("  perdaTotal: %.5f (kW)", 100 * 1000 * perda[0]);
 
         delete perda;
 
     }
 }
 
-void testeEntradas(char *arqIn){
+void testeEntradas(char *arqIn) {
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
     g->leEntrada(nome);
@@ -218,12 +238,12 @@ void testeEntradas(char *arqIn){
 
 
     printf("\ntensao minima: %.5f (p.u)", g->tensaoMinima());
-    printf("\nperdaTotal: %.5f (kW)", 100*1000*g->soma_perdas()[0]);
+    printf("\nperdaTotal: %.5f (kW)", 100 * 1000 * g->soma_perdas()[0]);
     printf("\neh Conexo? %d", g->ehConexo());
     printf("\neh arvore? %d\n\n\n", g->ehArvore());
 }
 
-void testeCopiaGrafo(char *arqIn){
+void testeCopiaGrafo(char *arqIn) {
     char nome[] = arquivoEntrada;
     Grafo *g, *h;
     g = new Grafo();
@@ -234,13 +254,13 @@ void testeCopiaGrafo(char *arqIn){
     g->calcula_fluxos_e_perdas(1e-8);
 
 
-    for(int i=0; true; i++){
+    for (int i = 0; true; i++) {
         h = g->retornaCopia();
         h->calcula_fluxos_e_perdas(1e-8);
 
         double *perda = h->soma_perdas();
         printf("\ntensao minima: %.5f (p.u)", h->tensaoMinima());
-        printf("\nperdaTotal: %.5f (kW)", 100*1000*perda[0]);
+        printf("\nperdaTotal: %.5f (kW)", 100 * 1000 * perda[0]);
         printf("\neh arvore? %d\n\n\n", h->ehArvore());
         delete perda;
 
@@ -248,7 +268,7 @@ void testeCopiaGrafo(char *arqIn){
     }
 }
 
-void testeArestasModificaveis(){
+void testeArestasModificaveis() {
     char nome[] = arquivoEntrada;
     Grafo *g;
     g = new Grafo();
@@ -261,7 +281,7 @@ void testeArestasModificaveis(){
 //    int ids[] = {36, 34, 2, 25, 33};
     int ids[] = {32, 10, 20, 4, 12};
 
-    for(int i=0; i<2; i++){
+    for (int i = 0; i < 2; i++) {
 
         printf("\nabriu A{%d}", ids[i]);
 
@@ -278,8 +298,8 @@ void testeArestasModificaveis(){
 
         printf("modif = %d", a->getModificavel());
 
-        noOrigem->setGrauAux(noOrigem->getGrauAux()-1);
-        noDestino->setGrauAux(noDestino->getGrauAux()-1);
+        noOrigem->setGrauAux(noOrigem->getGrauAux() - 1);
+        noDestino->setGrauAux(noDestino->getGrauAux() - 1);
 
         g->defineArestasModificaveis();
 
@@ -288,7 +308,7 @@ void testeArestasModificaveis(){
 
 }
 
-void testeArestasModificaveis2(){
+void testeArestasModificaveis2() {
     char nome[] = arquivoEntrada;
     Grafo *g;
     g = new Grafo();
@@ -298,11 +318,11 @@ void testeArestasModificaveis2(){
     g->defineArestasModificaveis();
 
     vector<int> naoModificaveis;
-    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
+    for (No *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
 
-        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+        for (Arco *a = no->getListaArcos(); a != NULL; a = a->getProxArco()) {
 
-            if(a->getModificavel() == false){
+            if (a->getModificavel() == false) {
                 naoModificaveis.push_back(a->getID());
             }
         }
@@ -311,16 +331,16 @@ void testeArestasModificaveis2(){
 
     sort(naoModificaveis.begin(), naoModificaveis.end());
     printf("arestas nao modificaveis: [");
-    for(unsigned int i=0; i<naoModificaveis.size(); i+=2)
+    for (unsigned int i = 0; i < naoModificaveis.size(); i += 2)
         printf(" %d, ", naoModificaveis.at(i));
-    printf("] size = %d\n ", (int) naoModificaveis.size()/2);
+    printf("] size = %d\n ", (int) naoModificaveis.size() / 2);
     printf("%d\n", g->getN_naoModificaveis());
 }
 
-void testeDestrutor(){
+void testeDestrutor() {
     char nome[] = arquivoEntrada;
 
-    while(true){
+    while (true) {
         Grafo *g;
         g = new Grafo();
         g->leEntrada(nome);
@@ -328,129 +348,249 @@ void testeDestrutor(){
     }
 }
 
-void defineConfiguracao(Grafo *g, char *arqIn){
+void defineConfiguracao(Grafo *g, char *arqIn) {
 
-    int *ids = configuracaoInicial(arqIn), n = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
+    int *ids = configuracaoInicial(arqIn), n = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
     abreChaves(g, ids, n);
 }
 
-int *configuracaoInicial(char *arqIn){
+int *configuracaoInicial(char *arqIn) {
     int *ids;
-    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis33.m")==0){
+    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33.m") == 0) {
 
         ids = new int[5];
 
         //CONFIGURACAO INICIAL
-        if( strcmp(configuracao, "inicial") == 0 ){
-            ids[0] = 33; ids[1] = 34; ids[2] = 35; ids[3] = 36; ids[4] = 37;
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 33;
+            ids[1] = 34;
+            ids[2] = 35;
+            ids[3] = 36;
+            ids[4] = 37;
         }
         //CONFIGURACAO DA LITERATURA
-        if( strcmp(configuracao, "literatura1") == 0 ){
-            ids[0] = 7; ids[1] = 10; ids[2] = 14; ids[3] = 32; ids[4] = 37;
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 32;
+            ids[4] = 37;
         }
         //ABORDAGEM ARSD
-        if( strcmp(configuracao, "ARSD") == 0 ){
-            ids[0] = 7; ids[1] = 9; ids[2] = 14; ids[3] = 32; ids[4] = 37;
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 9;
+            ids[2] = 14;
+            ids[3] = 32;
+            ids[4] = 37;
         }
 
         return ids;
     }
 
-    if( strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33modif.m") == 0 ){
+    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33modif.m") == 0) {
 
         ids = new int[5];
 
         //CONFIGURACAO INICIAL
-        if( strcmp(configuracao, "inicial") == 0 ){
-            ids[0] = 33; ids[1] = 34; ids[2] = 35; ids[3] = 36; ids[4] = 37;
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 33;
+            ids[1] = 34;
+            ids[2] = 35;
+            ids[3] = 36;
+            ids[4] = 37;
         }
         //CONFIGURACAO DA LITERATURA
-        if( strcmp(configuracao, "literatura1") == 0 ){
-            ids[0] = 7; ids[1] = 10; ids[2] = 14; ids[3] = 28; ids[4] = 36;
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 28;
+            ids[4] = 36;
         }
         //ABORDAGEM ARSD
-        if( strcmp(configuracao, "ARSD") == 0 ){
-            ids[0] = 7; ids[1] = 10; ids[2] = 14; ids[3] = 16; ids[4] = 28;
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 16;
+            ids[4] = 28;
         }
 
         return ids;
     }
 
-    if( strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis119.m") == 0 ){
+    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis119.m") == 0) {
 
         ids = new int[15];
         //CONFIGURACAO INICIAL
-        if( strcmp(configuracao, "inicial") == 0 ){
-            ids[0] = 119; ids[1] = 120; ids[2] = 121; ids[3] = 122; ids[4] = 123;
-            ids[5] = 124; ids[6] = 125; ids[7] = 126; ids[8] = 127; ids[9] = 128;
-            ids[10] = 129; ids[11] = 130; ids[12] = 131; ids[13] = 132; ids[14] = 133;
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 119;
+            ids[1] = 120;
+            ids[2] = 121;
+            ids[3] = 122;
+            ids[4] = 123;
+            ids[5] = 124;
+            ids[6] = 125;
+            ids[7] = 126;
+            ids[8] = 127;
+            ids[9] = 128;
+            ids[10] = 129;
+            ids[11] = 130;
+            ids[12] = 131;
+            ids[13] = 132;
+            ids[14] = 133;
         }
         //CONFIGURACAO DA LITERATURA
-        if( strcmp(configuracao, "literatura1") == 0 ){
-            ids[0] = 24; ids[1] = 27; ids[2] = 35; ids[3] = 40; ids[4] = 43;
-            ids[5] = 52; ids[6] = 59; ids[7] = 72; ids[8] = 75; ids[9] = 96;
-            ids[10] = 99; ids[11] = 110; ids[12] = 123; ids[13] = 130; ids[14] = 131;
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 24;
+            ids[1] = 27;
+            ids[2] = 35;
+            ids[3] = 40;
+            ids[4] = 43;
+            ids[5] = 52;
+            ids[6] = 59;
+            ids[7] = 72;
+            ids[8] = 75;
+            ids[9] = 96;
+            ids[10] = 99;
+            ids[11] = 110;
+            ids[12] = 123;
+            ids[13] = 130;
+            ids[14] = 131;
         }
         //ABORDAGEM ARSD
-        if( strcmp(configuracao, "ARSD") == 0 ){
-            ids[0] = 24; ids[1] = 26; ids[2] = 35; ids[3] = 40; ids[4] = 43;
-            ids[5] = 51; ids[6] = 61; ids[7] = 72; ids[8] = 75; ids[9] = 96;
-            ids[10] = 98; ids[11] = 110; ids[12] = 122; ids[13] = 130; ids[14] = 131;
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 24;
+            ids[1] = 26;
+            ids[2] = 35;
+            ids[3] = 40;
+            ids[4] = 43;
+            ids[5] = 51;
+            ids[6] = 61;
+            ids[7] = 72;
+            ids[8] = 75;
+            ids[9] = 96;
+            ids[10] = 98;
+            ids[11] = 110;
+            ids[12] = 122;
+            ids[13] = 130;
+            ids[14] = 131;
         }
 
         /*
         esse arquivo tem na verdade 132 arcos ao inves de 133
         dessa forma os ids dos arcos abertos deve ser subtraido 1.
         */
-        for(int i=0; i<15; i++)
+        for (int i = 0; i < 15; i++)
             ids[i]--;
 
         return ids;
     }
-    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis83.m")==0){
+    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis83.m") == 0) {
 
         ids = new int[13];
 
         //CONFIGURACAO INICIAL
-        if( strcmp(configuracao, "inicial") == 0 ){
-            ids[0] = 84; ids[1] = 85; ids[2] = 86; ids[3] = 87; ids[4] = 88;
-            ids[5] = 89; ids[6] = 90; ids[7] = 91; ids[8] = 92; ids[9] = 93;
-            ids[10] = 94; ids[11] = 95; ids[12] = 96;
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 84;
+            ids[1] = 85;
+            ids[2] = 86;
+            ids[3] = 87;
+            ids[4] = 88;
+            ids[5] = 89;
+            ids[6] = 90;
+            ids[7] = 91;
+            ids[8] = 92;
+            ids[9] = 93;
+            ids[10] = 94;
+            ids[11] = 95;
+            ids[12] = 96;
         }
         //CONFIGURACAO DA LITERATURA
-        if( strcmp(configuracao, "literatura1") == 0 ){
-            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 39; ids[4] = 42;
-            ids[5] = 55; ids[6] = 62; ids[7] = 72; ids[8] = 83; ids[9] = 86;
-            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 39;
+            ids[4] = 42;
+            ids[5] = 55;
+            ids[6] = 62;
+            ids[7] = 72;
+            ids[8] = 83;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
         }
 
         return ids;
     }
-    if(strcmp(arqIn,"ENTRADAS_MODIFICADAS/sis83modif.m")==0){
+    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis83modif.m") == 0) {
 
         ids = new int[13];
 
         //CONFIGURACAO INICIAL
-        if( strcmp(configuracao, "inicial") == 0 ){
-            ids[0] = 84; ids[1] = 85; ids[2] = 86; ids[3] = 87; ids[4] = 88;
-            ids[5] = 89; ids[6] = 90; ids[7] = 91; ids[8] = 92; ids[9] = 93;
-            ids[10] = 94; ids[11] = 95; ids[12] = 96;
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 84;
+            ids[1] = 85;
+            ids[2] = 86;
+            ids[3] = 87;
+            ids[4] = 88;
+            ids[5] = 89;
+            ids[6] = 90;
+            ids[7] = 91;
+            ids[8] = 92;
+            ids[9] = 93;
+            ids[10] = 94;
+            ids[11] = 95;
+            ids[12] = 96;
         }
         //CONFIGURACAO DA LITERATURA
-        if( strcmp(configuracao, "literatura1") == 0 ){
-            ids[0] = 7; ids[1] = 13; ids[2] = 33; ids[3] = 38; ids[4] = 42;
-            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
-            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 33;
+            ids[3] = 38;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
         }
-        if( strcmp(configuracao, "literatura2") == 0 ){
-            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 38; ids[4] = 42;
-            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
-            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        if (strcmp(configuracao, "literatura2") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 38;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
         }
-        if( strcmp(configuracao, "ARSD") == 0 ){
-            ids[0] = 7; ids[1] = 13; ids[2] = 34; ids[3] = 39; ids[4] = 42;
-            ids[5] = 63; ids[6] = 72; ids[7] = 83; ids[8] = 84; ids[9] = 86;
-            ids[10] = 89; ids[11] = 90; ids[12] = 92;
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 39;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
         }
 
         return ids;
@@ -461,9 +601,9 @@ int *configuracaoInicial(char *arqIn){
     return ids;
 }
 
-void abreChaves(Grafo *g, int *ids, int n){
+void abreChaves(Grafo *g, int *ids, int n) {
     Arco *a;
-    for(int i=0; i<n; i++){
+    for (int i = 0; i < n; i++) {
         a = g->buscaArco(ids[i]);
         a->setChave(false);
         a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
@@ -471,7 +611,7 @@ void abreChaves(Grafo *g, int *ids, int n){
     }
 }
 
-void testeConfInicial(char *arqIn){
+void testeConfInicial(char *arqIn) {
     Grafo *g = new Grafo();
 
     g->leEntrada(arqIn);
@@ -481,19 +621,19 @@ void testeConfInicial(char *arqIn){
     Individuo::criaCromossomos(g);
     unsigned int tam = Individuo::cromossomos.size();
 
-    Individuo *ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+    Individuo *ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
-    int nAbertos = g->getNumeroArcos()/2 - (g->getNumeroNos()-1);
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
 
     int *abertos = configuracaoInicial(arqIn);
     ind->geraPesosConfInicial(abertos, nAbertos, g);
     ind->calculaFuncaoObjetivoOtimizado(g);
 
-    printf("PerdaAtiva: %f (kw)\n", 100*1000*ind->getPerdaAtiva());
+    printf("PerdaAtiva: %f (kw)\n", 100 * 1000 * ind->getPerdaAtiva());
     printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 }
 
-void testeFuncaoObjetivoOtimizada(){
+void testeFuncaoObjetivoOtimizada() {
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
@@ -505,16 +645,16 @@ void testeFuncaoObjetivoOtimizada(){
 
     int num = 10;
 
-    Individuo *ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+    Individuo *ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
-    for(int i=0; i<10000; i++){
+    for (int i = 0; i < 10000; i++) {
         ind->geraPesosAleatorios();
         ind->calculaFuncaoObjetivoOtimizado(g);
-        printf("perda: %lf\n", 100*1000*ind->getPerdaAtiva());
+        printf("perda: %lf\n", 100 * 1000 * ind->getPerdaAtiva());
     }
 }
 
-void testeprs(){
+void testeprs() {
     char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
@@ -524,8 +664,8 @@ void testeprs(){
     g->marcaUmsentidoArcos();
     Individuo::criaCromossomos(g);
 
-    Individuo *i1 = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
-    Individuo *i2 = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
     Individuo *indRef;
 
 
@@ -535,19 +675,20 @@ void testeprs(){
     i1->calculaFuncaoObjetivo(g);
     i2->calculaFuncaoObjetivo(g);
 
-    if(i1->getPerdaAtiva() > i2->getPerdaAtiva())
+    if (i1->getPerdaAtiva() > i2->getPerdaAtiva())
         indRef = i1;
     else
         indRef = i2;
 
-    printf("i1->perdaAtiva: %lf\n", 100*1000*i1->getPerdaAtiva());
-    printf("i2->perdaAtiva: %lf\n\n\n", 100*1000*i2->getPerdaAtiva());
+    printf("i1->perdaAtiva: %lf\n", 100 * 1000 * i1->getPerdaAtiva());
+    printf("i2->perdaAtiva: %lf\n\n\n", 100 * 1000 * i2->getPerdaAtiva());
 
     Individuo *path = i1->prs(i2, g, indRef);
 
-    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100*1000*path->getPerdaAtiva());
+    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100 * 1000 * path->getPerdaAtiva());
 }
-void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn){
+
+void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
 
     clock_t inicio, fim;
     Individuo *best;
@@ -568,29 +709,55 @@ void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn){
         Random_keys *rd = new Random_keys(tamPop, numGeracoes);
 
         /** populacao inicial gerada de forma aleatoria **/
-        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome), g->getNumeroArcos()/2 - (g->getNumeroNos() - 1));
+        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
+                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
 
         /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
 
         int melhorGeracao;
-        if(prs == 0)
+        if (prs == 0)
             melhorGeracao = rd->avancaGeracoes2(g);
-        if(prs == 1)
-            melhorGeracao = rd->avancaGeracoesPRS(g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
-        if(prs == 2)
+        if (prs == 1)
+            melhorGeracao = rd->avancaGeracoesPRS(
+                    g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
+        if (prs == 2)
             melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
 
         /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
 
-        best = rd->getPopAtual().at(rd->getTamPopulacao()-1);
+        best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
         best->calculaFuncaoObjetivoOtimizado(g);
 
         fim = clock();
 
-        printf("        %.2lf &  ",  (float)(fim-inicio)/CLOCKS_PER_SEC);
-        printf("        %.3f  &  ", 100*1000*best->getPerdaAtiva());
+        printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
+        printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
         printf("        %.3f  &  ", g->tensaoMinima());
         printf("        %d\n\n\n", melhorGeracao);
     }
+}
+
+void testeprs2(){
+
+    char nome[] = arquivoEntrada;
+    Grafo *g = new Grafo();
+
+    g->leEntrada(nome);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    Individuo::criaCromossomos(g);
+
+    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+
+    i1->geraPesosAleatorios();
+    i2->geraPesosAleatorios();
+
+    i1->calculaFuncaoObjetivoOtimizado(g);
+    i2->calculaFuncaoObjetivoOtimizado(g);
+
+    i1->prs2(i2, g);
+
 }
