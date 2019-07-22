@@ -4,8 +4,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "No.h"
-#include "Arco.h"
+#include "Vertex.h"
+#include "Edge.h"
 #include <vector>
 #include <algorithm>
 

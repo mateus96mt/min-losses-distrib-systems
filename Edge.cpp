@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "Arco.h"
+#include "Edge.h"
 
 Arco::Arco(int id){
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "Grafo.h"
-#include "Random_keys.h"
+#include "Graph_network.h"
+#include "RKGA.h"
 #include "time.h"
 #include <algorithm>
 #include <math.h>
@@ -11,7 +11,7 @@
 
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis33.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis119.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
 //#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
@@ -56,10 +56,67 @@ void testeprs2();
 
 void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn);
 
-int main(int c, char *argv[]) {
 
-    srand(time(NULL));
-    testeprs2();
+
+//################################################################
+
+void testePRE(char *arquIn, int tam_pool, int max_it, float pct_pr_elite);
+void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int tam_pool, int max_it, float pct_pr_elite);
+//Grafo *g, int tam_pool, int max_it, float pct_pool_elite
+
+//################################################################
+
+int semente = time(NULL);
+int main(int c, char *argv[]) {
+//int main(){
+
+    srand(semente);
+//    testeprs2();
+
+    //char *arqIn, int tam_pool, int max_it, float pct_pr_elite, Grafo *g;
+
+
+                    //PREpuro
+//####################################################
+
+//    char *arqIn =argv[1];
+//    int tam_pool = strtol(argv[2], nullptr, 0);
+//    int max_it = strtol(argv[3], nullptr, 0);
+//    float pct_pr_elite = atof(argv[4]);
+//
+//    testePRE(arqIn, tam_pool, max_it, pct_pr_elite);
+
+//####################################################
+
+
+
+                    //AG+PRE
+//####################################################
+
+    char *arqIn = arquivoEntrada;
+    int tampop = 100;
+    int numgeracoes = 500;
+    int it_s_melhora = 50;
+    int tam_pool = 10;
+    int max_it = 10;
+    float pct_pr_elite = 0.3;
+
+//    char *arqIn =argv[1];
+//    int tampop = strtol(argv[2], nullptr, 0);
+//    int numgeracoes = strtol(argv[3], nullptr, 0);
+//    int it_s_melhora = strtol(argv[4], nullptr, 0);
+//    int tam_pool = strtol(argv[5], nullptr, 0);
+//    int max_it = strtol(argv[6], nullptr, 0);
+//    float pct_pr_elite = atof(argv[7]);
+
+    clock_t inicio = clock();
+//    testeAG_PRE(arqIn, it_s_melhora, tampop, numgeracoes,
+//                tam_pool, max_it, pct_pr_elite);
+    testePRE(arqIn, 10, 10, 0.3);
+    clock_t fim = clock();
+    printf("%f %d\n", (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
+
+//####################################################
 
     /*if (c != 5) {
         printf("\n\n  Erro ao chamar o programa! ./main <prs(0=sem, 1=prs_simples_a_cada_geracao 2=evolutivo)> <tamPop> <numGeracoes> <entrada>\n");
@@ -654,110 +711,192 @@ void testeFuncaoObjetivoOtimizada() {
     }
 }
 
-void testeprs() {
-    char nome[] = arquivoEntrada;
+//void testeprs() {
+//    char nome[] = arquivoEntrada;
+//    Grafo *g = new Grafo();
+//
+//    g->leEntrada(nome);
+//    g->defineArestasModificaveis();
+//    g->resetaArcosMarcados();
+//    g->marcaUmsentidoArcos();
+//    Individuo::criaCromossomos(g);
+//
+//    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+//    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+//    Individuo *indRef;
+//
+//
+//    i1->geraPesosAleatorios();
+//    i2->geraPesosAleatorios();
+//
+//    i1->calculaFuncaoObjetivo(g);
+//    i2->calculaFuncaoObjetivo(g);
+//
+//    if (i1->getPerdaAtiva() > i2->getPerdaAtiva())
+//        indRef = i1;
+//    else
+//        indRef = i2;
+//
+//    printf("i1->perdaAtiva: %lf\n", 100 * 1000 * i1->getPerdaAtiva());
+//    printf("i2->perdaAtiva: %lf\n\n\n", 100 * 1000 * i2->getPerdaAtiva());
+//
+//    Individuo *path = i1->prs(i2, g, indRef);
+//
+//    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100 * 1000 * path->getPerdaAtiva());
+//}
+
+//void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
+//
+//    clock_t inicio, fim;
+//    Individuo *best;
+//
+//    {
+//        inicio = clock();
+//
+//        char *nome = arqIn;
+//        Grafo *g = new Grafo();
+//
+//        g->leEntrada(nome);
+//        g->defineArestasModificaveis();
+//        g->resetaArcosMarcados();
+//        g->marcaUmsentidoArcos();
+//        Individuo::criaCromossomos(g);
+//
+//        /** numero de individuos da populacao,numero de geracaoes **/
+//        Random_keys *rd = new Random_keys(tamPop, numGeracoes);
+//
+//        /** populacao inicial gerada de forma aleatoria **/
+//        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
+//                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
+//
+//        /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
+//
+//        int melhorGeracao;
+//        if (prs == 0)
+//            melhorGeracao = rd->avancaGeracoes2(g);
+//        if (prs == 1)
+//            melhorGeracao = rd->avancaGeracoesPRS(
+//                    g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
+//        if (prs == 2)
+//            melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
+//
+//        /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
+//        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+//
+//        best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+//        best->calculaFuncaoObjetivoOtimizado(g);
+//
+//        fim = clock();
+//
+//        printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
+//        printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
+//        printf("        %.3f  &  ", g->tensaoMinima());
+//        printf("        %d\n\n\n", melhorGeracao);
+//    }
+//}
+
+//void testeprs2(){
+//
+//    char nome[] = arquivoEntrada;
+//    Grafo *g = new Grafo();
+//
+//    g->leEntrada(nome);
+//    g->defineArestasModificaveis();
+//    g->resetaArcosMarcados();
+//    g->marcaUmsentidoArcos();
+//    Individuo::criaCromossomos(g);
+//
+//    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+//    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+//
+//    i1->geraPesosAleatorios();
+//    i2->geraPesosAleatorios();
+//
+//    i1->calculaFuncaoObjetivoOtimizado(g);
+//    i2->calculaFuncaoObjetivoOtimizado(g);
+//
+//    Individuo *result;
+//    while(true){
+//        clock_t inicio = clock();
+//        result = i1->prs2(i2, g);
+//        clock_t fim = clock();
+//        printf("tempo de execucao do path-relinking: %f\n", (double)(fim-inicio)/CLOCKS_PER_SEC);
+//        delete result;
+//    }
+//}
+
+void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
+
     Grafo *g = new Grafo();
 
-    g->leEntrada(nome);
+    //inicializacoes
+    g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
     Individuo::criaCromossomos(g);
+    //fim inicializacoes
 
-    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    Individuo *indRef;
+//    printf("\n\ntamanho do individuo (arestas modificaveis): %d\n\n", g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
+    Random_keys *rd = new Random_keys(100, 1);
 
-    i1->geraPesosAleatorios();
-    i2->geraPesosAleatorios();
+    Individuo *inicial = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    inicial->geraPesosConfInicial(configuracaoInicial(arqIn),  g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1), g);
+    inicial->calculaFuncaoObjetivoOtimizado(g);
+//    printf("i 0:   %f\n", 100*1000*inicial->getPerdaAtiva());
 
-    i1->calculaFuncaoObjetivo(g);
-    i2->calculaFuncaoObjetivo(g);
+    vector<Individuo*> pool;
+    pool.push_back(inicial);
 
-    if (i1->getPerdaAtiva() > i2->getPerdaAtiva())
-        indRef = i1;
-    else
-        indRef = i2;
-
-    printf("i1->perdaAtiva: %lf\n", 100 * 1000 * i1->getPerdaAtiva());
-    printf("i2->perdaAtiva: %lf\n\n\n", 100 * 1000 * i2->getPerdaAtiva());
-
-    Individuo *path = i1->prs(i2, g, indRef);
-
-    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100 * 1000 * path->getPerdaAtiva());
-}
-
-void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
-
-    clock_t inicio, fim;
-    Individuo *best;
-
-    {
-        inicio = clock();
-
-        char *nome = arqIn;
-        Grafo *g = new Grafo();
-
-        g->leEntrada(nome);
-        g->defineArestasModificaveis();
-        g->resetaArcosMarcados();
-        g->marcaUmsentidoArcos();
-        Individuo::criaCromossomos(g);
-
-        /** numero de individuos da populacao,numero de geracaoes **/
-        Random_keys *rd = new Random_keys(tamPop, numGeracoes);
-
-        /** populacao inicial gerada de forma aleatoria **/
-        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
-                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
-
-        /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
-
-        int melhorGeracao;
-        if (prs == 0)
-            melhorGeracao = rd->avancaGeracoes2(g);
-        if (prs == 1)
-            melhorGeracao = rd->avancaGeracoesPRS(
-                    g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
-        if (prs == 2)
-            melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
-
-        /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
-
-        best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
-        best->calculaFuncaoObjetivoOtimizado(g);
-
-        fim = clock();
-
-        printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
-        printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
-        printf("        %.3f  &  ", g->tensaoMinima());
-        printf("        %d\n\n\n", melhorGeracao);
+    Individuo *ind;
+    for(int i=1; i<tam_pool; i++){
+        ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+        ind->geraPesosAleatorios();
+        ind->calculaFuncaoObjetivoOtimizado(g);
+        //populacao inicial de individuos aleatorios validos
+        while(ind->getPerdaAtiva()==9999999999){
+            ind->geraPesosAleatorios();
+            ind->calculaFuncaoObjetivoOtimizado(g);
+        }
+//        printf("i %d:   %f\n", i, 100*1000*ind->getPerdaAtiva());
+        pool.push_back(ind);
     }
+
+    Path_relinking p(pool, max_it, pct_pr_elite);
+
+    clock_t inicio = clock();
+    Individuo *best = p.pre(g);
+    clock_t fim = clock();
+    printf("%f %f %d\n", 100*1000*best->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
 }
 
-void testeprs2(){
+void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int tam_pool, int max_it, float pct_pr_elite){
 
-    char nome[] = arquivoEntrada;
     Grafo *g = new Grafo();
 
-    g->leEntrada(nome);
+    //inicializacoes
+    g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
     Individuo::criaCromossomos(g);
+    //fim inicializacoes
 
-    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
-    i1->geraPesosAleatorios();
-    i2->geraPesosAleatorios();
+    Random_keys *rd = new Random_keys(tampop, numgeracoes);
 
-    i1->calculaFuncaoObjetivoOtimizado(g);
-    i2->calculaFuncaoObjetivoOtimizado(g);
+    /** populacao inicial gerada de forma aleatoria **/
+    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
 
-    i1->prs2(i2, g);
+    /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
+    int melhorGeracao = rd->avancaGeracoesPRE(g, it_s_melhora, tam_pool, max_it, pct_pr_elite);
 
+    /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
+    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+
+
+    printf(" %.3f ", 100 * 1000 * best->getPerdaAtiva());
+    printf("%.3f ", g->tensaoMinima());
+    printf("%d ", melhorGeracao);
 }

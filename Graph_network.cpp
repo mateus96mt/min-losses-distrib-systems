@@ -1,4 +1,4 @@
-#include "Grafo.h"
+#include "Graph_network.h"
 #include <fstream>
 #include <math.h>
 #include "time.h"

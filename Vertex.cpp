@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "No.h"
-#include "Arco.h"
+#include "Vertex.h"
+#include "Edge.h"
 
 No::No(int id){
 

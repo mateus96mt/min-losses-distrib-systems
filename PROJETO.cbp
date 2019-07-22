@@ -32,16 +32,18 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="Arco.cpp" />
-		<Unit filename="Arco.h" />
-		<Unit filename="Grafo.cpp" />
-		<Unit filename="Grafo.h" />
-		<Unit filename="Individuo.cpp" />
-		<Unit filename="Individuo.h" />
-		<Unit filename="No.cpp" />
-		<Unit filename="No.h" />
-		<Unit filename="Random_key.cpp" />
-		<Unit filename="Random_keys.h" />
+		<Unit filename="Edge.cpp" />
+		<Unit filename="Edge.h" />
+		<Unit filename="Graph_network.cpp" />
+		<Unit filename="Graph_network.h" />
+		<Unit filename="Individual.cpp" />
+		<Unit filename="Individual.h" />
+		<Unit filename="Path_relinking.cpp" />
+		<Unit filename="Path_relinking.h" />
+		<Unit filename="RKGA.cpp" />
+		<Unit filename="RKGA.h" />
+		<Unit filename="Vertex.cpp" />
+		<Unit filename="Vertex.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

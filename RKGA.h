@@ -2,7 +2,8 @@
 #define RANDOM_KEYS_H_INCLUDED
 #include <math.h>
 
-#include "Individuo.h"
+#include "RK_Individual.h"
+#include "Path_relinking.h"
 
 using namespace std;
 
@@ -34,9 +35,22 @@ class Random_keys{
         int avancaGeracoes2(Grafo *g);
         int avancaGeracoesPRS(Grafo *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
 
-        void prsEvolutivo(vector<Individuo*> pool, vector<Individuo*> &populacao, Grafo *g);//path relinking simples evolutivo
+//        void prsEvolutivo(vector<Individuo*> pool, vector<Individuo*> &populacao, Grafo *g);//path relinking simples evolutivo
         int avancaGeracoesPRSEvolutivoFinal(Grafo *g);
 
+
+//        Individuo *pre(vector<Individuo*> pool, int max_it, float pct_pr_elite, Grafo *g);
+        int avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
+
+        ///--------------------------RKGA operators--------------------------:
+
+        void cruzamentoMedia(Individuo *pai1, Individuo *pai2, Individuo *filho);
+
+        void cruzamentoMedia2(Individuo *pai1, Individuo *pai2, Individuo *filho);
+
+        void mutacao(Individuo *ind);
+
+        ///--------------------------RKGA operators--------------------------:
 
 };
 #endif // RANDOM_KEYS_H_INCLUDED
