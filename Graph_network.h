@@ -11,11 +11,11 @@
 
 using namespace std;
 
-class Grafo{
+class Graph_network{
 
 private:
     //estrutura basica da lista de adjacencia:
-    No *listaNos;
+    Vertex *listaNos;
     int numeroNos, numeroArcos;
 
     //informacoes necessarias para o problema de minimizacao de perdas:
@@ -27,12 +27,12 @@ private:
 
 public:
     //funcoes do grafo:
-    Grafo();//construtor
-    ~Grafo();//destrutor
+    Graph_network();//construtor
+    ~Graph_network();//destrutor
 
-    No* buscaNo(int id);
-    Arco *buscaArco(int id);
-    Arco *buscaArco(int idOrigem, int idDestino);
+    Vertex* buscaNo(int id);
+    Edge *buscaArco(int id);
+    Edge *buscaArco(int idOrigem, int idDestino);
 
 
     void insereNo(int id, double potAtiva, double potReativa, double voltagem);
@@ -44,18 +44,18 @@ public:
 
 
     //calcula o somatorio de cargas e perdas ativas pada todo o ramo abaixo do no "no"
-    double cargasPerdasRamoAtiv(No *no);
-    void auxcargasPerdasRamoAtiv(No *no, double &soma);
+    double cargasPerdasRamoAtiv(Vertex *no);
+    void auxcargasPerdasRamoAtiv(Vertex *no, double &soma);
 
     //calcula o somatorio de cargas e perdas reativas pada todo o ramo abaixo do no "no"
-    double cargasPerdasRamoReAtiv(No *no);
-    void auxcargasPerdasRamoReAtiv(No *no, double &soma);
+    double cargasPerdasRamoReAtiv(Vertex *no);
+    void auxcargasPerdasRamoReAtiv(Vertex *no, double &soma);
 
     void foward(int it);
-    void Auxfoward(No *no, Arco *ak, int it);
+    void Auxfoward(Vertex *no, Edge *ak, int it);
 
     void backward();
-    void Auxbackward(No *no);
+    void Auxbackward(Vertex *no);
 
     double *soma_perdas();
 
@@ -72,17 +72,17 @@ public:
     void desmarcaNos();//util em percursos
 
     bool ehArvore();
-    void auxehArvore(No *no, int &marcados, bool &ciclo);
+    void auxehArvore(Vertex *no, int &marcados, bool &ciclo);
 
     bool ehConexo();
-    void auxehConexo(No *no, int &n_marcados);
+    void auxehConexo(Vertex *no, int &n_marcados);
 
     void define_sentido_fluxos();
-    void auxDefine_sentido_fluxos(No *no, No *noAnterior);
+    void auxDefine_sentido_fluxos(Vertex *no, Vertex *noAnterior);
 
     void defineArestasModificaveis();
 
-    Grafo *retornaCopia();
+    Graph_network *retornaCopia();
 
     void solucaoAleatoria();
 
@@ -96,15 +96,20 @@ public:
     void resetaArcosMarcados();
     void marcaUmsentidoArcos();
 
+    void percursoPronfundidade(Vertex *start, int value);
+
+    void checaCiclo();
 
     //GETS e SETS:
-    No *getListaNos(){          return this->listaNos; };
+    Vertex *getListaNos(){          return this->listaNos; };
     int getNumeroNos(){         return this->numeroNos; };
     int getNumeroArcos(){       return this->numeroArcos; };
     int getN_marcados(){        return this->n_marcados; };
     int getN_naoModificaveis(){ return this->n_naoModificaveis;};
 
-    void setListaNos(No *no){ this->listaNos = no; };
+    void setListaNos(Vertex *no){ this->listaNos = no; };
+    void marcaComponenteConexa(Vertex *start, int value);
+    void aux_marcaComponenteConexa(Vertex *start, Vertex *previous, int value);
 };
 
 #endif // DIGRAFO_H_INCLUDED

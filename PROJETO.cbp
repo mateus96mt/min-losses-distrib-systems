@@ -34,14 +34,16 @@
 		</Compiler>
 		<Unit filename="Edge.cpp" />
 		<Unit filename="Edge.h" />
+		<Unit filename="Evolutionary_path_relinking.cpp" />
+		<Unit filename="Evolutionary_path_relinking.h" />
 		<Unit filename="Graph_network.cpp" />
 		<Unit filename="Graph_network.h" />
-		<Unit filename="Individual.cpp" />
-		<Unit filename="Individual.h" />
-		<Unit filename="Path_relinking.cpp" />
-		<Unit filename="Path_relinking.h" />
+		<Unit filename="OS_Individual.cpp" />
+		<Unit filename="OS_Individual.h" />
 		<Unit filename="RKGA.cpp" />
 		<Unit filename="RKGA.h" />
+		<Unit filename="RK_Individual.cpp" />
+		<Unit filename="RK_Individual.h" />
 		<Unit filename="Vertex.cpp" />
 		<Unit filename="Vertex.h" />
 		<Unit filename="main.cpp" />

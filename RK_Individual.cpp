@@ -3,19 +3,19 @@
 
 using namespace std;
 
-vector<Cromossomo*> Individuo::cromossomos = vector<Cromossomo*>();
+vector<Cromossome*> RK_Individual::cromossomos = vector<Cromossome*>();
 
-bool ordenacaoCromossomo(Cromossomo *c1, Cromossomo *c2){return c1->peso > c2->peso;}
-bool ordenaPosicaoCromossomo(Cromossomo *c1, Cromossomo *c2){ return c1->posicao < c2->posicao;}
-bool ordenaCromossomoPorIdArco(Cromossomo *c1, Cromossomo *c2){ return c1->arco->getID() < c2->arco->getID(); }
+bool ordenacaoCromossomo(Cromossome *c1, Cromossome *c2){return c1->peso > c2->peso;}
+bool ordenaPosicaoCromossomo(Cromossome *c1, Cromossome *c2){ return c1->posicao < c2->posicao;}
+bool ordenaCromossomoPorIdArco(Cromossome *c1, Cromossome *c2){ return c1->arco->getID() < c2->arco->getID(); }
 
 
-Individuo::Individuo(int numArcos){
+RK_Individual::RK_Individual(int numArcos){
      this->numArcos=numArcos;
      pesos = new double[this->numArcos];
 }
 
-void Individuo::geraPesosAleatorios(){
+void RK_Individual::geraPesosAleatorios(){
     for(int i=0; i<this->numArcos; i++)
         this->pesos[i] = rand() % RANGEPESO;
 }
@@ -44,18 +44,18 @@ void Individuo::geraPesosAleatorios(){
 //    }
 //}
 
-void Individuo::calculaFuncaoObjetivo(Grafo *g){
-    vector<Cromossomo*> cromossomos;
+void RK_Individual::calculaFuncaoObjetivo(Graph_network *g){
+    vector<Cromossome*> cromossomos;
 
-    Cromossomo *c;
-    for(No *no = g->getListaNos(); no!=NULL; no=no->getProxNo()){
+    Cromossome *c;
+    for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Arco *a = no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
 
             /**individuo possui somente arcos modificaveis e em um sentido
             (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
             if(a->getModificavel()==true && a->getMarcado()==true){
-                c = new Cromossomo();
+                c = new Cromossome();
                 c->arco = a;
                 c->peso = 0;
                 cromossomos.push_back(c);
@@ -73,8 +73,8 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
     int n_arc_inseridos = 0, n_arcos_inserir = g->getNumeroNos() - 1 - g->getN_naoModificaveis();
 
     /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
-    for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
-        for(Arco *a = no->getListaArcos(); a!=NULL; a = a->getProxArco()){
+    for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
 
             //arcos nao modificaveis ficam sempre fechados
             if(a->getModificavel()==false)
@@ -98,7 +98,7 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
         if( (cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && cromossomos.at(i)->arco->getChave()==false){
 
             int id = cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
-            for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
+            for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
                     no->setIdArv(cromossomos.at(i)->arco->getNoDestino()->getIdArv());
             }
@@ -131,12 +131,12 @@ void Individuo::calculaFuncaoObjetivo(Grafo *g){
     cromossomos.clear();///deletar vetor de cromossomos(nao esta deletando memoria)
 }
 
-void Individuo::resetaPesos(float valor){
+void RK_Individual::resetaPesos(float valor){
     for(int i=0; i<this->numArcos; i++)
         this->pesos[i] = valor;
 }
 
-void Individuo::geraPesosConfInicial(int *idsAbertos, int n, Grafo *g){
+void RK_Individual::geraPesosConfInicial(int *idsAbertos, int n, Graph_network *g){
 
 //    cout << "vai gerar conf inicial:\n--------------------------------" << endl;
 
@@ -147,9 +147,9 @@ void Individuo::geraPesosConfInicial(int *idsAbertos, int n, Grafo *g){
 
     this->resetaPesos(1.0);
     int j=0;
-    for(No *no = g->getListaNos(); no!=NULL; no=no->getProxNo()){
+    for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Arco *a = no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
 
             if(a->getModificavel()==true && a->getMarcado()==true){
                 for(int i=0; i<n; i++){
@@ -166,7 +166,7 @@ void Individuo::geraPesosConfInicial(int *idsAbertos, int n, Grafo *g){
 //    cout << "--------------------------------" << endl;
 }
 
-void Individuo::imprimePesos(){
+void RK_Individual::imprimePesos(){
     printf("pesos {");
     for(int i=0; i<this->numArcos; i++)
         printf("%.2f, ", this->pesos[i]);
@@ -189,17 +189,17 @@ void Individuo::imprimePesos(){
 //    }
 //}
 
-void Individuo::criaCromossomos(Grafo *g){
-    Cromossomo *c;
+void RK_Individual::criaCromossomos(Graph_network *g){
+    Cromossome *c;
     int i = 0;
-    for(No *no = g->getListaNos(); no!=NULL; no=no->getProxNo()){
+    for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Arco *a = no->getListaArcos(); a!=NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
 
             /**individuo possui somente arcos modificaveis e em um sentido
             (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
             if(a->getModificavel()==true && a->getMarcado()==true){
-                c = new Cromossomo();
+                c = new Cromossome();
                 c->arco = a;
                 c->peso = 0;
                 c->posicao = i;
@@ -211,7 +211,7 @@ void Individuo::criaCromossomos(Grafo *g){
     }
 }
 
-void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
+void RK_Individual::calculaFuncaoObjetivoOtimizado(Graph_network *g){
 
     /** colocar os cromossomos na ordem correta em que aparecem no grafo antes de associar os pesos **/
     sort(cromossomos.begin(), cromossomos.end(), ordenaPosicaoCromossomo);
@@ -231,7 +231,7 @@ void Individuo::calculaFuncaoObjetivoOtimizado(Grafo *g){
         if( (cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && cromossomos.at(i)->arco->getChave()==false){
 
             int id = cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
-            for(No *no = g->getListaNos(); no!=NULL; no = no->getProxNo()){
+            for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
                     no->setIdArv(cromossomos.at(i)->arco->getNoDestino()->getIdArv());
             }

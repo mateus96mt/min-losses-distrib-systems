@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "Edge.h"
 
-Arco::Arco(int id){
+Edge::Edge(int id){
 
     this->id = id;
 
@@ -22,13 +22,14 @@ Arco::Arco(int id){
 
     this->modificavel = true;
     this->marcado = true;
+    this->fixed = false;
 }
 
-Arco::~Arco(){
+Edge::~Edge(){
 
 }
 
-void Arco::imprime(){
+void Edge::imprime(){
     printf("[ ( %d, %d ) A{%d} chave = %d  modif = %d res = %.5f  reat = %.5f  fA = %.5f  fR = %.5f  peA = %.9f  peR = %.9f ]",
     this->noOrigem->getID(), this->noDestino->getID(), this->id, this->chave, this->modificavel, this->resistencia, this->reatancia,
     this->FLuxoPAtiva, this->FLuxoPReativa, this->perdaAtiva, this->perdaReativa);

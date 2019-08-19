@@ -3,15 +3,15 @@
 
 using namespace std;
 
-class Arco;
+class Edge;
 
-class No{
+class Vertex{
 
 private:
     //estrutura basica do No
     int id;
-    No *proxNo;
-    Arco *listaArcos;
+    Vertex *proxNo;
+    Edge *listaArcos;
     int grauSaida, grauEntrada;
     int grauAux;
     int idArv;
@@ -25,16 +25,16 @@ private:
 
 public:
     //Funcoes do No:
-    No(int id);//construtor
-    ~No();//destrutor
+    Vertex(int id);//construtor
+    ~Vertex();//destrutor
 
     void imprime();
 
 
     //GETS e SETS:
     int getID(){            return this->id;    };
-    No *getProxNo(){        return this->proxNo; };
-    Arco *getListaArcos(){  return this->listaArcos; };
+    Vertex *getProxNo(){        return this->proxNo; };
+    Edge *getListaArcos(){  return this->listaArcos; };
     double getPotAtiva(){   return this->potAtiva; };
     double getPotReativa(){ return this->potReativa; };
     double getVoltagem(){   return this->voltagem; };
@@ -45,8 +45,8 @@ public:
     int getIdArv(){         return this->idArv;};
 
     void setID(int id){                 this->id          = id; };
-    void setProxNo(No *no){             this->proxNo      = no; };
-    void setListaArcos(Arco *Arc){      this->listaArcos  = Arc; };
+    void setProxNo(Vertex *no){ this->proxNo      = no; };
+    void setListaArcos(Edge *Arc){ this->listaArcos  = Arc; };
     void setPotAtiva(double potAt){     this->potAtiva    = potAt; };
     void setPotReativa(double potReat){ this->potReativa  = potReat; };
     void setVoltagem(double volt){      this->voltagem    = volt; };

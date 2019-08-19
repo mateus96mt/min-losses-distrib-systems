@@ -1,24 +1,25 @@
 #include "RKGA.h"
 #include <unistd.h>
+#include <random>
 
 using namespace std;
 
 #define RANGEPESO 100
 
-bool ordenacaoIndividuo(Individuo *i1, Individuo *i2){return i1->getPerdaAtiva() > i2->getPerdaAtiva();}
+bool ordenacaoIndividuo(RK_Individual *i1, RK_Individual *i2){return i1->getPerdaAtiva() > i2->getPerdaAtiva();}
 
-Random_keys::Random_keys(int tamPop, int numGeracoes){
+RKGA::RKGA(int tamPop, int numGeracoes){
     this->tamPop = tamPop;
     this->numGeracoes = numGeracoes;
 }
 
-void Random_keys::geraPopAleatoria(Grafo *g){
+void RKGA::geraPopAleatoria(Graph_network *g){
 
     g->marcaUmsentidoArcos();
-    Individuo *ind;
+    RK_Individual *ind;
     for(int i=0; i<this->tamPop; i++){
 
-        ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
         ind->geraPesosAleatorios();
 
         popAtual.push_back(ind);
@@ -26,13 +27,13 @@ void Random_keys::geraPopAleatoria(Grafo *g){
     popAnterior = popAtual;
 }
 
-void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int nAbertos){
+void RKGA::geraPopAleatoriaConfInicial(Graph_network *g, int *idsAbertos, int nAbertos){
 
     g->marcaUmsentidoArcos();
-    Individuo *ind;
+    RK_Individual *ind;
     for(int i=0; i<this->tamPop; i++){
 
-        ind = new Individuo(g->getNumeroArcos()/2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
         if(i==0){
             ind->geraPesosConfInicial(idsAbertos, nAbertos, g);
         }
@@ -48,7 +49,7 @@ void Random_keys::geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int nAb
 /** ordena populacao em ordem decrescente por valor da funcao objetivo
 dado que queremos minimizar a perda os piores individuos ficam no inicio(perda maior)
 queremos os melhore (menor perda, fim da lista) **/
-void Random_keys::ordenaPopulacaoAtual(Grafo *g){
+void RKGA::ordenaPopulacaoAtual(Graph_network *g){
     for(unsigned int i=0; i<popAtual.size(); i++)
         popAtual.at(i)->calculaFuncaoObjetivoOtimizado(g);
 //        popAtual.at(i)->calculaFuncaoObjetivo(g);
@@ -56,10 +57,10 @@ void Random_keys::ordenaPopulacaoAtual(Grafo *g){
     sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
 }
 
-int Random_keys::avancaGeracoes(Grafo *g){
+int RKGA::avancaGeracoes(Graph_network *g){
 
     int melhorGeracao = 0;
-    Individuo *best = popAtual.at(this->tamPop-1);
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
     this->ordenaPopulacaoAtual(g);
     double perda = 100*1000*best->getPerdaAtiva();
     for(int k=0; k<this->numGeracoes; k++){
@@ -69,7 +70,7 @@ int Random_keys::avancaGeracoes(Grafo *g){
         pra menor perda(melhor individuo), perdaAtiva**/
         this->ordenaPopulacaoAtual(g);
 
-        Individuo *best = popAtual.at(this->tamPop-1);
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
 //            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
@@ -123,10 +124,10 @@ int Random_keys::avancaGeracoes(Grafo *g){
     return melhorGeracao;
 }
 
-int Random_keys::avancaGeracoes2(Grafo *g){
+int RKGA::avancaGeracoes2(Graph_network *g){
 
     int melhorGeracao = 0;
-    Individuo *best = popAtual.at(this->tamPop-1);
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
     this->ordenaPopulacaoAtual(g);
     double perda = 100*1000*best->getPerdaAtiva();
     for(int k=0; k<this->numGeracoes; k++){
@@ -136,7 +137,7 @@ int Random_keys::avancaGeracoes2(Grafo *g){
          pra menor perda(melhor individuo), perdaAtiva**/
         this->ordenaPopulacaoAtual(g);
 
-        Individuo *best = popAtual.at(this->tamPop-1);
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
 //            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
@@ -198,10 +199,11 @@ int Random_keys::avancaGeracoes2(Grafo *g){
     return melhorGeracao;
 }
 
-int Random_keys::avancaGeracoesPRS(Grafo *g){
+    ///OLD IMPLEMENTATION OF AG+PR
+int RKGA::avancaGeracoesPRS(Graph_network *g){
 
     int melhorGeracao = 0;
-    Individuo *best = popAtual.at(this->tamPop-1);
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
     this->ordenaPopulacaoAtual(g);
     double perda = 100*1000*best->getPerdaAtiva();
     for(int k=0; k<this->numGeracoes; k++){
@@ -211,7 +213,7 @@ int Random_keys::avancaGeracoesPRS(Grafo *g){
          pra menor perda(melhor individuo), perdaAtiva**/
         this->ordenaPopulacaoAtual(g);
 
-        Individuo *best = popAtual.at(this->tamPop-1);
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
 //            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
@@ -227,7 +229,7 @@ int Random_keys::avancaGeracoesPRS(Grafo *g){
             int id1 = (tamPop-num_melhores) + (rand() % num_melhores);
             int id2 = (tamPop-num_melhores) + (rand() % num_melhores);
 
-            Individuo *indRef;//individuo de referencia para o pathrelinking
+            RK_Individual *indRef;//individuo de referencia para o pathrelinking
 
             if(popAtual.at(id1)->getPerdaAtiva() > popAtual.at(id2)->getPerdaAtiva())
                 indRef = popAtual.at(id1);
@@ -235,8 +237,8 @@ int Random_keys::avancaGeracoesPRS(Grafo *g){
                 indRef = popAtual.at(id2);
 
 //            Individuo *ind = popAtual.at(id1)->prs(popAtual.at(id2), g, indRef);
-            Path_relinking p(this->popAnterior, 0, 0);//objeto necessario para utilizacao de funcoes do path-relinking
-            Individuo *ind = p.prs(popAtual.at(id1), popAtual.at(id2), g, indRef);
+            Evolutionary_path_relinking p(this->popAnterior, 0, 0);//objeto necessario para utilizacao de funcoes do path-relinking
+            RK_Individual *ind = p.prs(popAtual.at(id1), popAtual.at(id2), g, indRef);
 
             if(ind->getPerdaAtiva() < popAtual.at(0)->getPerdaAtiva())//atualiza pior individuo da populacao com resultado do path relinking
                 popAtual.at(0) = ind;
@@ -291,186 +293,102 @@ int Random_keys::avancaGeracoesPRS(Grafo *g){
     return melhorGeracao;
 }
 
-//void Random_keys::prsEvolutivo(vector<Individuo*> pool, vector<Individuo*> &populacao, Grafo *g){
-//
-//    Individuo *indRef, *ind;
-//
-//    sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenar novamente a pool atualizada
-//
-//    //path relinking evolutivo entre todos os individuos da pool, par a par
-//    for(unsigned int i=0; i<pool.size(); i++){
-//
-//        for(unsigned int j=0; j<pool.size(); j++){
-//
-//            if(i!=j){
-//
-//                indRef = pool.at(0);
-//
+void RKGA::prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g){
+
+    RK_Individual *indRef, *ind;
+
+    sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenar novamente a pool atualizada
+
+    //path relinking evolutivo entre todos os individuos da pool, par a par
+    for(unsigned int i=0; i<pool.size(); i++){
+
+        for(unsigned int j=0; j<pool.size(); j++){
+
+            if(i!=j){
+
+                indRef = pool.at(0);
+
 //                ind = pool.at(i)->prs(pool.at(j), g, indRef);//path relinking
-//
-//                if(ind->getPerdaAtiva() < indRef->getPerdaAtiva()){//atualizacao da pool
-//
-//                    pool.at(0) = ind;
-//                    i = 0;
-//                    j = 0;
-//
-//                    sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenar novamente a pool atualizada
-//
-//                }
-//
-//            }
-//
-//        }
-//
-//    }
-//
-//    //acrescenta pool atualizada na populacao
-//    for(unsigned int i=0; i<pool.size(); i++)
-//        populacao.push_back(pool.at(i));
-//
-//}
+                Evolutionary_path_relinking *p = new Evolutionary_path_relinking();
+                ind = p->prs(pool.at(i), pool.at(j), g, indRef);
 
-//Individuo *Random_keys::pre(vector<Individuo*> pool, int max_it, float pct_pr_elite, Grafo *g){
-//
-//    unsigned int tam_pool = pool.size();
-//
-//    int tam_elite = round(pct_pr_elite*tam_pool);
-//
-//    Individuo *i;
-//
-//    int k = 0;
-//    while(k<max_it){
-//
-////        cout << "k: " << k << endl;
-//
-//        clock_t inicio = clock();
-//        sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenando toda hora, overhead deve estar aqui
-//        clock_t fim = clock();
-//
-////        printf("best: %f\npior: %f\n", 100*1000*pool.at(pool.size()-1)->getPerdaAtiva(), 100*1000*pool.at(0)->getPerdaAtiva());
-//
-//        int ind = (rand() % tam_elite) + (tam_pool - tam_elite);
-//        int guia = (rand() % tam_elite);
-//
-//        clock_t inicio2 = clock();
+                if(ind->getPerdaAtiva() < indRef->getPerdaAtiva()){//atualizacao da pool
+
+                    pool.at(0) = ind;
+                    i = 0;
+                    j = 0;
+
+                    sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenar novamente a pool atualizada
+
+                }
+
+            }
+
+        }
+
+    }
+
+    //acrescenta pool atualizada na populacao
+    for(unsigned int i=0; i<pool.size(); i++)
+        populacao.push_back(pool.at(i));
+
+}
+
+RK_Individual *RKGA::pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph_network *g){
+
+    unsigned int tam_pool = pool.size();
+
+    int tam_elite = round(pct_pr_elite*tam_pool);
+
+    RK_Individual *i;
+
+    int k = 0;
+    while(k<max_it){
+
+//        cout << "k: " << k << endl;
+
+        clock_t inicio = clock();
+        sort(pool.begin(), pool.end(), ordenacaoIndividuo);//ordenando toda hora, overhead deve estar aqui
+        clock_t fim = clock();
+
+//        printf("best: %f\npior: %f\n", 100*1000*pool.at(pool.size()-1)->getPerdaAtiva(), 100*1000*pool.at(0)->getPerdaAtiva());
+
+        int ind = (rand() % tam_elite) + (tam_pool - tam_elite);
+        int guia = (rand() % tam_elite);
+
+        clock_t inicio2 = clock();
 //        i = pool.at(ind)->prs2(pool.at(guia), g);//ja tem funcao objetivo calculada
-//        clock_t fim2 = clock();
-//
-//        if(i->getPerdaAtiva() < pool.at(0)->getPerdaAtiva()){
-////            printf("pr: %f\ntempo ordenacao pool: %f\ntempo execucao pr: %f\n\n", 100*1000*i->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, (double)(fim2-inicio2)/CLOCKS_PER_SEC);
-////            swap(pool.at(0), i);
-//            pool.erase(pool.begin());
-//            pool.push_back(i);
-////            delete i;
-//            k=0;
-//        }else{
-//            k++;
+        Evolutionary_path_relinking *p = new Evolutionary_path_relinking();
+        i = p->prs2(pool.at(ind), pool.at(guia), g);
+        delete p;
+        clock_t fim2 = clock();
+
+        if(i->getPerdaAtiva() < pool.at(0)->getPerdaAtiva()){
+//            printf("pr: %f\ntempo ordenacao pool: %f\ntempo execucao pr: %f\n\n", 100*1000*i->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, (double)(fim2-inicio2)/CLOCKS_PER_SEC);
+//            swap(pool.at(0), i);
+            pool.erase(pool.begin());
+            pool.push_back(i);
 //            delete i;
-//        }
-//
-//    }
-//    sort(pool.begin(), pool.end(), ordenacaoIndividuo);
-//
-////    cout << "fim do pre" << endl;
-//
-//    return pool.at(pool.size()-1);//retorna o melhor individuo
-//
-//}
+            k=0;
+        }else{
+            k++;
+            delete i;
+        }
 
-//int Random_keys::avancaGeracoesPRSEvolutivoFinal(Grafo *g){
-//
-//    int num_piores, num_melhores;
-//    int melhorGeracao = 0;
-//    Individuo *best = popAtual.at(this->tamPop-1);
-//    this->ordenaPopulacaoAtual(g);
-//    double perda = 100*1000*best->getPerdaAtiva();
-//    for(int k=0; k<this->numGeracoes; k++){
-//
-//        /** calcula a funcao criterio para cada individuo
-//         e ordena a populacao da maior perda(pior individuo)
-//         pra menor perda(melhor individuo), perdaAtiva**/
-//        this->ordenaPopulacaoAtual(g);
-//
-//        Individuo *best = popAtual.at(this->tamPop-1);
-//        if (100*1000*best->getPerdaAtiva() < perda){
-//            perda = 100*1000*best->getPerdaAtiva();
-////            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
-//            melhorGeracao = k;
-//        }
-//
-//        popAnterior = popAtual;
-//
-//        num_piores = 0.05*this->tamPop;
-//        num_melhores = 0.1*this->tamPop;
-//
-//        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
-//
-//            /** cruzamento entre pai1 e pai2 entre os
-//            individuos aleatorios da populacao anterior
-//            modificar por uma escolha em roleta no futuro**/
-//            int pai1 = rand() % this->tamPop;
-//
-//            /*torneio com 3*/
-//            int cand1, cand2, cand3;
-//            cand1 = rand() % this->tamPop;
-//            cand2 = rand() % this->tamPop;
-//            cand3 = rand() % this->tamPop;
-//
-//            int aux = cand1;
-//
-//            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
-//                cand2=cand1;
-//            }else{aux = cand2;}
-//            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
-//                cand3=cand2;
-//            }else{aux = cand3;}
-//            pai1 = aux;
-//
-//            int pai2 = cand3;
-//
-//            while(pai2==pai1)
-//                pai2 = rand() % this->tamPop;
-//
-//            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-//            popAtual.at(i)->mutacao();
-//        }
-//
-//        /**aleatorio ao inves de manter piores**/
-//        for(int i=0; i<num_piores; i++)
-//            popAtual.at(i)->geraPesosAleatorios();
-//    }
-//
-//    vector<Individuo*> pool;
-//    for(int i=0; i<num_melhores; i++)
-//        pool.push_back(popAtual.at(tamPop - num_melhores + i));
-//
-//    clock_t inicio = clock();
-//
-//
-//    prsEvolutivo(pool, popAtual, g);//execucao do path reliking evolutivo no final
-//
-//    clock_t fim = clock();
-//    printf("tempo prsEvolutivo(isoladamente) (pool size = %d):  %.2lf\n",  num_melhores, (float)(fim-inicio)/CLOCKS_PER_SEC);
-//
-//    this->tamPop = popAtual.size();
-//
-//    this->ordenaPopulacaoAtual(g);
-//
-//    return melhorGeracao;
-//}
+    }
+    sort(pool.begin(), pool.end(), ordenacaoIndividuo);
 
+//    cout << "fim do pre" << endl;
 
-int Random_keys::avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite){
+    return pool.at(pool.size()-1);//retorna o melhor individuo
 
-    cout << "avanca geracoes\n";
+}
 
-    int tam_elite = round(pct_pool_elite*tam_pool);
-    int it = 0;
-    vector<int> chamadasPr;
-    Individuo *bestPr;
+int RKGA::avancaGeracoesPRSEvolutivoFinal(Graph_network *g){
 
+    int num_piores, num_melhores;
     int melhorGeracao = 0;
-    Individuo *best = popAtual.at(this->tamPop-1);
+    RK_Individual *best = popAtual.at(this->tamPop-1);
     this->ordenaPopulacaoAtual(g);
     double perda = 100*1000*best->getPerdaAtiva();
     for(int k=0; k<this->numGeracoes; k++){
@@ -480,10 +398,101 @@ int Random_keys::avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int
          pra menor perda(melhor individuo), perdaAtiva**/
         this->ordenaPopulacaoAtual(g);
 
-        Individuo *best = popAtual.at(this->tamPop-1);
+        RK_Individual *best = popAtual.at(this->tamPop-1);
         if (100*1000*best->getPerdaAtiva() < perda){
             perda = 100*1000*best->getPerdaAtiva();
-            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+            melhorGeracao = k;
+        }
+
+        popAnterior = popAtual;
+
+        num_piores = 0.05*this->tamPop;
+        num_melhores = 0.1*this->tamPop;
+
+        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+
+            /** cruzamento entre pai1 e pai2 entre os
+            individuos aleatorios da populacao anterior
+            modificar por uma escolha em roleta no futuro**/
+            int pai1 = rand() % this->tamPop;
+
+            /*torneio com 3*/
+            int cand1, cand2, cand3;
+            cand1 = rand() % this->tamPop;
+            cand2 = rand() % this->tamPop;
+            cand3 = rand() % this->tamPop;
+
+            int aux = cand1;
+
+            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
+                cand2=cand1;
+            }else{aux = cand2;}
+            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
+                cand3=cand2;
+            }else{aux = cand3;}
+            pai1 = aux;
+
+            int pai2 = cand3;
+
+            while(pai2==pai1)
+                pai2 = rand() % this->tamPop;
+
+//            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+//            popAtual.at(i)->mutacao();
+            this->mutacao(popAtual.at(i));
+        }
+
+        /**aleatorio ao inves de manter piores**/
+        for(int i=0; i<num_piores; i++)
+            popAtual.at(i)->geraPesosAleatorios();
+    }
+
+    vector<RK_Individual*> pool;
+    for(int i=0; i<num_melhores; i++)
+        pool.push_back(popAtual.at(tamPop - num_melhores + i));
+
+    clock_t inicio = clock();
+
+
+    prsEvolutivo(pool, popAtual, g);//execucao do path reliking evolutivo no final
+
+    clock_t fim = clock();
+    printf("tempo prsEvolutivo(isoladamente) (pool size = %d):  %.2lf\n",  num_melhores, (float)(fim-inicio)/CLOCKS_PER_SEC);
+
+    this->tamPop = popAtual.size();
+
+    this->ordenaPopulacaoAtual(g);
+
+    return melhorGeracao;
+}
+
+    //OLD IMPLEMENTATION
+int RKGA::avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite){
+
+//    cout << "avanca geracoes\n";
+
+    int tam_elite = round(pct_pool_elite*tam_pool);
+    int it = 0;
+    vector<int> chamadasPr;
+    RK_Individual *bestPr;
+
+    int melhorGeracao = 0;
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
+    this->ordenaPopulacaoAtual(g);
+    double perda = 100*1000*best->getPerdaAtiva();
+    for(int k=0; k<this->numGeracoes; k++){
+
+        /** calcula a funcao criterio para cada individuo
+         e ordena a populacao da maior perda(pior individuo)
+         pra menor perda(melhor individuo), perdaAtiva**/
+        this->ordenaPopulacaoAtual(g);
+
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
+        if (100*1000*best->getPerdaAtiva() < perda){
+            perda = 100*1000*best->getPerdaAtiva();
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
             melhorGeracao = k;
             it=0;
         }else{
@@ -495,7 +504,7 @@ int Random_keys::avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int
 
             chamadasPr.push_back(k);
             //preenche a pool
-            vector<Individuo*> pool;
+            vector<RK_Individual*> pool;
             for(int i=0; i<tam_elite; i++)
                 pool.push_back(popAtual.at(popAtual.size()-1-i));
             for(int i=0; i<tam_pool-tam_elite;i++){
@@ -503,9 +512,9 @@ int Random_keys::avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int
                 pool.push_back(popAtual.at(id));
             }
 
-            vector<Individuo*> pool_cp = pool;//copia
+            vector<RK_Individual*> pool_cp = pool;//copia
 //            printf("\nchamou pre na geracao %d!\n", k);
-            Path_relinking p(pool, max_it, pct_pool_elite);
+            Evolutionary_path_relinking p(pool, max_it, pct_pool_elite);
             bestPr = p.pre(g);
 //            printf("\nterminou pre!\n");
 
@@ -576,19 +585,19 @@ int Random_keys::avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int
 
     this->ordenaPopulacaoAtual(g);
 
-    for(unsigned int i=0; i<chamadasPr.size(); i++)
-        printf("%d,", chamadasPr.at(i));
+//    for(unsigned int i=0; i<chamadasPr.size(); i++)
+//        printf("%d,", chamadasPr.at(i));
 
     return melhorGeracao;
 }
 
 
-void Random_keys::cruzamentoMedia(Individuo *pai1, Individuo *pai2, Individuo *filho){
+void RKGA::cruzamentoMedia(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++)
         filho->getPesos()[i] = (pai1->getPesos()[i] + pai2->getPesos()[i])/2.0;
 }
 
-void Random_keys::mutacao(Individuo *ind){
+void RKGA::mutacao(RK_Individual *ind){
     int i = rand() % 100;
     if(i<=5){
         int j = rand() % ind->getNumArcos();
@@ -607,7 +616,7 @@ void Random_keys::mutacao(Individuo *ind){
     }
 }
 
-void Random_keys::cruzamentoMedia2(Individuo *pai1, Individuo *pai2, Individuo *filho){
+void RKGA::cruzamentoMedia2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++){
         int j = rand() % 1000;
         if (j>=800){
@@ -620,4 +629,283 @@ void Random_keys::cruzamentoMedia2(Individuo *pai1, Individuo *pai2, Individuo *
             }
         }
     }
+}
+
+void RKGA::cruzamentoPartes(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+    shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
+
+    for(unsigned long int i=0; i<RK_Individual::cromossomos.size()/2; i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+
+    for(unsigned long int i=RK_Individual::cromossomos.size()/2; i<RK_Individual::cromossomos.size(); i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+
+}
+
+int RKGA::avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento) {
+
+    int melhorGeracao = 0;
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
+    this->ordenaPopulacaoAtual(g);
+    double perda = 100*1000*best->getPerdaAtiva();
+    for(int k=0; k<this->numGeracoes; k++){
+
+        /** calcula a funcao criterio para cada individuo
+         e ordena a populacao da maior perda(pior individuo)
+         pra menor perda(melhor individuo), perdaAtiva**/
+        this->ordenaPopulacaoAtual(g);
+
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
+        if (100*1000*best->getPerdaAtiva() < perda){
+            perda = 100*1000*best->getPerdaAtiva();
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+            melhorGeracao = k;
+        }
+
+        popAnterior = popAtual;
+
+        int num_piores = 0.05*this->tamPop;
+        int num_melhores = 0.1*this->tamPop;
+
+        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+
+            /* cruzamento entre pai1 e pai2 entre os
+            individuos aleatorios da populacao anterior
+            modificar por uma escolha em roleta no futuro*/
+
+            int pai1 = rand() % this->tamPop;
+//            int pai2 = rand() % this->tamPop; //aleatorio
+
+            /*torneio com 3*/
+            int cand1, cand2, cand3;
+            cand1 = rand() % this->tamPop;
+            cand2 = rand() % this->tamPop;
+            cand3 = rand() % this->tamPop;
+
+            int aux = cand1;
+
+            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
+                cand2=cand1;
+            }else{aux = cand2;}
+            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
+                cand3=cand2;
+            }else{aux = cand3;}
+            pai1 = aux;
+
+            int pai2 = cand3;
+
+            while(pai2==pai1)
+                pai2 = rand() % this->tamPop;
+
+//            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==0)
+                this->cruzamentoMedia(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==1)
+                this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==2)
+                this->cruzamentoPartes(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==3)
+                this->cruzamentoPartes2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==4)
+                this->cruzamentoPartes3(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            if(tipoCruzamento==5)
+                this->cruzamentoMistura(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+
+//            popAtual.at(i)->mutacao();
+            this->mutacao(popAtual.at(i));
+        }
+
+        /**aleatorio ao inves de manter piores**/
+        for(int i=0; i<num_piores; i++)
+            popAtual.at(i)->geraPesosAleatorios();
+    }
+
+//    cout << "\n--------------------------------------"<<endl;
+//    for(unsigned int i=0; i<popAtual.size(); i++)
+//        cout << 100*1000*popAtual.at(i)->getPerdaAtiva() << " , ";
+//    cout << "\n--------------------------------------"<<endl;
+
+    this->ordenaPopulacaoAtual(g);
+
+    return melhorGeracao;
+}
+
+void RKGA::cruzamentoPartes2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+    shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
+
+    int tam = RK_Individual::cromossomos.size();
+
+    int tamMelhor = round(0.8*tam);
+
+    RK_Individual *melhorPai = pai2, *piorPai = pai1;
+    if(pai1->getPerdaAtiva()<pai2->getPerdaAtiva()){
+        melhorPai = pai1;
+        piorPai = pai2;
+    }
+
+    //80% vem do melhor pai
+    for(unsigned long int i=0; i<tamMelhor; i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = melhorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+
+    //20% vem do pior pai
+    for(unsigned long int i=tamMelhor; i<RK_Individual::cromossomos.size(); i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = piorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+}
+
+void RKGA::cruzamentoPartes3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+    shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
+
+    int tam = RK_Individual::cromossomos.size();
+
+    int tam04 = round(0.4*tam);
+
+    //40% vem do pai1
+    for(unsigned long int i=0; i<tam04; i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+
+    //40% vem do pai12
+    for(unsigned long int i=tam04; i<RK_Individual::cromossomos.size()-tam04; i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+
+    //20% gerado de forma aleatoria
+    for(unsigned long int i=RK_Individual::cromossomos.size()-tam04; i<RK_Individual::cromossomos.size(); i++)
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = rand() % 100;
+
+}
+
+void RKGA::cruzamentoMistura(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+    int i = rand() % 5;
+
+    if(i==0)
+        this->cruzamentoMedia(pai1, pai2, filho);
+    if(i==1)
+        this->cruzamentoMedia2(pai1, pai2, filho);
+    if(i==2)
+        this->cruzamentoPartes(pai1, pai2, filho);
+    if(i==3)
+        this->cruzamentoPartes2(pai1, pai2, filho);
+    if(i==4)
+        this->cruzamentoPartes3(pai1, pai2, filho);
+
+}
+
+int RKGA::avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite) {
+
+    int tam_elite = round(pct_pool_elite*tam_pool);
+    int it = 0;
+    vector<int> chamadasPr;
+    RK_Individual *bestPr;
+
+    int melhorGeracao = 0;
+    RK_Individual *best = popAtual.at(this->tamPop - 1);
+    this->ordenaPopulacaoAtual(g);
+    double perda = 100*1000*best->getPerdaAtiva();
+    for(int k=0; k<this->numGeracoes; k++){
+
+        /** calcula a funcao criterio para cada individuo
+         e ordena a populacao da maior perda(pior individuo)
+         pra menor perda(melhor individuo), perdaAtiva**/
+        this->ordenaPopulacaoAtual(g);
+
+        RK_Individual *best = popAtual.at(this->tamPop - 1);
+        if (100*1000*best->getPerdaAtiva() < perda){
+            perda = 100*1000*best->getPerdaAtiva();
+//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+            melhorGeracao = k;
+            it=0;
+        }else{
+            it++;
+        }
+
+        //chamada de path-relinking quando AG fica estagnado
+        if(it==it_s_melhora){
+
+            chamadasPr.push_back(k);
+            //preenche a pool
+            vector<RK_Individual*> pool;
+            for(int i=0; i<tam_elite; i++)
+                pool.push_back(popAtual.at(popAtual.size()-1-i));
+            for(int i=0; i<tam_pool-tam_elite;i++){
+                int id = rand() % (this->tamPop - tam_elite);
+                pool.push_back(popAtual.at(id));
+            }
+
+            vector<RK_Individual*> pool_cp = pool;//copia
+//            printf("\nchamou pre na geracao %d!\n", k);
+            Evolutionary_path_relinking *p = new Evolutionary_path_relinking();
+            bestPr = (p->run(pool, max_it, pct_pool_elite, g))->OS_to_RK(g);
+            delete  p;
+//            printf("\nterminou pre!\n");
+
+            if(bestPr->getPerdaAtiva() < popAtual.at(0)->getPerdaAtiva()){
+//                printf("foi tentar atualizar pop com pr\n");
+//                swap(popAtual.at(0), bestPr);
+                popAtual.erase(popAtual.begin());
+                popAtual.push_back(bestPr);
+//                delete bestPr;
+//                printf("deu\n");
+            }else{
+                delete bestPr;
+            }
+
+//            printf("atualizou popAtual!");
+            it=0;
+        }
+
+        popAnterior = popAtual;
+
+        int num_piores = 0.05*this->tamPop;
+        int num_melhores = 0.1*this->tamPop;
+
+        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+
+            /** cruzamento entre pai1 e pai2 entre os
+            individuos aleatorios da populacao anterior
+            modificar por uma escolha em roleta no futuro**/
+            int pai1 = rand() % this->tamPop;
+//            int pai2 = rand() % this->tamPop; //aleatorio
+
+            /*torneio com 3*/
+            int cand1, cand2, cand3;
+            cand1 = rand() % this->tamPop;
+            cand2 = rand() % this->tamPop;
+            cand3 = rand() % this->tamPop;
+
+            int aux = cand1;
+
+            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
+                cand2=cand1;
+            }else{aux = cand2;}
+            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
+                cand3=cand2;
+            }else{aux = cand3;}
+            pai1 = aux;
+
+            int pai2 = cand3;
+
+            while(pai2==pai1)
+                pai2 = rand() % this->tamPop;
+
+            //popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            //popAtual.at(i)->mutacao();
+            this->mutacao(popAtual.at(i));
+        }
+
+        /**aleatorio ao inves de manter piores**/
+        for(int i=0; i<num_piores; i++)
+            popAtual.at(i)->geraPesosAleatorios();
+    }
+
+//    cout << "\n--------------------------------------"<<endl;
+//    for(unsigned int i=0; i<popAtual.size(); i++)
+//        cout << 100*1000*popAtual.at(i)->getPerdaAtiva() << " , ";
+//    cout << "\n--------------------------------------"<<endl;
+
+    this->ordenaPopulacaoAtual(g);
+
+//    for(unsigned int i=0; i<chamadasPr.size(); i++)
+//        printf("%d,", chamadasPr.at(i));
+
+    return melhorGeracao;
 }

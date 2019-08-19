@@ -3,54 +3,64 @@
 #include <math.h>
 
 #include "RK_Individual.h"
-#include "Path_relinking.h"
+#include "Evolutionary_path_relinking.h"
 
 using namespace std;
 
-class Random_keys{
+class RKGA{
     private:
         int numGeracoes, tamPop;
 
-        vector<Individuo*> popAtual;
-        vector<Individuo*> popAnterior;
+        vector<RK_Individual*> popAtual;
+        vector<RK_Individual*> popAnterior;
 
     public:
-        Random_keys(int tamPop, int numGeracoes);
+        RKGA(int tamPop, int numGeracoes);
 
         /** GET's **/
-        vector<Individuo*> getPopAtual(){return this->popAtual;}
-        vector<Individuo*> getPopAnterior(){return this->popAnterior;}
+        vector<RK_Individual*> getPopAtual(){return this->popAtual;}
+        vector<RK_Individual*> getPopAnterior(){return this->popAnterior;}
         int getNumGeracoes(){return this->numGeracoes;}
         int getTamPopulacao(){return this->tamPop;}
 
 
-        void geraPopAleatoria(Grafo *g);
-        void geraPopAleatoriaConfInicial(Grafo *g, int *idsAbertos, int nAbertos);
+        void geraPopAleatoria(Graph_network *g);
+        void geraPopAleatoriaConfInicial(Graph_network *g, int *idsAbertos, int nAbertos);
 
-        ~Random_keys(){}
+        ~RKGA(){}
 
-        void ordenaPopulacaoAtual(Grafo *g);
+        void ordenaPopulacaoAtual(Graph_network *g);
 
-        int avancaGeracoes(Grafo *g);
-        int avancaGeracoes2(Grafo *g);
-        int avancaGeracoesPRS(Grafo *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
+        int avancaGeracoes(Graph_network *g);
+        int avancaGeracoes2(Graph_network *g);
+        int avancaGeracoesPRS(Graph_network *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
+        int avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento);
 
-//        void prsEvolutivo(vector<Individuo*> pool, vector<Individuo*> &populacao, Grafo *g);//path relinking simples evolutivo
-        int avancaGeracoesPRSEvolutivoFinal(Grafo *g);
+        void prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g);//path relinking simples evolutivo
+        int avancaGeracoesPRSEvolutivoFinal(Graph_network *g);
 
 
-//        Individuo *pre(vector<Individuo*> pool, int max_it, float pct_pr_elite, Grafo *g);
-        int avancaGeracoesPRE(Grafo *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
-
-        ///--------------------------RKGA operators--------------------------:
-
-        void cruzamentoMedia(Individuo *pai1, Individuo *pai2, Individuo *filho);
-
-        void cruzamentoMedia2(Individuo *pai1, Individuo *pai2, Individuo *filho);
-
-        void mutacao(Individuo *ind);
+        RK_Individual *pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph_network *g);
+        int avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
 
         ///--------------------------RKGA operators--------------------------:
 
+        void cruzamentoMedia(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+        void cruzamentoMedia2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+        void cruzamentoPartes(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+        void cruzamentoPartes2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+        void cruzamentoPartes3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+        void cruzamentoMistura(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+
+         void mutacao(RK_Individual *ind);
+
+        ///--------------------------RKGA operators--------------------------:
+
+        int avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
 };
 #endif // RANDOM_KEYS_H_INCLUDED

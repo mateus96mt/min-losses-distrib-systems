@@ -1,38 +1,23 @@
-#Individuo reduzido & configuracaoInicial & modificacoesCrossover
-#			0					0				0
-#			0					0				1
-#			0					1				0
-#			0					1				1
-#			1					0				0
-#			1					0				1
-#			1					1 				0
-#			1					1				1
+#execucao        1         2           3           4           5
+#               PR_RK     PR_OS        AG       AG_PR_RK    AG_PR_OS
 
-for arq in ENTRADAS_MODIFICADAS/sis*;
+
+
+for arq in networks/sis*;
 do
-	echo arquivo $arq
-	for indRed in `seq 0 1 1`;
-	do
-		for confIni in `seq 0 1 1`;
-		do
-			for mdfCrossOver in `seq 0 1 1`;
-			do
-				aux=$(echo $arq | cut -d "/" -f 2)
-				numBarras=$(echo $aux | tr -dc '0-9')  
-				saida=$(echo $numBarras"barras")
-				if [[ $aux == *"modif"* ]]; then
-					saida=$(echo $saida"_modif")
-				fi
-				num="$indRed$confIni$mdfCrossOver"
-				mkdir -p r"$num"
-				echo " Perda Ativa (kw)  &  Tensao Minima (pu)     &    Geração  &  Tempo (s)       &      Semente   " >>  r"$num"/"$saida"
-				for x in `seq 1 1 30`;
-				do
-					echo execucao $x "("codigo"$num"")"
-					./codigo"$num" "$arq" >> r"$num"/"$saida"
-				done;
-			done;
-		done;	
-	done;
+    for execucao in 'seq 1 1 5';
+    
+        saida="$execucao""/""$(echo $arq | cut -d "/" -f 2)"
+        num="GERAL"
+        mkdir -p "$saida"
+        echo "Perda_Ativa(kw) Tempo(s) Geracao Semente ChavesAbertas" >>  "$saida"/"$num".csv
+        for x in `seq 1 1 5`;
+        do
+            echo execucao $x "(""$num"")"
+            ./"$num" "$arq" 100 500 50 10 10 0.3 "$execucao" >> "$saida"/"$num".csv
+            
+        done;
+
+    done;
+    
 done;
-  

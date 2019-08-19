@@ -5,13 +5,13 @@
 #include <iostream>
 #include "Vertex.h"
 
-class Arco{
+class Edge{
 
 private:
     //estrutura basica do Arco:
     int id;
-    Arco *proxArco;
-    No *noOrigem, *noDestino;
+    Edge *proxArco;
+    Vertex *noOrigem, *noDestino;
 
     //informacoes necessarias para o problema de minimizacao de perdas:
     bool chave;//1=chave fechada, ou seja em uso.   0=chave aberta
@@ -21,11 +21,12 @@ private:
 
     bool modificavel;
     bool marcado;
+    bool fixed;
 
 public:
     //funcoes do Arco:
-    Arco(int id);//construtor
-    ~Arco();//destrutor
+    Edge(int id);//construtor
+    ~Edge();//destrutor
 
     void imprime();
 
@@ -33,9 +34,9 @@ public:
 
     //GETS e SETS:
     int getID(){              return this->id;    };
-    Arco *getProxArco(){      return this->proxArco;  };
-    No *getNoOrigem(){        return this->noOrigem; };
-    No *getNoDestino(){       return this->noDestino; };
+    Edge *getProxArco(){      return this->proxArco;  };
+    Vertex *getNoOrigem(){        return this->noOrigem; };
+    Vertex *getNoDestino(){       return this->noDestino; };
     bool getChave(){          return this->chave; };
     double getFLuxoPAtiva(){  return this->FLuxoPAtiva; };
     double getFLuxoReativa(){ return this->FLuxoPReativa; };
@@ -45,11 +46,12 @@ public:
     double getPerdaReativa(){ return this->perdaReativa; };
     bool getModificavel(){    return this->modificavel; };
     bool getMarcado(){        return this->marcado;};
+    bool getFixed(){          return this->fixed;}
 
     void setID(int id){                      this->id            = id; };
-    void setProxArco(Arco *arc){             this->proxArco      = arc; };
-    void setNoOrigem(No *no){                this->noOrigem      = no; };
-    void setNoDestino(No *no){               this->noDestino     = no; };
+    void setProxArco(Edge *arc){ this->proxArco      = arc; };
+    void setNoOrigem(Vertex *no){ this->noOrigem      = no; };
+    void setNoDestino(Vertex *no){ this->noDestino     = no; };
     void setChave(bool chave){               this->chave         = chave; };
     void setFLuxoPAtiva(double FpAtiva){     this->FLuxoPAtiva   = FpAtiva; };
     void setFLuxoPReativa(double FpReativa){ this->FLuxoPReativa = FpReativa; };
@@ -59,6 +61,7 @@ public:
     void setPerdaReativa(double perdaReat){  this->perdaReativa  = perdaReat; };
     void setModificavel(bool modificavel){   this->modificavel   = modificavel; };
     void setMarcado(bool marca){             this->marcado       = marca;};
+    void setFixed(bool fixed){               this->fixed         = fixed;}
 };
 
 #endif // ARCO_H_INCLUDED

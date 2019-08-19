@@ -3,7 +3,7 @@
 #include "Vertex.h"
 #include "Edge.h"
 
-No::No(int id){
+Vertex::Vertex(int id){
 
     this->id = id;
 
@@ -23,15 +23,15 @@ No::No(int id){
     this->idArv = this->id;
 }
 
-No::~No(){
+Vertex::~Vertex(){
 }
 
-void No::imprime(){
+void Vertex::imprime(){
     printf("------------------------------------------------------------------------\n");
     printf("< No{%d}  idArv = %d  grauS = %d  grauE = %d  grauAUX = %d  pA = %.5f  pR = %.5f  vol = %.5f >",
     this->id, this->idArv, this->grauSaida, this->grauEntrada, this->grauAux, this->potAtiva, this->potReativa, this->voltagem);
 
-    for(Arco *a = this->listaArcos; a!=NULL; a=a->getProxArco()){
+    for(Edge *a = this->listaArcos; a != NULL; a=a->getProxArco()){
         printf("\n\n");
         a->imprime();
     }

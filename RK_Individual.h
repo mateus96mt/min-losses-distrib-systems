@@ -4,13 +4,13 @@
 #include <math.h>
 #include "Graph_network.h"
 
-struct Cromossomo{
-    Arco *arco;
+struct Cromossome{
+    Edge *arco;
     double peso;
     int posicao;
 };
 
-class Individuo{
+class RK_Individual{
     private:
         int numArcos;
         double *pesos, perdaAtiva, perdaReativa;
@@ -18,14 +18,14 @@ class Individuo{
 
         ///--------------------------conection to graph network--------------------------:
 
-        static vector<Cromossomo*> cromossomos;
-        static void criaCromossomos(Grafo *g);
+        static vector<Cromossome*> cromossomos;
+        static void criaCromossomos(Graph_network *g);
 
         ///--------------------------conection to graph network--------------------------:
 
 
-        Individuo(int numArcos);
-        ~Individuo(){delete[] pesos;}
+        RK_Individual(int numArcos);
+        ~RK_Individual(){delete[] pesos;}
 
         /** GET's **/
         int getNumArcos(){return this->numArcos;}
@@ -35,16 +35,15 @@ class Individuo{
 
         void geraPesosAleatorios();
 
-        void geraPesosConfInicial(int *idsAbertos, int n, Grafo *g);
+        void geraPesosConfInicial(int *idsAbertos, int n, Graph_network *g);
 
         void resetaPesos(float valor);
 
-        void calculaFuncaoObjetivo(Grafo *g);
+        void calculaFuncaoObjetivo(Graph_network *g);
 
-        void calculaFuncaoObjetivoOtimizado(Grafo *g);
+        void calculaFuncaoObjetivoOtimizado(Graph_network *g);
 
         void imprimePesos();
-
 
 //        ///--------------------------RKGA operators--------------------------:
 //

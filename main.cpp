@@ -2,6 +2,8 @@
 #include "Graph_network.h"
 #include "RKGA.h"
 #include "time.h"
+#include "OS_Individual.h"
+
 #include <algorithm>
 #include <math.h>
 #include <string.h>
@@ -9,22 +11,22 @@
 
 //bool ordenaCromossomoPorIdArco(Cromossomo *c1, Cromossomo *c2){ return c1->arco->getID() < c2->arco->getID(); }
 
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis119.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist135barras.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sist215barras.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
-//#define arquivoEntrada "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
+#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis33.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis33modif.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis119.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis135.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis215.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis83.m"
+//#define arquivoEntrada "ENTRADAS_MODIFICADAS/sis83modif.m"
 
 #define configuracao "inicial"
 //#define configuracao "literatura1"
 //#define configuracao "literatura2"
 //#define configuracao "ARSD"
 
-void abreChaves(Grafo *g, int *ids, int n);
+void abreChaves(Graph_network *g, int *ids, int n);
 
-void defineConfiguracao(Grafo *g, char *arqIn);
+void defineConfiguracao(Graph_network *g, char *arqIn);
 
 void testeDestrutor();
 
@@ -38,7 +40,7 @@ void testePopulacaoAleatoria();
 
 void testeEntradas();
 
-bool ordenacao(Grafo *g1, Grafo *g2);
+bool ordenacao(Graph_network *g1, Graph_network *g2);
 
 void testeMemLeakRandomKeys();
 
@@ -56,7 +58,27 @@ void testeprs2();
 
 void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn);
 
+void testeFO_OS_INDIVIDUAL(char *arqIn);
 
+void testeOSPR(char *arqIn);
+
+void testeContrutorOS(char *arqIn);
+
+void testeEvaluate(char *arqIn);
+
+void testeConstructorOSRK(char *arqIn);
+
+void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite);
+
+void testePATHRELINKING(char *arqIn, int m);
+
+void testeAGgenerico(char *arqIn, int tamPop, int numGeracoes, int tipoCruzamento);
+
+void testeConversoes(char *arqIn);
+
+void testeAGPRCA(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite);
+
+void testeGERAL(char * arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao);
 
 //################################################################
 
@@ -68,132 +90,67 @@ void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int
 
 int semente = time(NULL);
 int main(int c, char *argv[]) {
-//int main(){
-
     srand(semente);
-//    testeprs2();
+//    printf("\n\n\t\tsemente------>>> %d <<<-----\n\n", semente);
 
-    //char *arqIn, int tam_pool, int max_it, float pct_pr_elite, Grafo *g;
+//    testeFO_OS_INDIVIDUAL("networks/sis33.m");
+//    testeFO_OS_INDIVIDUAL("networks/sis33modif.m");
+//    testeFO_OS_INDIVIDUAL("networks/83.m");
+//    testeFO_OS_INDIVIDUAL("networks/sis83_modif.m ");
+//    testeFO_OS_INDIVIDUAL("networks/sis119.m");
+//    testeFO_OS_INDIVIDUAL("networks/sis135.m");
+//    testeFO_OS_INDIVIDUAL("networks/sis215.m");
 
+//    testeOSPR(argv[1]);
+//    testeContrutorOS(argv[1]);
+//    testeEvaluate(argv[1]);
+//    testeConstructorOSRK(argv[1]);
 
-                    //PREpuro
-//####################################################
-
-//    char *arqIn =argv[1];
+//    char *arqIn = argv[1];
 //    int tam_pool = strtol(argv[2], nullptr, 0);
 //    int max_it = strtol(argv[3], nullptr, 0);
-//    float pct_pr_elite = atof(argv[4]);
-//
-//    testePRE(arqIn, tam_pool, max_it, pct_pr_elite);
+//    float pct_elite = atof(argv[4]);
+//    testeEVP(arqIn, tam_pool, max_it, pct_elite);
 
-//####################################################
+//    int m = strtol(argv[2], nullptr, 0);
+//    testePATHRELINKING(argv[1], m);
+
+//    char *arqIn = argv[1];
+//    int tamPop = strtol(argv[2], nullptr, 0);
+//    int numGeracoes = strtol(argv[3], nullptr, 0);
+//    int tipoCruzamento = strtol(argv[4], nullptr, 0);
+
+//    testeAGgenerico(argv[1], tamPop, numGeracoes, tipoCruzamento);
+//    testeConversoes(arqIn);
 
 
-
-                    //AG+PRE
-//####################################################
-
-    char *arqIn = arquivoEntrada;
-    int tampop = 100;
-    int numgeracoes = 500;
-    int it_s_melhora = 50;
-    int tam_pool = 10;
-    int max_it = 10;
-    float pct_pr_elite = 0.3;
-
-//    char *arqIn =argv[1];
-//    int tampop = strtol(argv[2], nullptr, 0);
-//    int numgeracoes = strtol(argv[3], nullptr, 0);
-//    int it_s_melhora = strtol(argv[4], nullptr, 0);
-//    int tam_pool = strtol(argv[5], nullptr, 0);
-//    int max_it = strtol(argv[6], nullptr, 0);
-//    float pct_pr_elite = atof(argv[7]);
-
-    clock_t inicio = clock();
-//    testeAG_PRE(arqIn, it_s_melhora, tampop, numgeracoes,
-//                tam_pool, max_it, pct_pr_elite);
-    testePRE(arqIn, 10, 10, 0.3);
-    clock_t fim = clock();
-    printf("%f %d\n", (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
-
-//####################################################
-
-    /*if (c != 5) {
-        printf("\n\n  Erro ao chamar o programa! ./main <prs(0=sem, 1=prs_simples_a_cada_geracao 2=evolutivo)> <tamPop> <numGeracoes> <entrada>\n");
-        return 1;
-    }*/
-    //srand(time(NULL));
-//    testeprs();
-
-    /*int prs = strtol(argv[1], nullptr, 0);
+    char *arqIn = argv[1];
     int tamPop = strtol(argv[2], nullptr, 0);
-    int numGeracoes = strtol(argv[3], nullptr, 0);*/
-    //char *arqIn = argv[4];
+    int numGeracoes = strtol(argv[3], nullptr, 0);
+    int it_s_melhora = strtol(argv[4], nullptr, 0);
+    int tamPool = strtol(argv[5], nullptr, 0);
+    int max_it = strtol(argv[6], nullptr, 0);
+    float pct_elite = atof(argv[7]);
+    int execucao = strtol(argv[8], nullptr, 0);
 
-    //testeprsEvolutivo(prs, tamPop, numGeracoes, arqIn);//com path relinking evolutivo no final
-
-
-//    unsigned long int semente = time(NULL);
-//
-//    if(c!=2){
-//        printf("\n\n  Erro ao chamar o programa! Formato: minLoss <arqivo_Entrada");
-//        return 1;
-//    }
-//    char *arqIn =argv[1];
-////    char *arqIn = arquivoEntrada;
-//
-//
-////    semente = 1539184195;
-////    semente = 1537845961; //melhor semente para 119 barras
-////    semente = 1530715848; //melhor semente para 33 barras modificado
-////    semente = 1536085327; //melhor semente para 94 barras original (470,10 kw)
-////    semente = 1536082004; //melhor semente para 94 barras modificado (491,96 kw)
-//
-////    semente = 1539185071;
-//    srand(semente);
-//
-//
-//
-////    testeEntradas();//perda total e tensao minima para cada configuracao para compara com a tese do leonardo willer
-//
-////    testeDestrutor();
-//
-////    testeArestasModificaveis();
-//
-////    testeArestasModificaveis2();
-//
-////    testeCopiaGrafo();
-//
-////    testePopulacaoAleatoria();
-//
-////    testeMemLeakRandomKeys();
-//
-//
-//    clock_t inicio = clock();
-//    testeRandomKeys(arqIn);
-//    clock_t fim = clock();
-//
-////    testeConfInicial(arqIn);
-//
-//    printf("       %.2lf    &       %lu    \n",  (float)(fim-inicio)/CLOCKS_PER_SEC, semente);
-//
-////    testeFuncaoObjetivoOtimizada();
+    testeGERAL(arqIn, tamPop, numGeracoes, it_s_melhora, tamPool, max_it, pct_elite, execucao);
+//    testeAGPRCA(arqIn, tamPop, numGeracoes, it_s_melhora, tamPool, max_it, pct_elite);
 }
 
 void testeRandomKeys(char arqIn[]) {
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
-    Individuo::criaCromossomos(g);
+    RK_Individual::criaCromossomos(g);
 //    unsigned int tam = Individuo::cromossomos.size();
 //    cout << "tamanho vector<cromossomos> : " << tam << endl;
 //    cout << "numero de arcos nao modificaveis: " << g->getN_naoModificaveis() << endl;
 
     /** numero de individuos da populacao,numero de geracaoes **/
-    Random_keys *rd = new Random_keys(100, 1000);
+    RKGA *rd = new RKGA(100, 1000);
 
     /** populacao inicial gerada de forma aleatoria **/
 //    rd->geraPopAleatoria(g);
@@ -205,7 +162,7 @@ void testeRandomKeys(char arqIn[]) {
 
 
     /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+    RK_Individual *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
 
 //    /**Para imprimir as chaves abertas de forma ordenada, sem repeticao de arcos**/
 //    vector<int> chavesAbertas;
@@ -239,13 +196,13 @@ void testeRandomKeys(char arqIn[]) {
 /** pequeno vazamento de memoria na funcao "calculaFuncaoObjetivo" do individuo novamente no vector **/
 void testeMemLeakRandomKeys() {
     char nome[] = arquivoEntrada;
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     g->leEntrada(nome);
 
     printf("\n num nos: %d         num arcos: %d", g->getNumeroNos(), g->getNumeroArcos());
 
-    Individuo *i = new Individuo(g->getNumeroArcos());
+    RK_Individual *i = new RK_Individual(g->getNumeroArcos());
 
     i->geraPesosAleatorios();
     while (true) {
@@ -257,12 +214,12 @@ void testeMemLeakRandomKeys() {
 
 void testePopulacaoAleatoria() {
     char nome[] = arquivoEntrada;
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     g->leEntrada(nome);
 
     int n_individuos = 500;
-    vector<Grafo *> h;
+    vector<Graph_network *> h;
 
     for (int i = 0; i < n_individuos; i++) {
 
@@ -285,7 +242,7 @@ void testePopulacaoAleatoria() {
 
 void testeEntradas(char *arqIn) {
     char nome[] = arquivoEntrada;
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
     g->leEntrada(nome);
 
     defineConfiguracao(g, arqIn);
@@ -302,8 +259,8 @@ void testeEntradas(char *arqIn) {
 
 void testeCopiaGrafo(char *arqIn) {
     char nome[] = arquivoEntrada;
-    Grafo *g, *h;
-    g = new Grafo();
+    Graph_network *g, *h;
+    g = new Graph_network();
     g->leEntrada(arqIn);
 
     defineConfiguracao(g, arqIn);
@@ -327,8 +284,8 @@ void testeCopiaGrafo(char *arqIn) {
 
 void testeArestasModificaveis() {
     char nome[] = arquivoEntrada;
-    Grafo *g;
-    g = new Grafo();
+    Graph_network *g;
+    g = new Graph_network();
     g->leEntrada(nome);
     g->resetaGrausAuxiliares();
 //    g->imprime();
@@ -342,10 +299,10 @@ void testeArestasModificaveis() {
 
         printf("\nabriu A{%d}", ids[i]);
 
-        Arco *a = g->buscaArco(ids[i]);
+        Edge *a = g->buscaArco(ids[i]);
 
-        No *noOrigem = a->getNoOrigem();
-        No *noDestino = a->getNoDestino();
+        Vertex *noOrigem = a->getNoOrigem();
+        Vertex *noDestino = a->getNoDestino();
 
         a->setChave(false);
         a->setModificavel(false);
@@ -367,17 +324,17 @@ void testeArestasModificaveis() {
 
 void testeArestasModificaveis2() {
     char nome[] = arquivoEntrada;
-    Grafo *g;
-    g = new Grafo();
+    Graph_network *g;
+    g = new Graph_network();
     g->leEntrada(nome);
     g->resetaGrausAuxiliares();
 
     g->defineArestasModificaveis();
 
     vector<int> naoModificaveis;
-    for (No *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
+    for (Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
 
-        for (Arco *a = no->getListaArcos(); a != NULL; a = a->getProxArco()) {
+        for (Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()) {
 
             if (a->getModificavel() == false) {
                 naoModificaveis.push_back(a->getID());
@@ -398,14 +355,14 @@ void testeDestrutor() {
     char nome[] = arquivoEntrada;
 
     while (true) {
-        Grafo *g;
-        g = new Grafo();
+        Graph_network *g;
+        g = new Graph_network();
         g->leEntrada(nome);
         delete g;
     }
 }
 
-void defineConfiguracao(Grafo *g, char *arqIn) {
+void defineConfiguracao(Graph_network *g, char *arqIn) {
 
     int *ids = configuracaoInicial(arqIn), n = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
     abreChaves(g, ids, n);
@@ -413,7 +370,7 @@ void defineConfiguracao(Grafo *g, char *arqIn) {
 
 int *configuracaoInicial(char *arqIn) {
     int *ids;
-    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33.m") == 0) {
+    if (strcmp(arqIn, "networks/sis33.m") == 0) {
 
         ids = new int[5];
 
@@ -445,7 +402,7 @@ int *configuracaoInicial(char *arqIn) {
         return ids;
     }
 
-    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis33modif.m") == 0) {
+    if (strcmp(arqIn, "networks/sis33modif.m") == 0) {
 
         ids = new int[5];
 
@@ -477,7 +434,7 @@ int *configuracaoInicial(char *arqIn) {
         return ids;
     }
 
-    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis119.m") == 0) {
+    if (strcmp(arqIn, "networks/sis119.m") == 0) {
 
         ids = new int[15];
         //CONFIGURACAO INICIAL
@@ -544,7 +501,7 @@ int *configuracaoInicial(char *arqIn) {
 
         return ids;
     }
-    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis83.m") == 0) {
+    if (strcmp(arqIn, "networks/sis83.m") == 0) {
 
         ids = new int[13];
 
@@ -583,7 +540,7 @@ int *configuracaoInicial(char *arqIn) {
 
         return ids;
     }
-    if (strcmp(arqIn, "ENTRADAS_MODIFICADAS/sis83modif.m") == 0) {
+    if (strcmp(arqIn, "networks/sis83modif.m") == 0) {
 
         ids = new int[13];
 
@@ -658,8 +615,8 @@ int *configuracaoInicial(char *arqIn) {
     return ids;
 }
 
-void abreChaves(Grafo *g, int *ids, int n) {
-    Arco *a;
+void abreChaves(Graph_network *g, int *ids, int n) {
+    Edge *a;
     for (int i = 0; i < n; i++) {
         a = g->buscaArco(ids[i]);
         a->setChave(false);
@@ -669,16 +626,16 @@ void abreChaves(Grafo *g, int *ids, int n) {
 }
 
 void testeConfInicial(char *arqIn) {
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
-    Individuo::criaCromossomos(g);
-    unsigned int tam = Individuo::cromossomos.size();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
 
-    Individuo *ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
     int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
 
@@ -692,17 +649,17 @@ void testeConfInicial(char *arqIn) {
 
 void testeFuncaoObjetivoOtimizada() {
     char nome[] = arquivoEntrada;
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     g->leEntrada(nome);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
-    Individuo::criaCromossomos(g);
+    RK_Individual::criaCromossomos(g);
 
     int num = 10;
 
-    Individuo *ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
     for (int i = 0; i < 10000; i++) {
         ind->geraPesosAleatorios();
@@ -711,147 +668,152 @@ void testeFuncaoObjetivoOtimizada() {
     }
 }
 
-//void testeprs() {
-//    char nome[] = arquivoEntrada;
-//    Grafo *g = new Grafo();
-//
-//    g->leEntrada(nome);
-//    g->defineArestasModificaveis();
-//    g->resetaArcosMarcados();
-//    g->marcaUmsentidoArcos();
-//    Individuo::criaCromossomos(g);
-//
-//    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-//    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-//    Individuo *indRef;
-//
-//
-//    i1->geraPesosAleatorios();
-//    i2->geraPesosAleatorios();
-//
-//    i1->calculaFuncaoObjetivo(g);
-//    i2->calculaFuncaoObjetivo(g);
-//
-//    if (i1->getPerdaAtiva() > i2->getPerdaAtiva())
-//        indRef = i1;
-//    else
-//        indRef = i2;
-//
-//    printf("i1->perdaAtiva: %lf\n", 100 * 1000 * i1->getPerdaAtiva());
-//    printf("i2->perdaAtiva: %lf\n\n\n", 100 * 1000 * i2->getPerdaAtiva());
-//
-//    Individuo *path = i1->prs(i2, g, indRef);
-//
-//    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100 * 1000 * path->getPerdaAtiva());
-//}
+void testeprs() {
+    char nome[] = arquivoEntrada;
+    Graph_network *g = new Graph_network();
 
-//void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
-//
-//    clock_t inicio, fim;
-//    Individuo *best;
-//
-//    {
-//        inicio = clock();
-//
-//        char *nome = arqIn;
-//        Grafo *g = new Grafo();
-//
-//        g->leEntrada(nome);
-//        g->defineArestasModificaveis();
-//        g->resetaArcosMarcados();
-//        g->marcaUmsentidoArcos();
-//        Individuo::criaCromossomos(g);
-//
-//        /** numero de individuos da populacao,numero de geracaoes **/
-//        Random_keys *rd = new Random_keys(tamPop, numGeracoes);
-//
-//        /** populacao inicial gerada de forma aleatoria **/
-//        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
-//                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
-//
-//        /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
-//
-//        int melhorGeracao;
-//        if (prs == 0)
-//            melhorGeracao = rd->avancaGeracoes2(g);
-//        if (prs == 1)
-//            melhorGeracao = rd->avancaGeracoesPRS(
-//                    g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
-//        if (prs == 2)
-//            melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
-//
-//        /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-//        Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
-//
-//        best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
-//        best->calculaFuncaoObjetivoOtimizado(g);
-//
-//        fim = clock();
-//
-//        printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
-//        printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
-//        printf("        %.3f  &  ", g->tensaoMinima());
-//        printf("        %d\n\n\n", melhorGeracao);
-//    }
-//}
+    g->leEntrada(nome);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
 
-//void testeprs2(){
-//
-//    char nome[] = arquivoEntrada;
-//    Grafo *g = new Grafo();
-//
-//    g->leEntrada(nome);
-//    g->defineArestasModificaveis();
-//    g->resetaArcosMarcados();
-//    g->marcaUmsentidoArcos();
-//    Individuo::criaCromossomos(g);
-//
-//    Individuo *i1 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-//    Individuo *i2 = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-//
-//    i1->geraPesosAleatorios();
-//    i2->geraPesosAleatorios();
-//
-//    i1->calculaFuncaoObjetivoOtimizado(g);
-//    i2->calculaFuncaoObjetivoOtimizado(g);
-//
-//    Individuo *result;
-//    while(true){
-//        clock_t inicio = clock();
+    RK_Individual *i1 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *i2 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *indRef;
+
+
+    i1->geraPesosAleatorios();
+    i2->geraPesosAleatorios();
+
+    i1->calculaFuncaoObjetivo(g);
+    i2->calculaFuncaoObjetivo(g);
+
+    if (i1->getPerdaAtiva() > i2->getPerdaAtiva())
+        indRef = i1;
+    else
+        indRef = i2;
+
+    printf("i1->perdaAtiva: %lf\n", 100 * 1000 * i1->getPerdaAtiva());
+    printf("i2->perdaAtiva: %lf\n\n\n", 100 * 1000 * i2->getPerdaAtiva());
+
+    Evolutionary_path_relinking *p = new Evolutionary_path_relinking();
+//    RK_Individual *path = i1->prs(i2, g, indRef);
+    RK_Individual *path = p->prs(i1, i2, g, indRef);
+    delete p;
+
+    printf("\n\npath->perdaAtiva: %lf\n\n\n", 100 * 1000 * path->getPerdaAtiva());
+}
+
+void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
+
+    clock_t inicio, fim;
+    RK_Individual *best;
+
+    {
+        inicio = clock();
+
+        char *nome = arqIn;
+        Graph_network *g = new Graph_network();
+
+        g->leEntrada(nome);
+        g->defineArestasModificaveis();
+        g->resetaArcosMarcados();
+        g->marcaUmsentidoArcos();
+        RK_Individual::criaCromossomos(g);
+
+        /** numero de individuos da populacao,numero de geracaoes **/
+        RKGA *rd = new RKGA(tamPop, numGeracoes);
+
+        /** populacao inicial gerada de forma aleatoria **/
+        rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
+                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
+
+        /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
+
+        int melhorGeracao;
+        if (prs == 0)
+            melhorGeracao = rd->avancaGeracoes2(g);
+        if (prs == 1)
+            melhorGeracao = rd->avancaGeracoesPRS(
+                    g);//path relinking simples a cada geracao utilizando 2 individuos aleatorios entre 10% dos melhores
+        if (prs == 2)
+            melhorGeracao = rd->avancaGeracoesPRSEvolutivoFinal(g);//path relinking evolutivo no final da geracao
+
+        /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
+        RK_Individual *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+
+        best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+        best->calculaFuncaoObjetivoOtimizado(g);
+
+        fim = clock();
+
+        printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
+        printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
+        printf("        %.3f  &  ", g->tensaoMinima());
+        printf("        %d\n\n\n", melhorGeracao);
+    }
+}
+
+void testeprs2(){
+
+    char nome[] = arquivoEntrada;
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(nome);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+
+    RK_Individual *i1 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *i2 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+
+    i1->geraPesosAleatorios();
+    i2->geraPesosAleatorios();
+
+    i1->calculaFuncaoObjetivoOtimizado(g);
+    i2->calculaFuncaoObjetivoOtimizado(g);
+
+    RK_Individual *result;
+    while(true){
+        clock_t inicio = clock();
 //        result = i1->prs2(i2, g);
-//        clock_t fim = clock();
-//        printf("tempo de execucao do path-relinking: %f\n", (double)(fim-inicio)/CLOCKS_PER_SEC);
-//        delete result;
-//    }
-//}
+        Evolutionary_path_relinking *p = new Evolutionary_path_relinking();
+        result = p->prs2(i1, i2, g);
+        clock_t fim = clock();
+        printf("tempo de execucao do path-relinking: %f\n", (double)(fim-inicio)/CLOCKS_PER_SEC);
+        delete result;
+    }
+}
 
 void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
 
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     //inicializacoes
     g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
-    Individuo::criaCromossomos(g);
+    RK_Individual::criaCromossomos(g);
     //fim inicializacoes
 
 //    printf("\n\ntamanho do individuo (arestas modificaveis): %d\n\n", g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
-    Random_keys *rd = new Random_keys(100, 1);
+    RKGA *rd = new RKGA(100, 1);
 
-    Individuo *inicial = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *inicial = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
     inicial->geraPesosConfInicial(configuracaoInicial(arqIn),  g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1), g);
     inicial->calculaFuncaoObjetivoOtimizado(g);
 //    printf("i 0:   %f\n", 100*1000*inicial->getPerdaAtiva());
 
-    vector<Individuo*> pool;
+    vector<RK_Individual*> pool;
     pool.push_back(inicial);
 
-    Individuo *ind;
+    RK_Individual *ind;
     for(int i=1; i<tam_pool; i++){
-        ind = new Individuo(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
         ind->geraPesosAleatorios();
         ind->calculaFuncaoObjetivoOtimizado(g);
         //populacao inicial de individuos aleatorios validos
@@ -863,28 +825,28 @@ void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
         pool.push_back(ind);
     }
 
-    Path_relinking p(pool, max_it, pct_pr_elite);
+    Evolutionary_path_relinking p(pool, max_it, pct_pr_elite);
 
     clock_t inicio = clock();
-    Individuo *best = p.pre(g);
+    RK_Individual *best = p.pre(g);
     clock_t fim = clock();
     printf("%f %f %d\n", 100*1000*best->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
 }
 
 void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int tam_pool, int max_it, float pct_pr_elite){
 
-    Grafo *g = new Grafo();
+    Graph_network *g = new Graph_network();
 
     //inicializacoes
     g->leEntrada(arqIn);
     g->defineArestasModificaveis();
     g->resetaArcosMarcados();
     g->marcaUmsentidoArcos();
-    Individuo::criaCromossomos(g);
+    RK_Individual::criaCromossomos(g);
     //fim inicializacoes
 
 
-    Random_keys *rd = new Random_keys(tampop, numgeracoes);
+    RKGA *rd = new RKGA(tampop, numgeracoes);
 
     /** populacao inicial gerada de forma aleatoria **/
     rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
@@ -893,10 +855,577 @@ void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int
     int melhorGeracao = rd->avancaGeracoesPRE(g, it_s_melhora, tam_pool, max_it, pct_pr_elite);
 
     /** melhor individuo eh o ultimo (menor perda) da populacao da ultima geracao **/
-    Individuo *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+    RK_Individual *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
 
 
     printf(" %.3f ", 100 * 1000 * best->getPerdaAtiva());
     printf("%.3f ", g->tensaoMinima());
     printf("%d ", melhorGeracao);
 }
+
+void testeFO_OS_INDIVIDUAL(char *arqIn) {
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    RK_Individual *ind = new RK_Individual(tam);
+
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+
+    int *abertos = configuracaoInicial(arqIn);
+    ind->geraPesosConfInicial(abertos, nAbertos, g);
+    ind->calculaFuncaoObjetivoOtimizado(g);
+
+    OS_Individual *os = new OS_Individual(ind, g);
+
+    printf("%f\n%f", 100 * 1000 * ind->getPerdaAtiva(), 100 * 1000 * os->getActiveLoss());
+
+
+//    for(unsigned long int i = 0; i<os->getOpenedSwitches().size(); i++)
+//        printf("\no2[%ld]%d\n", i, os->getOpenedSwitches().at(i)->getID());
+//
+//
+//    g = new Graph_network();
+//
+//    g->leEntrada(arqIn);
+//    g->defineArestasModificaveis();
+//    g->resetaArcosMarcados();
+//    g->marcaUmsentidoArcos();
+//    RK_Individual::criaCromossomos(g);
+//
+//
+//    RK_Individual *ind2 = new RK_Individual(tam);
+//    OS_Individual *o2 = new OS_Individual();
+//    for (Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
+//
+//        for (Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()) {
+//
+//            if (a->getModificavel() == true && a->getMarcado() == true) {
+//
+//                for (int i = 0; i < (g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1)); i++) {
+////                    printf("abertos[%d]: %d\n", i, abertos[i]);
+//                    if (a->getID() == abertos[i]) {
+////                        printf("deu push\n");
+////                        printf("\nabertos[%d]: %d\n", i, abertos[i]);
+//                        o2->getOpenedSwitches().push_back(a);
+//                    }
+//                }
+//            }
+//
+//        }
+//    }
+//
+////    printf("tamanho de o2: %d\n", o2->getOpenedSwitches().size());
+//
+////    for(unsigned long int i = 0; i<o2->getOpenedSwitches().size(); i++)
+////        printf("\no2[%d]%d\n", i, o2->getOpenedSwitches().at(i)->getID());
+//
+//    o2->calcObjectiveF(g);
+//    printf("\n\n%f\n%f", 100 * 1000 * ind->getPerdaAtiva(), 100 * 1000 * o2->getActiveLoss());
+//    printf("\n\n%d", g->getNumeroArcos() / 2);
+}
+
+void testeOSPR(char *arqIn) {
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    RK_Individual *ind = new RK_Individual(tam);
+
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+
+    int *abertos = configuracaoInicial(arqIn);
+    ind->geraPesosConfInicial(abertos, nAbertos, g);
+    ind->calculaFuncaoObjetivoOtimizado(g);
+
+    OS_Individual *os = new OS_Individual(ind, g);
+
+    printf("\n\nos:");
+    for(unsigned long int i = 0; i<os->getOpenedSwitches().size(); i++)
+        printf("\nos[%ld]%d\n", i, os->getOpenedSwitches().at(i)->getID());
+
+    ind->geraPesosAleatorios();
+    ind->calculaFuncaoObjetivoOtimizado(g);
+    while(ind->getPerdaAtiva()==9999999999){
+        ind->geraPesosAleatorios();
+        ind->calculaFuncaoObjetivoOtimizado(g);
+    }
+
+    OS_Individual *os2 = new OS_Individual(ind, g);
+
+    printf("\n\nos2:");
+    for(unsigned long int i = 0; i<os2->getOpenedSwitches().size(); i++)
+        printf("\nos2[%ld]%d\n", i, os2->getOpenedSwitches().at(i)->getID());
+
+
+    Evolutionary_path_relinking *epr = new Evolutionary_path_relinking();
+
+//    OS_Individual *result = epr->path_relingking(os, os2, g);
+    vector<int> v = os->evaluate(os2->getOpenedSwitches().at(0), g);
+
+    printf("\n\nevaluate result:\n");
+    for(unsigned long int i=0; i<v.size(); i++)
+        printf("%d\n", v.at(i));
+}
+
+void testeContrutorOS(char *arqIn) {
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    RK_Individual *rk = new RK_Individual(tam);
+
+    double valor = 139.55;//melhor solucao literatura
+
+    int n;
+    cin>>n;
+    for (int j = 0; j < n; ++j) {
+        rk->geraPesosAleatorios();
+        OS_Individual *os = new OS_Individual(rk, g);
+        os->calcObjectiveF(g);
+        if(os->getSize()!=(g->getNumeroArcos()/2) - (g->getNumeroNos()-1) || 100*1000*os->getActiveLoss()<valor)
+            printf("falha! perda: %f\n", os->getActiveLoss());
+//        cout << 100*1000*os->getActiveLoss() << endl;
+//        printf("\n\n\nsize: %d\tperda:%.6f\t", 100*1000*os->getActiveLoss(), os->getSize());
+//        for(unsigned long int i = 0; i<os->getOpenedSwitches().size(); i++) {
+//            printf("os[%ld]:%d\t", i, os->getOpenedSwitches().at(i)->getID());
+//        }
+    }
+}
+
+void testeEvaluate(char *arqIn) {
+
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    RK_Individual *rk = new RK_Individual(tam);
+
+    OS_Individual *os1, *os2, *pr;
+
+    Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
+
+
+    rk->geraPesosAleatorios();
+    os1 = new OS_Individual(rk, g);
+
+    rk->geraPesosAleatorios();
+    os2 = new OS_Individual(rk, g);
+
+    printf("\n\nos1\tactiveLoss: %.2f\t", 100*1000*os1->getActiveLoss());
+    os1->imprime();
+
+    printf("\nos2\tactiveLoss: %.2f\t", 100*1000*os2->getActiveLoss());
+    os2->imprime();
+
+    pr = evp->path_relingking(os1, os2, g);
+
+    printf("\npr\tactiveLoss: %.2f\t", 100*1000*pr->getActiveLoss());
+    pr->imprime();
+
+
+
+
+
+//    RK_Individual *ind = new RK_Individual(tam);
+//
+//    ind->geraPesosAleatorios();
+//    OS_Individual *os = new OS_Individual(ind, g);
+//
+//    ind->geraPesosAleatorios();
+//    OS_Individual *os2 = new OS_Individual(ind, g);
+//
+//    os->setOpenSwitches(0, os2->getOpenedSwitches().at(0));
+//    os->setOpenSwitches(2, os2->getOpenedSwitches().at(1));
+//    os->calcObjectiveF(g);
+//
+//    int in = 2;
+//    vector<int> v = os->evaluate(os2->getOpenedSwitches().at(in), g);
+//
+//    printf("\n\nos\tactiveLoss: %.2f\t", 100*1000*os->getActiveLoss());
+//    os->imprime();
+////    for(unsigned long int i = 0; i<os->getOpenedSwitches().size(); i++)
+////        printf("\nos[%ld]%d\n", i, os->getOpenedSwitches().at(i)->getID());
+//
+//    printf("\n\nos2\tactiveLoss: %.2f\t", 100*1000*os2->getActiveLoss());
+//    os2->imprime();
+////    for(unsigned long int i = 0; i<os2->getOpenedSwitches().size(); i++)
+////        printf("\nos2[%ld]%d\n", i, os2->getOpenedSwitches().at(i)->getID());
+//
+//
+//    printf("\n\ncandidatos para sair de \"os\" ao inserir os2[%d]=%d:\t", in, os2->getOpenedSwitches().at(in)->getID());
+//    for(unsigned long int i=0; i<v.size(); i++)
+//        printf("%d\t", os->getOpenedSwitches().at(v.at(i))->getID());
+//
+////    printf("\n\noss:\n");
+////    OS_Individual **oss = new OS_Individual*[v.size()];
+////    for(unsigned long int i=0;i<v.size();i++){
+////        oss[i] = new OS_Individual(os);
+////        oss[i]->getOpenedSwitches().at(v.at(i)) = os2->getOpenedSwitches().at(0);
+////        oss[i]->calcObjectiveF(g);
+////        printf("\n\noss[%ld]\tactiveLoss: %.2f\t", i, 100*1000*oss[i]->getActiveLoss());
+////        oss[i]->imprime();
+////    }
+//
+//
+//    printf("\n check \"os\": %d\t check \"os2\": %d", os->checkSolution(g), os2->checkSolution(g));
+//
+//    Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
+//
+//    OS_Individual *pr = evp->path_relingking(os, os2, g);
+//
+//    printf("\n\npr->activeLoss: %.2f\t", 100*1000*pr->getActiveLoss());
+//    pr->imprime();
+//
+////    ofstream saida;
+////    saida.open("saida.txt");
+//
+////    OS_Individual *i1, *i2;
+////    int m = 10;
+////    for (int j = 0; j < m; ++j) {
+////
+//////        printf("MINHA PIKA EH BEM GROSSINHA LALALA FINURA DO SEU CU LALALA!!!!\n");
+////
+////        ind->geraPesosAleatorios();
+////        i1 = new OS_Individual(ind, g);
+////
+////        ind->geraPesosAleatorios();
+////        i2 = new OS_Individual(ind, g);
+////
+////        pr = evp->path_relingking(i1, i2, g);
+////
+////        cout << "\n\n" << 100*1000*os->getActiveLoss() << "\t" << 100*1000*os2->getActiveLoss() << "\t" << 100*1000*pr->getActiveLoss() << "\n";
+////    }
+////    saida.close();
+
+}
+
+void testeConstructorOSRK(char *arqIn) {
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    RK_Individual *rk;
+    OS_Individual *os;
+
+    int m;
+    cin >> m;
+    for (int i = 0; i < m; ++i) {
+
+        rk = new RK_Individual(tam);
+        rk->geraPesosAleatorios();
+
+        os = new OS_Individual(rk, g);
+
+        printf("%.2f\n", 100*1000*os->getActiveLoss());
+
+        delete rk;
+        delete os;
+    }
+}
+
+void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite) {
+    clock_t inicio = clock();
+
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+
+
+
+    ///-------------creating pool of RK individuals----------
+
+    RK_Individual **ind = new RK_Individual*[tamPool];
+    vector<RK_Individual*> pool_RK;
+    for(int i=1; i<tamPool; i++){
+        ind[i] = new RK_Individual(tam);
+        ind[i]->geraPesosAleatorios();
+        pool_RK.push_back(ind[i]);
+    }
+
+    //initial configuration individual in pool
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int *abertos = configuracaoInicial(arqIn);
+    ind[0] = new RK_Individual(tam);
+    ind[0]->geraPesosConfInicial(abertos, nAbertos, g);
+    pool_RK.push_back(ind[0]);
+
+    ///-------------creating pool of RK individuals----------
+
+    Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
+    OS_Individual *best = evp->run(pool_RK, max_it, pctElite, g);
+
+    clock_t fim = clock();
+
+    printf("%f %f %d\n", 100*1000*best->getActiveLoss(), (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
+}
+
+void testePATHRELINKING(char *arqIn, int m) {
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+//    int m;
+//    cin >> m;
+
+    RK_Individual*rk = new RK_Individual(tam);
+    OS_Individual *o1, *o2, *pr;
+    Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
+    for (int i = 0; i < m; ++i) {
+
+        rk->geraPesosAleatorios();
+        o1 = new OS_Individual(rk, g);
+
+        rk->geraPesosAleatorios();
+        o2 = new OS_Individual(rk, g);
+
+//        printf("\n----------------------0---------------------------");
+        pr = evp->path_relingking(o1, o2, g);
+//        printf("o1: %.2f\to2: %.2f\tpr: %.2f\n",
+//                o1->getActiveLoss()*100*1000,
+//                o2->getActiveLoss()*100*1000,
+//                pr->getActiveLoss()*100*1000);
+//        printf("----------------------x---------------------------\n\n");
+
+
+        delete o1, o2, pr;
+    }
+}
+
+void testeAGgenerico(char *arqIn, int tamPop, int numGeracoes, int tipoCruzamento) {
+    clock_t inicio = clock();
+
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    RKGA *ga = new RKGA(tamPop, numGeracoes);
+
+    int *abertos = configuracaoInicial(arqIn);
+    ga->geraPopAleatoriaConfInicial(g, abertos, g->getNumeroArcos()/2 - (g->getNumeroNos() -1));
+
+    ga->avancaGeracoesGenerico(g, tipoCruzamento);
+
+    OS_Individual *os = new OS_Individual(ga->getPopAtual().at(ga->getPopAtual().size()-1), g);
+//    os->imprime();
+
+
+    clock_t fim = clock();
+
+
+    printf("%f %f %d\n", 100*1000*ga->getPopAtual().at(ga->getPopAtual().size()-1)->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, semente);
+}
+
+void testeConversoes(char *arqIn) {
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    RK_Individual *rk = new RK_Individual(tam);
+    rk->geraPesosAleatorios();
+    rk->calculaFuncaoObjetivoOtimizado(g);
+
+    OS_Individual *os = new OS_Individual(rk, g);
+
+    RK_Individual *rk2 = os->OS_to_RK(g);
+
+    printf("%f\t%f\t%f\n", rk->getPerdaAtiva(), os->getActiveLoss(), rk2->getPerdaAtiva());
+}
+
+void testeAGPRCA(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite) {
+    clock_t inicio = clock();
+
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    RKGA *ga = new RKGA(tamPop, numGeracoes);
+
+    int *abertos = configuracaoInicial(arqIn);
+    ga->geraPopAleatoriaConfInicial(g, abertos, g->getNumeroArcos()/2 - (g->getNumeroNos() -1));
+
+    int geracao = ga->avancaGeracoesPRECA(g, it_s_melhora, tamPool, max_it, pct_elite);
+//    ga->avancaGeracoes2(g);
+
+    OS_Individual *os = new OS_Individual(ga->getPopAtual().at(ga->getPopAtual().size()-1), g);
+//    os->imprime();
+
+
+    clock_t fim = clock();
+
+
+    printf("%f %f %d %d\n", 100*1000*ga->getPopAtual().at(ga->getPopAtual().size()-1)->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, geracao, semente);
+}
+
+void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao) {
+
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    ///-------------creating pool of RK individuals----------
+
+    RK_Individual **ind = new RK_Individual*[tamPool];
+    vector<RK_Individual*> pool_RK;
+    for(int i=1; i<tamPool; i++){
+        ind[i] = new RK_Individual(tam);
+        ind[i]->geraPesosAleatorios();
+        ind[i]->calculaFuncaoObjetivoOtimizado(g);
+        pool_RK.push_back(ind[i]);
+    }
+
+    //initial configuration individual in pool
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int *abertos = configuracaoInicial(arqIn);
+    ind[0] = new RK_Individual(tam);
+    ind[0]->geraPesosConfInicial(abertos, nAbertos, g);
+    ind[0]->calculaFuncaoObjetivoOtimizado(g);
+    pool_RK.push_back(ind[0]);
+
+    ///-------------creating pool of RK individuals----------
+
+    //PRE_RK
+    if(execucao==1){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        RK_Individual *best = rkga->pre(pool_RK, max_it, pct_elite, g);
+        clock_t fim = clock();
+        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+    }
+    //PRE_OS
+    if(execucao==2){
+        Evolutionary_path_relinking *evpos = new Evolutionary_path_relinking(pool_RK, max_it, pct_elite);
+        clock_t inicio = clock();
+        OS_Individual *best = evpos->run(pool_RK, max_it, pct_elite, g);
+        clock_t fim = clock();
+        printf("%f %f %d %d ", 100*1000*best->getActiveLoss(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
+        best->imprime();
+    }
+    //AG
+    if(execucao==3){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoes2(g);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+    }
+    //AG_RK
+    if(execucao==4){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesPRE(g, it_s_melhora, tamPool, max_it, pct_elite);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+    }
+    //AG_OS
+    if(execucao==5){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesPRECA(g, it_s_melhora, tamPool, max_it, pct_elite);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+    }
+}
+
