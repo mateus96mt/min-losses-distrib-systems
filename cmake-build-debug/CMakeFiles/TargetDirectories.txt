@@ -1,0 +1,3 @@
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/CMakeFiles/minimizacao_perdas_sistema_distribuicao.dir
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/CMakeFiles/edit_cache.dir

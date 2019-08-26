@@ -2,88 +2,96 @@
 
 using namespace std;
 
-bool ordenacaoIndividuo(Individuo *i1, Individuo *i2){return i1->getPerdaAtiva() > i2->getPerdaAtiva();}
+bool orderedIndividual(Individual *i1, Individual *i2){return i1->getActiveLoss() > i2->getActiveLoss();}
 
-Random_keys::Random_keys(int tamPop, int numGeracoes){
-    this->tamPop = tamPop;
-    this->numGeracoes = numGeracoes;
+Random_keys::Random_keys(int popSize, int numGenerations){
+    this->popSize = popSize;
+    this->numGenerations = numGenerations;
 }
 
-void Random_keys::geraPopAleatoria(Grafo *g){
+void Random_keys::generatePopulation(Graph *g){
 
-    Individuo *ind;
-    for(int i=0; i<this->tamPop; i++){
+    Individual *ind;
+    for(int i=0; i<this->popSize; i++){
 
-        ind = new Individuo(g->getNumeroArcos());
-        ind->geraPesosAleatorios();
+        ind = new Individual(g->getEdgesSizes());
+        ind->generate_random_weights();
 
-        popAtual.push_back(ind);
+        currentPopulation.push_back(ind);
     }
-    popAnterior = popAtual;
+    lastPopulation = currentPopulation;
 }
 
-/** ordena populacao em ordem decrescente por valor da funcao objetivo
+/** Ordena populacao em ordem decrescente por valor da funcao objetivo
 dado que queremos minimizar a perda os piores individuos ficam no inicio(perda maior)
 queremos os melhore (menor perda, fim da lista) **/
-void Random_keys::ordenaPopulacaoAtual(Grafo *g){
-    for(unsigned int i=0; i<popAtual.size(); i++)
-        popAtual.at(i)->calculaFuncaoObjetivo(g);
+void Random_keys::sort_population(Graph *g){
+    for(unsigned int i=0; i<currentPopulation.size(); i++)
+        currentPopulation.at(i)->calculate_fitness(g);
 
-    sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
+    sort(currentPopulation.begin(), currentPopulation.end(), orderedIndividual);
 }
 
-void Random_keys::avancaGeracoes(Grafo *g){
+void Random_keys::forwardGenerations(Graph *g){
 
-    for(int k=0; k<this->numGeracoes; k++){
-
+    int counter = 0;
+    double oldLoss = 0.0;
+    int k;
+    Individual *best;
+    for(k=0; k<this->numGenerations; k++){
         /** calcula a funcao criterio para cada individuo
         e ordena a populacao da maior perda(pior individuo)
         pra menor perda(melhor individuo), perdaAtiva**/
-        this->ordenaPopulacaoAtual(g);
+        this->sort_population(g);
 
-        Individuo *best = popAtual.at(this->tamPop-1);
+        best = currentPopulation.at(this->popSize-1);
 
-        printf("\ngeracao (%d)  melhor individuo: %f kw",
-        k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+        if(oldLoss == best->getActiveLoss()){
+            counter++;
+            if( counter >= 0.25*numGenerations ) break;
+        }
+        else{
+            counter = 0;
+            oldLoss = best->getActiveLoss();
+            printf("\nGeracao %4.d \t-\tMelhor Individuo: %f kw", k, 100 * 1000 * best->getActiveLoss());
+        }
 
-        popAnterior = popAtual;
+        lastPopulation = currentPopulation;
 
-        int num_piores = 0.05*this->tamPop;
-        int num_melhores = 0.1*this->tamPop;
+        int num_worst = 0.05*this->popSize;
+        int num_best  = 0.1 *this->popSize;
 
-        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+        for(int i=num_worst; i<this->popSize-num_best; i++){
 
             /** cruzamento entre pai1 e pai2 entre os
             individuos aleatorios da populacao anterior
             modificar por uma escolha em roleta no futuro**/
-            int pai1 = rand() % this->tamPop;
-//            int pai2 = rand() % this->tamPop; //aleatorio
+            int father1 = rand() % this->popSize;
+//            int father2 = rand() % this->popSize; //aleatorio
 
             /**torneio com 3**/
             int cand1, cand2, cand3;
-            cand1 = rand() % this->tamPop;
-            cand2 = rand() % this->tamPop;
-            cand3 = rand() % this->tamPop;
+            cand1 = rand() % this->popSize;
+            cand2 = rand() % this->popSize;
+            cand3 = rand() % this->popSize;
 
-            if(popAnterior.at(cand1)->getPerdaAtiva() < popAnterior.at(cand2)->getPerdaAtiva()){
+            if(lastPopulation.at(cand1)->getActiveLoss() < lastPopulation.at(cand2)->getActiveLoss()){
                 cand2=cand1;
             }
-            if(popAnterior.at(cand2)->getPerdaAtiva() < popAnterior.at(cand3)->getPerdaAtiva()){
+            if(lastPopulation.at(cand2)->getActiveLoss() < lastPopulation.at(cand3)->getActiveLoss()){
                 cand3=cand2;
             }
+            int father2 = cand3;
 
-            int pai2 = cand3;
+            while( father2 == father1 )
+                father2 = rand() % this->popSize;
 
-            while(pai2==pai1)
-                pai2 = rand() % this->tamPop;
-
-            popAnterior.at(pai1)->cruzamentoMedia(popAnterior.at(pai2), popAtual.at(i));
-            popAtual.at(i)->mutacao();
+            lastPopulation.at(father1)->crossover_mean(lastPopulation.at(father2), currentPopulation.at(i));
+            currentPopulation.at(i)->mutation();
         }
 
-        /**aleatorio ao inves de manter piores**/
-        for(int i=0; i<num_piores; i++)
-            popAtual.at(i)->geraPesosAleatorios();
+        for(int i=0; i<num_worst; i++)
+            currentPopulation.at(i)->generate_random_weights(); // Populacao aleatoria no lugar dos piores
     }
-
+    printf("\nGeracao %4.d \t-\tMelhor Individuo: %f kw", k, 100 * 1000 * best->getActiveLoss()); // Result em kW
 }

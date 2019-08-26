@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="minimizacao_perdas_sistema_distribuicao"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="minimizacao_perdas_sistema_distribuicao">
+				<Option output="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/minimizacao_perdas_sistema_distribuicao" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/."/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 minimizacao_perdas_sistema_distribuicao"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="minimizacao_perdas_sistema_distribuicao/fast">
+				<Option output="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/minimizacao_perdas_sistema_distribuicao" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/."/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 minimizacao_perdas_sistema_distribuicao/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gbm/Área\ de\ Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.h">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.h">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Random_key.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Random_keys.h">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/main.cpp">
+			<Option target="minimizacao_perdas_sistema_distribuicao"/>
+		</Unit>
+		<Unit filename="/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

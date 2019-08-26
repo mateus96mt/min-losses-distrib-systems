@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.h
+stdio.h
+-
+iostream
+-
+Vertex.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.h
+iostream
+-
+fstream
+-
+Vertex.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h
+Edge.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.h
+vector
+-
+algorithm
+-
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.cpp
+Individual.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h
+math.h
+-
+Graph.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.h
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h
+vector
+-
+

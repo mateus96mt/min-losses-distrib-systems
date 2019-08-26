@@ -2,34 +2,34 @@
 #define RANDOM_KEYS_H_INCLUDED
 #include <math.h>
 
-#include "Individuo.h"
+#include "Individual.h"
 
 using namespace std;
 
 class Random_keys{
     private:
-        int numGeracoes, tamPop;
+        int numGenerations, popSize;
 
-        vector<Individuo*> popAtual;
-        vector<Individuo*> popAnterior;
+        vector<Individual*> currentPopulation;
+        vector<Individual*> lastPopulation;
 
     public:
-        Random_keys(int tamPop, int numGeracoes);
+        Random_keys(int popSize, int numGenerations);
 
         /** GET's **/
-        vector<Individuo*> getPopAtual(){return this->popAtual;}
-        vector<Individuo*> getPopAnterior(){return this->popAnterior;}
-        int getNumGeracoes(){return this->numGeracoes;}
-        int getTamPopulacao(){return this->tamPop;}
+        vector<Individual*> getPopAtual(){return this->currentPopulation;}
+        vector<Individual*> getPopAnterior(){return this->lastPopulation;}
+        int getNumGeracoes(){return this->numGenerations;}
+        int getPopulationSize(){return this->popSize;}
 
 
-        void geraPopAleatoria(Grafo *g);
+        void generatePopulation(Graph *g);
 
         ~Random_keys(){}
 
-        void ordenaPopulacaoAtual(Grafo *g);
+        void sort_population(Graph *g);
 
-        void avancaGeracoes(Grafo *g);
+        void forwardGenerations(Graph *g);
 
 };
 #endif // RANDOM_KEYS_H_INCLUDED
