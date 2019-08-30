@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include "Graph.h"
 #include "Random_keys.h"
 #include "time.h"
@@ -7,15 +7,15 @@
 #include <math.h>
 #include <string.h>
 
-//#define input_file "ENTRADAS_MODIFICADAS/sist33barras_Yang.m"
-#define input_file "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"
-//#define input_file "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"
-//#define input_file "ENTRADAS_MODIFICADAS/sist135barras.m"
-//#define input_file "ENTRADAS_MODIFICADAS/sist215barras.m"
-//#define input_file "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m"
-//#define input_file "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m"
-//#define input_file "ENTRADAS_MODIFICADAS/sist69barras.m"
-//#define input_file "ENTRADAS_MODIFICADAS/Caract_Sistem_85.m"
+//#define input_file "inputs/sist33barras_Yang.m"
+//#define input_file "inputs/sist33barras_Yang-modificado.m"
+//#define input_file "inputs/SISTEMA119s2.m"
+//#define input_file "inputs/sist135barras.m"
+//#define input_file "inputs/sist215barras.m"
+//#define input_file "inputs/SISTEMA83_TAIWAN.m"
+//#define input_file "inputs/SISTEMA83_TAIWAN_modificado.m"
+#define input_file "inputs/sist69barras.m"
+//#define input_file "inputs/Caract_Sistem_85.m"
 
 #define configuration "inicial"
 //#define configuration "literatura1"
@@ -24,37 +24,28 @@
 
 void openSwitches(Graph *g, int *ids, int n);
 void defineConfiguration(Graph *g);
-void testePopulacaoAleatoria();
 void testeEntradas();
-bool ordenacao(Graph *g1, Graph *g2);
 
-void Capacitor_Test(string savename);
+void print_tree(const string savefolder, Graph *g, Individual *best);
+void cap_combination1(const string savefolder, Graph *g, Individual *best);
+void cap_combination2(const string savefolder, Graph *g, Individual *best);
+void cap_combination3(const string savefolder, Graph *g, Individual *best);
+void Capacitor_Test(const string savename);
 
 int main(){
-    unsigned long int seed =
-//            time(NULL); // Set the clock time for the beggining
-            1530715368; // Best seed for 119 bus
-//            1530715848; // Best seed for 33 bus modificado
-//            1536085327; // Best seed for 94 bus (470,10 kw)
-//            1536861169; // Best seed for 94 bus modified (491,96 kw)
-    srand(seed);
+
+    srand(time(NULL));
 
     string savename = input_file;
-    savename.erase ( savename.begin()   , savename.begin()+21 );
+    savename.erase ( savename.begin()   , savename.begin()+7 );
     savename.erase ( savename.length()-2, savename.length()-1 );
 
 //    testeEntradas();//perda total e tensao minima para cada configuration para compara com a tese do leonardo willer
 
-//    testePopulacaoAleatoria();
-
-//    testMemLeakRandomKeys();
     Capacitor_Test( savename );
-
-
-    printf("Seed: %lu", seed);
 }
 
-void Capacitor_Test(string savename){
+void Capacitor_Test(const string savename){
     string name = input_file;
     Graph *g = new Graph();
     g->input_read(name);
@@ -70,7 +61,7 @@ void Capacitor_Test(string savename){
     for(Vertex *v = g->get_verticesList(); v!=NULL; v = v->getNext()){
         for(Edge *e = v->getEdgesList(); e != NULL; e = e->getNext()){
             Edge *e_reverse = g->findEdge(e->getDestiny()->getID(), e->getOrigin()->getID());
-            if(e->isClosed()==false && e_reverse->isClosed()==false)
+            if( !e->isClosed() && !e_reverse->isClosed() )
                 openSwitches.push_back(e->getID());
         }
     }
@@ -81,77 +72,165 @@ void Capacitor_Test(string savename){
     printf("\nPerda Ativa: \t %4.6f (kw)\n", 100*1000* best->getActiveLoss());
     printf("Tensao Minima: \t %4.6f (pu)\n\n\n", g->minVoltage());
 
-    int cap1, cap2 = 0, cap3 = 0;
-    string savename_cap = "out/teste_capacitor_1caps.csv";
-    FILE *output_file_cap = fopen( (savename_cap).c_str(), "w");
+    print_tree("out/" + savename, g, best );
+//    cap_combination1( "out/" + savename, g, best );
+//    cap_combination2( "out/" + savename, g, best );
+//    cap_combination3( "out/" + savename, g, best );
 
-    for(Vertex *v_cap1 = g->get_verticesList(); v_cap1!=NULL; v_cap1 = v_cap1->getNext() ){
+}
+
+void print_tree(const string savefolder, Graph *g, Individual *best) {
+    system( ("mkdir " + savefolder + " -p").c_str() );
+
+    best->calculate_fitness(g);
+
+    string savename_e_aux = savefolder + "/original_e_tree.csv";
+    string savename_v_aux = savefolder + "/original_v_tree.csv";
+    FILE *output_file_edges_aux = fopen((savename_e_aux).c_str(), "w");
+    FILE *output_file_vertices_aux = fopen((savename_v_aux).c_str(), "w");
+
+    for (Vertex *v_aux = g->get_verticesList(); v_aux != NULL; v_aux = v_aux->getNext()) {
+        for (Edge *e = v_aux->getEdgesList(); e != NULL; e = e->getNext()) {
+            if ( e->isClosed() )
+                fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f\n",
+                        e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
+        }
+        fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
+                v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
+    }
+    fclose(output_file_vertices_aux);
+    fclose(output_file_edges_aux);
+
+//    system( ("python3 plotGraph.py plotGraph(teste,1,'10','0','0')").c_str() ); // plota grafico da rede
+}
+
+void cap_combination1(const string savefolder, Graph *g, Individual *best ) {
+    int cap1, cap2 = 0, cap3 = 0;
+
+    system( ("mkdir " + savefolder + " -p").c_str() );
+    system( ("mkdir " + savefolder + "/caps1 -p").c_str() );
+    system( ("mkdir " + savefolder + "/1Caps_best -p").c_str() );
+
+    string savename_cap = savefolder + "/teste_capacitor_1caps.csv";
+    FILE *output_file_cap = fopen((savename_cap).c_str(), "w");
+
+    for (Vertex *v_cap1 = g->get_verticesList(); v_cap1 != NULL; v_cap1 = v_cap1->getNext()) {
         cap1 = v_cap1->getID();
         best->calculate_fitness_cap(g, v_cap1);
-//        for(Vertex *v_cap2 = v_cap1->getNext(); v_cap2!=NULL; v_cap2 = v_cap2->getNext()){
-//            cap2 = v_cap2->getID();
-//            best->calculate_fitness_cap(g, v_cap1, v_cap2);
-//            for(Vertex *v_cap3 = v_cap2->getNext(); v_cap3!=NULL; v_cap3 = v_cap3->getNext()) {
-//                cap3 = v_cap3->getID();
-//                best->calculate_fitness_cap(g, v_cap1, v_cap2, v_cap3);
+
+        fprintf(output_file_cap, "%3d, %3d, %3d, %4.6f, %4.6f\n",
+                v_cap1->getID(), cap2, cap3, 100 * 1000 * best->getActiveLoss(), g->minVoltage());
+        string namingCaps = to_string(cap1) + "-" + to_string(cap2) + "-" + to_string(cap3);
+        string savename_e_aux = savefolder + "/caps1/graph_cap" + namingCaps + "_e_tree.csv";
+        string savename_v_aux = savefolder + "/caps1/graph_cap" + namingCaps + "_v_tree.csv";
+        FILE *output_file_edges_aux = fopen((savename_e_aux).c_str(), "w");
+        FILE *output_file_vertices_aux = fopen((savename_v_aux).c_str(), "w");
+
+        for (Vertex *v_aux = g->get_verticesList(); v_aux != NULL; v_aux = v_aux->getNext()) {
+            for (Edge *e = v_aux->getEdgesList(); e != NULL; e = e->getNext()) {
+                if (e->isClosed() == true)
+                    fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f\n",
+                            e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
+            }
+            fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
+                    v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
+        }
+        fclose(output_file_vertices_aux);
+        fclose(output_file_edges_aux);
+        v_cap1->rmCapacitor(0);
+    }
+    fclose(output_file_cap);
+
+    system( ("python3 findBests.py " + savename_cap).c_str() ); // plota grafico da rede
+}
+void cap_combination2(const string savefolder, Graph *g, Individual *best ) {
+    int cap1, cap2 = 0, cap3 = 0;
+
+    system( ("mkdir " + savefolder + " -p").c_str() );
+    system( ("mkdir " + savefolder + "/caps2 -p").c_str() );
+    system( ("mkdir " + savefolder + "/2Caps_best -p").c_str() );
+
+    string savename_cap = savefolder + "/teste_capacitor_2caps.csv";
+    FILE *output_file_cap = fopen((savename_cap).c_str(), "w");
+
+    for (Vertex *v_cap1 = g->get_verticesList(); v_cap1 != NULL; v_cap1 = v_cap1->getNext()) {
+        cap1 = v_cap1->getID();
+        for (Vertex *v_cap2 = v_cap1->getNext(); v_cap2 != NULL; v_cap2 = v_cap2->getNext()) {
+            cap2 = v_cap2->getID();
+            best->calculate_fitness_cap(g, v_cap1, v_cap2);
+
+            fprintf(output_file_cap, "%3d, %3d, %3d, %4.6f, %4.6f\n",
+                    v_cap1->getID(), cap2, cap3, 100 * 1000 * best->getActiveLoss(), g->minVoltage());
+            string namingCaps = to_string(cap1) + "-" + to_string(cap2) + "-" + to_string(cap3);
+            string savename_e_aux = savefolder + "/caps2/graph_cap" + namingCaps + "_e_tree.csv";
+            string savename_v_aux = savefolder + "/caps2/graph_cap" + namingCaps + "_v_tree.csv";
+            FILE *output_file_edges_aux = fopen((savename_e_aux).c_str(), "w");
+            FILE *output_file_vertices_aux = fopen((savename_v_aux).c_str(), "w");
+
+            for (Vertex *v_aux = g->get_verticesList(); v_aux != NULL; v_aux = v_aux->getNext()) {
+                for (Edge *e = v_aux->getEdgesList(); e != NULL; e = e->getNext()) {
+                    if (e->isClosed() == true)
+                        fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f\n",
+                                e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
+                }
+                fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
+                        v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
+            }
+            fclose(output_file_vertices_aux);
+            fclose(output_file_edges_aux);
+            v_cap1->rmCapacitor(0);
+            v_cap2->rmCapacitor(0);
+        }
+    }
+    fclose(output_file_cap);
+
+    system( ("python3 findBests.py " + savename_cap).c_str() ); // plota grafico da rede
+}
+void cap_combination3(const string savefolder, Graph *g, Individual *best ) {
+    int cap1, cap2 = 0, cap3 = 0;
+
+    system( ("mkdir " + savefolder + " -p").c_str() );
+    system( ("mkdir " + savefolder + "/caps3 -p").c_str() );
+    system( ("mkdir " + savefolder + "/3Caps_best -p").c_str() );
+    string savename_cap =  savefolder + "/teste_capacitor_3caps.csv";
+    FILE *output_file_cap = fopen((savename_cap).c_str(), "w");
+
+    for (Vertex *v_cap1 = g->get_verticesList(); v_cap1 != NULL; v_cap1 = v_cap1->getNext()) {
+        cap1 = v_cap1->getID();
+        for (Vertex *v_cap2 = v_cap1->getNext(); v_cap2 != NULL; v_cap2 = v_cap2->getNext()) {
+            cap2 = v_cap2->getID();
+            for (Vertex *v_cap3 = v_cap2->getNext(); v_cap3 != NULL; v_cap3 = v_cap3->getNext()) {
+                cap3 = v_cap3->getID();
+                best->calculate_fitness_cap(g, v_cap1, v_cap2, v_cap3);
 
                 fprintf(output_file_cap, "%3d, %3d, %3d, %4.6f, %4.6f\n",
                         v_cap1->getID(), cap2, cap3, 100 * 1000 * best->getActiveLoss(), g->minVoltage());
                 string namingCaps = to_string(cap1) + "-" + to_string(cap2) + "-" + to_string(cap3);
-                string savename_e_aux = "out/caps1/graph_cap" + namingCaps + "_e_tree.csv";
-                string savename_v_aux = "out/caps1/graph_cap" + namingCaps + "_v_tree.csv";
+                string savename_e_aux = savefolder + "/caps3/graph_cap" + namingCaps + "_e_tree.csv";
+                string savename_v_aux = savefolder + "/caps3/graph_cap" + namingCaps + "_v_tree.csv";
                 FILE *output_file_edges_aux = fopen((savename_e_aux).c_str(), "w");
                 FILE *output_file_vertices_aux = fopen((savename_v_aux).c_str(), "w");
 
                 for (Vertex *v_aux = g->get_verticesList(); v_aux != NULL; v_aux = v_aux->getNext()) {
                     for (Edge *e = v_aux->getEdgesList(); e != NULL; e = e->getNext()) {
                         if (e->isClosed() == true)
-                            fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f\n",
-                                    e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(), e->getActivePowerFlow());
+                            fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f\n",
+                                    e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
                     }
-                    fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f\n",
-                            v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower());
+                    fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
+                            v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
                 }
-
                 fclose(output_file_vertices_aux);
                 fclose(output_file_edges_aux);
                 v_cap1->rmCapacitor(0);
-//                v_cap2->rmCapacitor(0);
-//                v_cap3->rmCapacitor(0);
-//            }
-//        }
+                v_cap2->rmCapacitor(0);
+                v_cap3->rmCapacitor(0);
+            }
+        }
     }
     fclose(output_file_cap);
 
-
-//    system("python plotGraph.py"); // plota grafico da rede
-}
-
-void testePopulacaoAleatoria(){
-    char name[] = input_file;
-    Graph *g = new Graph();
-
-    g->input_read(name);
-
-    int n_individuals = 500;
-    vector<Graph*> h;
-
-    for(int i=0; i<n_individuals; i++){
-
-        double *loss;
-        printf("\n\nsolucao  %d:", i);
-        h.push_back(g->returnCopy());
-        h.at(i)->randomSolution();
-        h.at(i)->defineFlows();
-        h.at(i)->evaluateLossesAndFlows(1e-8);
-        loss = h.at(i)->getLosses();
-
-        printf("\nvalida? %d", h.at(i)->isTree());
-        printf("  tensao minima: %.5f (p.u)", h.at(i)->minVoltage());
-        printf("  perdaTotal: %.5f (kW)", 100*1000*loss[0]);
-
-        delete loss;
-    }
+    system( ("python3 findBests.py " + savename_cap).c_str() ); // plota grafico da rede
 }
 
 void testeEntradas(){
@@ -164,7 +243,6 @@ void testeEntradas(){
     g->defineFlows();
     g->evaluateLossesAndFlows(1e-8);
 
-
     printf("\ntensao minima: %.5f (p.u)", g->minVoltage());
     printf("\nperdaTotal: %.5f (kW)", 100*1000* g->getLosses()[0]);
     printf("\neh Conexo? %d", g->isConected());
@@ -173,7 +251,7 @@ void testeEntradas(){
 
 void defineConfiguration(Graph *g){
 
-    if( input_file == "ENTRADAS_MODIFICADAS/sist33barras_Yang.m" ){
+    if( input_file == "inputs/sist33barras_Yang.m" ){
         int ids[5];
 
         //CONFIGURACAO INICIAL
@@ -192,7 +270,7 @@ void defineConfiguration(Graph *g){
         openSwitches(g, ids, 5);
     }
 
-    if( input_file == "ENTRADAS_MODIFICADAS/sist33barras_Yang-modificado.m"){
+    if( input_file == "inputs/sist33barras_Yang-modificado.m"){
         int ids[5];
 
         //CONFIGURACAO INICIAL
@@ -211,7 +289,7 @@ void defineConfiguration(Graph *g){
         openSwitches(g, ids, 5);
     }
 
-    if(input_file == "ENTRADAS_MODIFICADAS/SISTEMA119s2.m"){
+    if(input_file == "inputs/SISTEMA119s2.m"){
         int ids[15];
         //CONFIGURACAO INICIAL
         if(configuration == "inicial"){
@@ -240,7 +318,7 @@ void defineConfiguration(Graph *g){
 
         openSwitches(g, ids, 15);
     }
-    if( input_file == "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN.m" ){
+    if( input_file == "inputs/SISTEMA83_TAIWAN.m" ){
         int ids[13];
 
         //CONFIGURACAO INICIAL
@@ -257,7 +335,7 @@ void defineConfiguration(Graph *g){
         }
         openSwitches(g, ids, 13);
     }
-    if( input_file == "ENTRADAS_MODIFICADAS/SISTEMA83_TAIWAN_modificado.m" ){
+    if( input_file == "inputs/SISTEMA83_TAIWAN_modificado.m" ){
         int ids[13];
 
         //CONFIGURACAO INICIAL
@@ -285,7 +363,7 @@ void defineConfiguration(Graph *g){
 
         openSwitches(g, ids, 13);
     }
-    if( input_file == "ENTRADAS_MODIFICADAS/sist69barras.m" ){
+    if( input_file == "inputs/sist69barras.m" ){
         int ids[5];
 
         ids[0] = 69; ids[1] = 70; ids[2] = 71; ids[3] = 72; ids[4] = 73;
