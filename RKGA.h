@@ -35,8 +35,11 @@ class RKGA{
         int avancaGeracoes2(Graph_network *g);
         int avancaGeracoesPRS(Graph_network *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
         int avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento);
+        int avancaGeracaoesAdaptativo(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
+        int avancaGeracaoesAdaptativo2(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
 
-        void prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g);//path relinking simples evolutivo
+
+    void prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g);//path relinking simples evolutivo
         int avancaGeracoesPRSEvolutivoFinal(Graph_network *g);
 
 
@@ -57,7 +60,9 @@ class RKGA{
 
         void cruzamentoMistura(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-         void mutacao(RK_Individual *ind);
+        void mutacao(RK_Individual *ind);
+
+        void mutacaoAdaptavitva(RK_Individual *ind, float pctTam, float pctChance);
 
         ///--------------------------RKGA operators--------------------------:
 

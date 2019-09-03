@@ -78,7 +78,9 @@ void testeConversoes(char *arqIn);
 
 void testeAGPRCA(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite);
 
-void testeGERAL(char * arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao);
+void testeGERAL(char * arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao, float taxaTamMut, float taxaPctMut);
+
+void testeOperadoresCruzamentoAG(char *arqIn, int tamPop, int numGeracoes, int tipoCruzamento);
 
 //################################################################
 
@@ -132,8 +134,10 @@ int main(int c, char *argv[]) {
     int max_it = strtol(argv[6], nullptr, 0);
     float pct_elite = atof(argv[7]);
     int execucao = strtol(argv[8], nullptr, 0);
+    float taxaTamMut = atof(argv[9]);
+    float taxaPctMut = atof(argv[10]);
 
-    testeGERAL(arqIn, tamPop, numGeracoes, it_s_melhora, tamPool, max_it, pct_elite, execucao);
+    testeGERAL(arqIn, tamPop, numGeracoes, it_s_melhora, tamPool, max_it, pct_elite, execucao, taxaTamMut, taxaPctMut);
 //    testeAGPRCA(arqIn, tamPop, numGeracoes, it_s_melhora, tamPool, max_it, pct_elite);
 }
 
@@ -1336,7 +1340,7 @@ void testeAGPRCA(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int
     printf("%f %f %d %d\n", 100*1000*ga->getPopAtual().at(ga->getPopAtual().size()-1)->getPerdaAtiva(), (double)(fim-inicio)/CLOCKS_PER_SEC, geracao, semente);
 }
 
-void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao) {
+void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int tamPool, int max_it, float pct_elite, int execucao, float taxaTamMut, float taxaPctMut) {
 
     ///-------------initialization-------------
 
@@ -1378,9 +1382,10 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         clock_t inicio = clock();
         RK_Individual *best = rkga->pre(pool_RK, max_it, pct_elite, g);
         clock_t fim = clock();
-        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
+        printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
         OS_Individual *os = new OS_Individual(best, g);
         os->imprime();
+        printf("\n");
     }
     //PRE_OS
     if(execucao==2){
@@ -1388,8 +1393,9 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         clock_t inicio = clock();
         OS_Individual *best = evpos->run(pool_RK, max_it, pct_elite, g);
         clock_t fim = clock();
-        printf("%f %f %d %d ", 100*1000*best->getActiveLoss(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
+        printf("- %f %f %d %d ", 100*1000*best->getActiveLoss(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
         best->imprime();
+        printf("\n");
     }
     //AG
     if(execucao==3){
@@ -1399,9 +1405,10 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         int geracao = rkga->avancaGeracoes2(g);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
         OS_Individual *os = new OS_Individual(best, g);
         os->imprime();
+        printf("\n");
     }
     //AG_RK
     if(execucao==4){
@@ -1411,9 +1418,10 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         int geracao = rkga->avancaGeracoesPRE(g, it_s_melhora, tamPool, max_it, pct_elite);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
         OS_Individual *os = new OS_Individual(best, g);
         os->imprime();
+        printf("\n");
     }
     //AG_OS
     if(execucao==5){
@@ -1423,9 +1431,143 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         int geracao = rkga->avancaGeracoesPRECA(g, it_s_melhora, tamPool, max_it, pct_elite);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf("%f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
         OS_Individual *os = new OS_Individual(best, g);
         os->imprime();
+        printf("\n");
     }
+    //AG_AD
+    if(execucao==6){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracaoesAdaptativo(g, it_s_melhora, 0.5, 1.0, taxaTamMut, taxaPctMut);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG_AD 2
+    if(execucao==7){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracaoesAdaptativo2(g, it_s_melhora, 0.5, 1.0, taxaTamMut, taxaPctMut);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento media
+    if(execucao==8){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 0);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento media2
+    if(execucao==9){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 1);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento partes
+    if(execucao==10){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 2);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento partes 2
+    if(execucao==11){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 3);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento partes 3
+    if(execucao==12){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 4);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+    //AG Operador cruzamento mistura
+    if(execucao==13){
+        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        clock_t inicio = clock();
+        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+        int geracao = rkga->avancaGeracoesGenerico(g, 5);
+        clock_t fim = clock();
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        OS_Individual *os = new OS_Individual(best, g);
+        os->imprime();
+        printf("\n");
+    }
+}
+
+void testeOperadoresCruzamentoAG(char *arqIn, int tamPop, int numGeracoes, int tipoCruzamento) {
+    ///-------------initialization-------------
+
+    Graph_network *g = new Graph_network();
+
+    g->leEntrada(arqIn);
+    g->defineArestasModificaveis();
+    g->resetaArcosMarcados();
+    g->marcaUmsentidoArcos();
+    RK_Individual::criaCromossomos(g);
+    unsigned int tam = RK_Individual::cromossomos.size();
+
+    ///-------------initialization-------------
+
+    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int *abertos = configuracaoInicial(arqIn);
+
+    RKGA *rkga = new RKGA(tamPop, numGeracoes);
+    clock_t inicio = clock();
+    rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
+    int geracao = rkga->avancaGeracoesGenerico(g, tipoCruzamento);
+    clock_t fim = clock();
+    RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
+    printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+    OS_Individual *os = new OS_Individual(best, g);
+    os->imprime();
+    printf("\n");
 }
 
