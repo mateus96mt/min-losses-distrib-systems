@@ -48,17 +48,17 @@ class RKGA{
 
         ///--------------------------RKGA operators--------------------------:
 
-        void cruzamentoMedia(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento1(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-        void cruzamentoMedia2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-        void cruzamentoPartes(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-        void cruzamentoPartes2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-        void cruzamentoPartes3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
-        void cruzamentoMistura(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
+        void cruzamento6(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho);
 
         void mutacao(RK_Individual *ind);
 

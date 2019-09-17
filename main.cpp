@@ -1463,79 +1463,15 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         printf("\n");
     }
     //AG Operador cruzamento media
-    if(execucao==8){
+    if(execucao>=8 && execucao<=13) {
         RKGA *rkga = new RKGA(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracoesGenerico(g, 0);
         clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
-        os->imprime();
-        printf("\n");
-    }
-    //AG Operador cruzamento media2
-    if(execucao==9){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
-        clock_t inicio = clock();
-        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
-        int geracao = rkga->avancaGeracoesGenerico(g, 1);
-        clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
-        os->imprime();
-        printf("\n");
-    }
-    //AG Operador cruzamento partes
-    if(execucao==10){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
-        clock_t inicio = clock();
-        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
-        int geracao = rkga->avancaGeracoesGenerico(g, 2);
-        clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
-        os->imprime();
-        printf("\n");
-    }
-    //AG Operador cruzamento partes 2
-    if(execucao==11){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
-        clock_t inicio = clock();
-        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
-        int geracao = rkga->avancaGeracoesGenerico(g, 3);
-        clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
-        os->imprime();
-        printf("\n");
-    }
-    //AG Operador cruzamento partes 3
-    if(execucao==12){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
-        clock_t inicio = clock();
-        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
-        int geracao = rkga->avancaGeracoesGenerico(g, 4);
-        clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
-        os->imprime();
-        printf("\n");
-    }
-    //AG Operador cruzamento mistura
-    if(execucao==13){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
-        clock_t inicio = clock();
-        rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
-        int geracao = rkga->avancaGeracoesGenerico(g, 5);
-        clock_t fim = clock();
-        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
-        printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
+        RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size() - 1);
+        printf(" %f %f %d %d ", 100 * 1000 * best->getPerdaAtiva(), (double) (fim - inicio) / CLOCKS_PER_SEC, geracao,
+               semente);
         OS_Individual *os = new OS_Individual(best, g);
         os->imprime();
         printf("\n");

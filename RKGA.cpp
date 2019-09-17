@@ -109,7 +109,7 @@ int RKGA::avancaGeracoes(Graph_network *g){
                 pai2 = rand() % this->tamPop;
 
 //            popAnterior.at(pai1)->cruzamentoMedia(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento1(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 //            popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -179,7 +179,7 @@ int RKGA::avancaGeracoes2(Graph_network *g){
                 pai2 = rand() % this->tamPop;
 
 //            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 //            popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -277,7 +277,7 @@ int RKGA::avancaGeracoesPRS(Graph_network *g){
                 pai2 = rand() % this->tamPop;
 
             //popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             //popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -439,7 +439,7 @@ int RKGA::avancaGeracoesPRSEvolutivoFinal(Graph_network *g){
                 pai2 = rand() % this->tamPop;
 
 //            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 //            popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -572,7 +572,7 @@ int RKGA::avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, in
                 pai2 = rand() % this->tamPop;
 
             //popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             //popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -599,7 +599,7 @@ int RKGA::avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, in
 }
 
 
-void RKGA::cruzamentoMedia(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
+void RKGA::cruzamento1(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++)
         filho->getPesos()[i] = (pai1->getPesos()[i] + pai2->getPesos()[i])/2.0;
 }
@@ -623,7 +623,7 @@ void RKGA::mutacao(RK_Individual *ind){
     }
 }
 
-void RKGA::cruzamentoMedia2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
+void RKGA::cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++){
         int j = rand() % 1000;
         if (j>=800){
@@ -638,7 +638,7 @@ void RKGA::cruzamentoMedia2(RK_Individual *pai1, RK_Individual *pai2, RK_Individ
     }
 }
 
-void RKGA::cruzamentoPartes(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void RKGA::cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     for(unsigned long int i=0; i<RK_Individual::cromossomos.size()/2; i++)
@@ -706,17 +706,17 @@ int RKGA::avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento) {
 
 //            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==0)
-                this->cruzamentoMedia(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento1(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==1)
-                this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==2)
-                this->cruzamentoPartes(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento3(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==3)
-                this->cruzamentoPartes2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento4(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==4)
-                this->cruzamentoPartes3(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento5(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             if(tipoCruzamento==5)
-                this->cruzamentoMistura(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+                this->cruzamento6(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 
 //            popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
@@ -737,7 +737,7 @@ int RKGA::avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento) {
     return melhorGeracao;
 }
 
-void RKGA::cruzamentoPartes2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void RKGA::cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     int tam = RK_Individual::cromossomos.size();
@@ -759,7 +759,7 @@ void RKGA::cruzamentoPartes2(RK_Individual *pai1, RK_Individual *pai2, RK_Indivi
         filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = piorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
 }
 
-void RKGA::cruzamentoPartes3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void RKGA::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     int tam = RK_Individual::cromossomos.size();
@@ -780,19 +780,19 @@ void RKGA::cruzamentoPartes3(RK_Individual *pai1, RK_Individual *pai2, RK_Indivi
 
 }
 
-void RKGA::cruzamentoMistura(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void RKGA::cruzamento6(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     int i = rand() % 5;
 
     if(i==0)
-        this->cruzamentoMedia(pai1, pai2, filho);
+        this->cruzamento1(pai1, pai2, filho);
     if(i==1)
-        this->cruzamentoMedia2(pai1, pai2, filho);
+        this->cruzamento2(pai1, pai2, filho);
     if(i==2)
-        this->cruzamentoPartes(pai1, pai2, filho);
+        this->cruzamento3(pai1, pai2, filho);
     if(i==3)
-        this->cruzamentoPartes2(pai1, pai2, filho);
+        this->cruzamento4(pai1, pai2, filho);
     if(i==4)
-        this->cruzamentoPartes3(pai1, pai2, filho);
+        this->cruzamento5(pai1, pai2, filho);
 
 }
 
@@ -898,7 +898,7 @@ int RKGA::avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, 
                 pai2 = rand() % this->tamPop;
 
             //popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
             //popAtual.at(i)->mutacao();
             this->mutacao(popAtual.at(i));
         }
@@ -1002,7 +1002,7 @@ int RKGA::avancaGeracaoesAdaptativo(Graph_network *g, int it_s_melhora, float ma
                 pai2 = rand() % this->tamPop;
 
 //            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 //            popAtual.at(i)->mutacao();
 
             this->mutacaoAdaptavitva(popAtual.at(i), tamMutacao, pctMutacao);
@@ -1121,7 +1121,7 @@ RKGA::avancaGeracaoesAdaptativo2(Graph_network *g, int it_s_melhora, float maxMu
                 pai2 = rand() % this->tamPop;
 
 //            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamentoMedia2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
 //            popAtual.at(i)->mutacao();
 
             if(i<=5*num_piores)
