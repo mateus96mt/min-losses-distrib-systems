@@ -26,14 +26,13 @@ void openSwitches(Graph *g, int *ids, int n);
 void defineConfiguration(Graph *g);
 void testeEntradas();
 
-void print_tree(const string savefolder, Graph *g, Individual *best);
-void cap_combination1(const string savefolder, Graph *g, Individual *best);
-void cap_combination2(const string savefolder, Graph *g, Individual *best);
-void cap_combination3(const string savefolder, Graph *g, Individual *best);
-void Capacitor_Test(const string savename);
+void print_tree(const string savefolder, Graph *g );
+void cap_combination1(const string savefolder, Graph *g, Individual *individual);
+void cap_combination3(const string savefolder, Graph *g, Individual *individual);
+void Capacitor_Test_GA(const string savename);
+void Capacitor_Test_Ivo(const string savename);
 
 int main(){
-
     srand(time(NULL));
 
     string savename = input_file;
@@ -42,25 +41,101 @@ int main(){
 
 //    testeEntradas();//perda total e tensao minima para cada configuration para compara com a tese do leonardo willer
 
-    Capacitor_Test( savename );
+//    Capacitor_Test_Ivo(savename);
+    Capacitor_Test_GA(savename);
 }
 
-void Capacitor_Test(const string savename){
-    string name = input_file;
-    Graph *g = new Graph();
-    g->input_read(name);
-    Random_keys *rd = new Random_keys(100, 1000);       /// numero de individuos da populacao,numero de geracaoes
-    rd->generatePopulation(g);                          /// populacao inicial gerada de forma aleatoria
-    rd->forwardGenerations(g);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
 
-    Individual *best = rd->getPopAtual().at(rd->getPopulationSize()-1); /// melhor individuo eh o ultimo (menor perda)
-    best->calculate_fitness(g); /// abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo
+void Capacitor_Test_Ivo(const string savename){
+    string name = input_file;
+    Graph *graph = new Graph();
+    Graph *last_graph = new Graph();
+
+    /// Adiciona níveis de carga
+    graph->addChargeLevel( 0.50, 1000, 0.06 );
+    graph->addChargeLevel( 1.00, 6760, 0.06 );
+    graph->addChargeLevel( 2.45, 1000, 0.06 );
+
+    graph->input_read(name);
+    graph->createCapacitorType(1, 200, 4);                  // Colocar o valor do capacitor como um parametro de leitura pra ser convertido pelo Pb
+
+    defineConfiguration(graph);
+
+    graph->defineFlows();
+
+    printf("--------------------------------------------------------------------\n");
+    printf(" Load lvl \t| \t Losses\t\t| \t     Cost \t\t| \t Min Tension \n");
+    printf("--------------------------------------------------------------------\n");
+    for(int i = 0; i < 3; i++) {
+        graph->evaluateLossesAndFlows(1e-12, i);
+        graph->show_losses(100 * 1000 * graph->getLosses()[0], graph->minVoltage(), i );
+    }
+    graph->show_losses( graph->getTotalLoss()[0], graph->minVoltage(), -1 );
+
+    graph->capacitor_allocation();
+
+
+//                                                                        // 0
+//    graph->findVertex(62)->addCapacitor( graph->getCapacitorType(1) );  // 1
+//    graph->findVertex(62)->addCapacitor( graph->getCapacitorType(1) );  // 2
+//    graph->findVertex(62)->addCapacitor( graph->getCapacitorType(1) );  // 3
+//    graph->findVertex(65)->addCapacitor( graph->getCapacitorType(1) );  // 4
+//    graph->findVertex(60)->addCapacitor( graph->getCapacitorType(1) );  // 5
+//    graph->findVertex(63)->addCapacitor( graph->getCapacitorType(1) );  // 6
+//    graph->findVertex(22)->addCapacitor( graph->getCapacitorType(1) );  // 7
+//    graph->findVertex(65)->addCapacitor( graph->getCapacitorType(1) );  // 8
+//    graph->findVertex(13)->addCapacitor( graph->getCapacitorType(1) );  // 9
+
+//                                                                        // 0
+//    graph->findVertex(65)->addCapacitor( graph->getCapacitorType(1) );  // 1
+//    graph->findVertex(64)->addCapacitor( graph->getCapacitorType(1) );  // 2
+//    graph->findVertex(64)->addCapacitor( graph->getCapacitorType(1) );  // 3
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 4
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 5
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 6
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 7
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 8
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 9
+//    graph->findVertex(61)->addCapacitor( graph->getCapacitorType(1) );  // 10
+//    graph->findVertex(27)->addCapacitor( graph->getCapacitorType(1) );  // 11
+
+    printf("--------------------------------------------------------------------\n");
+    printf(" Load lvl \t| \t Losses\t\t| \t     Cost \t\t| \t Min Tension \n");
+    printf("--------------------------------------------------------------------\n");
+    for(int i = 0; i < 3; i++) {
+        graph->evaluateLossesAndFlows(1e-12, i);
+        graph->show_losses(100 * 1000 * graph->getLosses()[0], graph->minVoltage(), i );
+    }
+    graph->show_losses( graph->getTotalLoss()[0], graph->minVoltage(), -1 );
+
+    print_tree("out/" + savename + "_IVO", graph );
+}
+
+void Capacitor_Test_GA(const string savename){
+    string name = input_file;
+
+    Graph *graph = new Graph();
+
+    /// Adiciona níveis de carga
+//    graph->addChargeLevel( 0.50, 1000, 0.06 );
+    graph->addChargeLevel( 1.00, 6760, 0.06 );
+    graph->addChargeLevel( 2.45, 1000, 0.06 );
+
+    graph->input_read(name);
+    graph->createCapacitorType(1, 200, 4);                  // TODO colocar o valor do capacitor como um parametro de leitura pra ser convertido pelo Pb
+
+    Random_keys *rd = new Random_keys(100, 1000);       /// numero de individuos da populacao,numero de geracaoes
+    rd->generatePopulation(graph);                          /// populacao inicial gerada de forma aleatoria
+    rd->forwardGenerations(graph);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
+
+    Individual *best = rd->getCurrentPop().at(rd->getPopulationSize()-1); /// melhor individuo eh o ultimo (menor perda)
+    best->calculate_fitness(graph); /// abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo
 
     vector<int> openSwitches;
     printf("\n\n\nMELHOR INDIVIDUO FINAL: \n");
-    for(Vertex *v = g->get_verticesList(); v!=NULL; v = v->getNext()){
+    for(Vertex *v = graph->get_verticesList(); v!=NULL; v = v->getNext()){
         for(Edge *e = v->getEdgesList(); e != NULL; e = e->getNext()){
-            Edge *e_reverse = g->findEdge(e->getDestiny()->getID(), e->getOrigin()->getID());
+            Edge *e_reverse = graph->findEdge(e->getDestiny()->getID(), e->getOrigin()->getID());
             if( !e->isClosed() && !e_reverse->isClosed() )
                 openSwitches.push_back(e->getID());
         }
@@ -69,20 +144,18 @@ void Capacitor_Test(const string savename){
 
     cout << "Chaves Abertas:" << endl << "| ";
     for( uint i=0; i<openSwitches.size();i+=2)   cout << openSwitches.at(i) << " | ";
-    printf("\nPerda Ativa: \t %4.6f (kw)\n", 100*1000* best->getActiveLoss());
-    printf("Tensao Minima: \t %4.6f (pu)\n\n\n", g->minVoltage());
+    cout << endl;
+    graph->show_losses( 100 * 1000 * best->getActiveLoss(), graph->minVoltage() ) ;
 
-    print_tree("out/" + savename, g, best );
-//    cap_combination1( "out/" + savename, g, best );
-//    cap_combination2( "out/" + savename, g, best );
-//    cap_combination3( "out/" + savename, g, best );
-
+    print_tree("out/" + savename, graph );
+//    cap_combination1( "out/" + savename, graph, best );
+//    cap_combination2( "out/" + savename, graph, best );
+//    cap_combination3( "out/" + savename, graph, best );
 }
 
-void print_tree(const string savefolder, Graph *g, Individual *best) {
+void print_tree(const string savefolder, Graph *g ) {
     system( ("mkdir " + savefolder + " -p").c_str() );
-
-    best->calculate_fitness(g);
+    system( ("mkdir " + savefolder + "/Originals -p").c_str() );
 
     string savename_e_aux = savefolder + "/original_e_tree.csv";
     string savename_v_aux = savefolder + "/original_v_tree.csv";
@@ -96,12 +169,11 @@ void print_tree(const string savefolder, Graph *g, Individual *best) {
                         e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
         }
         fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
-                v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
+                v_aux->getID(), v_aux->getCapacitors().size(), v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
     }
     fclose(output_file_vertices_aux);
     fclose(output_file_edges_aux);
-
-//    system( ("python3 plotGraph.py plotGraph(teste,1,'10','0','0')").c_str() ); // plota grafico da rede
+    system( ("python3 printTree.py " + savefolder ).c_str() ); // plota grafico da rede
 }
 
 void cap_combination1(const string savefolder, Graph *g, Individual *best ) {
@@ -137,55 +209,13 @@ void cap_combination1(const string savefolder, Graph *g, Individual *best ) {
         }
         fclose(output_file_vertices_aux);
         fclose(output_file_edges_aux);
-        v_cap1->rmCapacitor(0);
+        v_cap1->rm_all_capacitors();
     }
     fclose(output_file_cap);
 
-    system( ("python3 findBests.py " + savename_cap).c_str() ); // plota grafico da rede
+    system( ( "python3 findBests.py " + savename_cap ).c_str() ); // plota grafico da rede
 }
-void cap_combination2(const string savefolder, Graph *g, Individual *best ) {
-    int cap1, cap2 = 0, cap3 = 0;
 
-    system( ("mkdir " + savefolder + " -p").c_str() );
-    system( ("mkdir " + savefolder + "/caps2 -p").c_str() );
-    system( ("mkdir " + savefolder + "/2Caps_best -p").c_str() );
-
-    string savename_cap = savefolder + "/teste_capacitor_2caps.csv";
-    FILE *output_file_cap = fopen((savename_cap).c_str(), "w");
-
-    for (Vertex *v_cap1 = g->get_verticesList(); v_cap1 != NULL; v_cap1 = v_cap1->getNext()) {
-        cap1 = v_cap1->getID();
-        for (Vertex *v_cap2 = v_cap1->getNext(); v_cap2 != NULL; v_cap2 = v_cap2->getNext()) {
-            cap2 = v_cap2->getID();
-            best->calculate_fitness_cap(g, v_cap1, v_cap2);
-
-            fprintf(output_file_cap, "%3d, %3d, %3d, %4.6f, %4.6f\n",
-                    v_cap1->getID(), cap2, cap3, 100 * 1000 * best->getActiveLoss(), g->minVoltage());
-            string namingCaps = to_string(cap1) + "-" + to_string(cap2) + "-" + to_string(cap3);
-            string savename_e_aux = savefolder + "/caps2/graph_cap" + namingCaps + "_e_tree.csv";
-            string savename_v_aux = savefolder + "/caps2/graph_cap" + namingCaps + "_v_tree.csv";
-            FILE *output_file_edges_aux = fopen((savename_e_aux).c_str(), "w");
-            FILE *output_file_vertices_aux = fopen((savename_v_aux).c_str(), "w");
-
-            for (Vertex *v_aux = g->get_verticesList(); v_aux != NULL; v_aux = v_aux->getNext()) {
-                for (Edge *e = v_aux->getEdgesList(); e != NULL; e = e->getNext()) {
-                    if (e->isClosed() == true)
-                        fprintf(output_file_edges_aux, "%2d, %2d, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f, %4.6f\n",
-                                e->getOrigin()->getID(), e->getDestiny()->getID(), e->getActiveLoss(),e->getActivePowerFlow(), e->getReactiveLoss(),e->getReactivePowerFlow(), e->getResistance(), e->getReactance() );
-                }
-                fprintf(output_file_vertices_aux, "%2d, %1d, %4.6f, %4.6f, %4.6f\n",
-                        v_aux->getID(), v_aux->getCapacitors().size() > 0, v_aux->getActivePower(), v_aux->getReactivePower(), v_aux->getVoltage() );
-            }
-            fclose(output_file_vertices_aux);
-            fclose(output_file_edges_aux);
-            v_cap1->rmCapacitor(0);
-            v_cap2->rmCapacitor(0);
-        }
-    }
-    fclose(output_file_cap);
-
-    system( ("python3 findBests.py " + savename_cap).c_str() ); // plota grafico da rede
-}
 void cap_combination3(const string savefolder, Graph *g, Individual *best ) {
     int cap1, cap2 = 0, cap3 = 0;
 
@@ -222,9 +252,9 @@ void cap_combination3(const string savefolder, Graph *g, Individual *best ) {
                 }
                 fclose(output_file_vertices_aux);
                 fclose(output_file_edges_aux);
-                v_cap1->rmCapacitor(0);
-                v_cap2->rmCapacitor(0);
-                v_cap3->rmCapacitor(0);
+                v_cap1->rm_all_capacitors();
+                v_cap2->rm_all_capacitors();
+                v_cap3->rm_all_capacitors();
             }
         }
     }

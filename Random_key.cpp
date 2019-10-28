@@ -6,7 +6,7 @@ bool orderedIndividual(Individual *i1, Individual *i2){return i1->getActiveLoss(
 
 Random_keys::Random_keys(int popSize, int numGenerations){
     this->popSize = popSize;
-    this->numGenerations = numGenerations;
+    this->generationSize = numGenerations;
 }
 
 void Random_keys::generatePopulation(Graph *g){
@@ -32,23 +32,22 @@ void Random_keys::sort_population(Graph *g){
     sort(currentPopulation.begin(), currentPopulation.end(), orderedIndividual);
 }
 
-void Random_keys::forwardGenerations(Graph *g){
+void Random_keys::forwardGenerations(Graph *graph){
 
     int counter = 0;
     double oldLoss = 0.0;
     int k;
     Individual *best;
-    for(k=0; k<this->numGenerations; k++){
-        /** calcula a funcao criterio para cada individuo
-        e ordena a populacao da maior perda(pior individuo)
+    for(k=0; k<this->generationSize; k++){
+        /** calcula a funcao criterio para cada individuo e ordena a populacao da maior perda(pior individuo)
         pra menor perda(melhor individuo), perdaAtiva**/
-        this->sort_population(g);
+        this->sort_population(graph);
 
         best = currentPopulation.at(this->popSize-1);
 
         if(oldLoss == best->getActiveLoss()){
             counter++;
-            if( counter >= 0.25*numGenerations ) break;
+            if( counter >= 0.25*generationSize ) break;
         }
         else{
             counter = 0;
@@ -63,9 +62,6 @@ void Random_keys::forwardGenerations(Graph *g){
 
         for(int i=num_worst; i<this->popSize-num_best; i++){
 
-            /** cruzamento entre pai1 e pai2 entre os
-            individuos aleatorios da populacao anterior
-            modificar por uma escolha em roleta no futuro**/
             int father1 = rand() % this->popSize;
 //            int father2 = rand() % this->popSize; //aleatorio
 
@@ -93,5 +89,5 @@ void Random_keys::forwardGenerations(Graph *g){
         for(int i=0; i<num_worst; i++)
             currentPopulation.at(i)->generate_random_weights(); // Populacao aleatoria no lugar dos piores
     }
-    printf("\nGeracao %4.d \t-\tMelhor Individuo: %f kw", k, 100 * 1000 * best->getActiveLoss()); // Result em kW
+    printf("\nGeracao %4.d \t-\tMelhor Individuo: %9.6f kw", k, 100 * 1000 * best->getActiveLoss()); // Result em kW
 }

@@ -8,7 +8,7 @@ using namespace std;
 
 class Random_keys{
     private:
-        int numGenerations, popSize;
+        int generationSize, popSize;
 
         vector<Individual*> currentPopulation;
         vector<Individual*> lastPopulation;
@@ -17,9 +17,9 @@ class Random_keys{
         Random_keys(int popSize, int numGenerations);
 
         /** GET's **/
-        vector<Individual*> getPopAtual(){return this->currentPopulation;}
-        vector<Individual*> getPopAnterior(){return this->lastPopulation;}
-        int getNumGeracoes(){return this->numGenerations;}
+        vector<Individual*> getCurrentPop(){return this->currentPopulation;}
+        vector<Individual*> getLastPop(){return this->lastPopulation;}
+        int getGenerationSize(){return this->generationSize;}
         int getPopulationSize(){return this->popSize;}
 
 
@@ -29,7 +29,7 @@ class Random_keys{
 
         void sort_population(Graph *g);
 
-        void forwardGenerations(Graph *g);
+        void forwardGenerations(Graph *graph);
 
 };
 #endif // RANDOM_KEYS_H_INCLUDED

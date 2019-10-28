@@ -5,20 +5,18 @@ Edge::Edge(int id){
 
     this->id = id;
 
-    this->nextEdge  = NULL;
-    this->origin    = NULL;
-    this->destiny   = NULL;
+    this->nextEdge          = NULL;
+    this->origin            = NULL;
+    this->destiny           = NULL;
 
-    this->closed = true;
+    this->closed            = true;
 
-    this->activePowerFlow = 0.0;
+    this->activePowerFlow   = 0.0;
     this->reactivePowerFlow = 0.0;
-
-    this->resistance    = 0.0;
-    this->reactance     = 0.0;
-
-    this->activeLoss    = 0.0;
-    this->reactiveLoss  = 0.0;
+    this->resistance        = 0.0;
+    this->reactance         = 0.0;
+    this->activeLoss        = 0.0;
+    this->reactiveLoss      = 0.0;
 
     this->modifiable = true;
 }

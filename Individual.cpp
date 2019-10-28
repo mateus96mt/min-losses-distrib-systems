@@ -40,14 +40,14 @@ void Individual::mutation(){
     }
 }
 
-void Individual::calculate_fitness(Graph *g ){
+void Individual::calculate_fitness(Graph *graph ){
     vector<Chromosome*> chromosomes;
 
     Chromosome *c;
-    for( Vertex *vertex = g->get_verticesList(); vertex!=NULL; vertex = vertex->getNext() ){
-        for(Edge *a = vertex->getEdgesList(); a!=NULL; a= a->getNext()){
+    for( Vertex *vertex = graph->get_verticesList(); vertex!=NULL; vertex = vertex->getNext() ){
+        for(Edge *e = vertex->getEdgesList(); e!=NULL; e= e->getNext()){
             c = new Chromosome();
-            c->edge = a;
+            c->edge = e;
             c->weight = 0;
             chromosomes.push_back(c);
         }
@@ -59,10 +59,10 @@ void Individual::calculate_fitness(Graph *g ){
 
     sort(chromosomes.begin(), chromosomes.end(), ordenacaoCromossomo);
 
-    int n_arc_inseridos = 0, n_arcos_inserir = g->getVerticesSize()-1;
+    int inserted_size = 0, toInsert_size = graph->getVerticesSize()-1;
 
     /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
-    for(Vertex *no = g->get_verticesList(); no!=NULL; no = no->getNext()){
+    for(Vertex *no = graph->get_verticesList(); no!=NULL; no = no->getNext()){
         for(Edge *a = no->getEdgesList(); a!=NULL; a = a->getNext()){
             a->setSwitch(false);
             a->setActiveFlow(0.0);
@@ -72,34 +72,36 @@ void Individual::calculate_fitness(Graph *g ){
         }
     }
 
-    g->resetIDTree(); // reseta os ids de componentes conexas para algoritmo de Kruskal
+    graph->resetIDTree(); // reseta os ids de componentes conexas para algoritmo de Kruskal
 
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
-    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
+    for(int i=0; inserted_size<toInsert_size; i++){
         if( (chromosomes.at(i)->edge->getOrigin()->getIdTree() != chromosomes.at(i)->edge->getDestiny()->getIdTree()) &&
                 chromosomes.at(i)->edge->isClosed()==false){
 
             int id = chromosomes.at(i)->edge->getOrigin()->getIdTree();
-            for(Vertex *v = g->get_verticesList(); v!=NULL; v = v->getNext()){
+            for(Vertex *v = graph->get_verticesList(); v!=NULL; v = v->getNext()){
                 if(v->getIdTree()==id)
                     v->setIdTree(chromosomes.at(i)->edge->getDestiny()->getIdTree());
             }
 
             chromosomes.at(i)->edge->setSwitch(true);
-            g->findEdge(chromosomes.at(i)->edge->getDestiny()->getID(),
+            graph->findEdge(chromosomes.at(i)->edge->getDestiny()->getID(),
                         chromosomes.at(i)->edge->getOrigin()->getID())->setSwitch(true);
 
-            n_arc_inseridos++;
+            inserted_size++;
         }
     }
 
-    g->defineFlows();
+    graph->defineFlows();
 
-    g->evaluateLossesAndFlows(1e-8); /** calcula fluxos e perda com erro de 1e-5 **/
+    graph->capacitor_allocation();
 
-    double *losses = g->getLosses();/** soma as perdas ativas e reativas em todos os arcos e retorna um double* **/
+    graph->evaluateLossesAndFlows(1e-8); /** calcula fluxos e perda com erro de 1e-5 */
 
-    this->active_loss = losses[0];
+    double *losses = graph->getLosses();/** soma as perdas ativas e reativas em todos os arcos e retorna um double */
+
+    this->active_loss   = losses[0];
     this->reactive_loss = losses[1];
 
     /** no caso de solucoes que possuem configuracao viavel porem sao muito longas **/
@@ -129,23 +131,23 @@ void Individual::calculate_fitness_cap(Graph *g, Vertex *vertexCap1, Vertex *ver
 
     sort(chromosomes.begin(), chromosomes.end(), ordenacaoCromossomo);
 
-    int n_arc_inseridos = 0, n_arcos_inserir = g->getVerticesSize()-1;
+    int inserted_size = 0, toInsert_size = g->getVerticesSize()-1;
 
     /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
-    for(Vertex *no = g->get_verticesList(); no!=NULL; no = no->getNext()){
-        for(Edge *a = no->getEdgesList(); a!=NULL; a = a->getNext()){
-            a->setSwitch(false);
-            a->setActiveFlow(0.0);
-            a->setReactiveFlow(0.0);
-            a->setActiveLoss(0.0);
-            a->setReactiveLoss(0.0);
+    for(Vertex *v = g->get_verticesList(); v!=NULL; v = v->getNext()){
+        for(Edge *e = v->getEdgesList(); e!=NULL; e = e->getNext()){
+            e->setSwitch(false);
+            e->setActiveFlow(0.0);
+            e->setReactiveFlow(0.0);
+            e->setActiveLoss(0.0);
+            e->setReactiveLoss(0.0);
         }
     }
 
     g->resetIDTree(); // reseta os ids de componentes conexas para algoritmo de Kruskal
 
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
-    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
+    for(int i=0; inserted_size<toInsert_size; i++){
         if( (chromosomes.at(i)->edge->getOrigin()->getIdTree() != chromosomes.at(i)->edge->getDestiny()->getIdTree()) &&
             chromosomes.at(i)->edge->isClosed()==false){
 
@@ -158,14 +160,13 @@ void Individual::calculate_fitness_cap(Graph *g, Vertex *vertexCap1, Vertex *ver
             chromosomes.at(i)->edge->setSwitch(true);
             g->findEdge(chromosomes.at(i)->edge->getDestiny()->getID(), chromosomes.at(i)->edge->getOrigin()->getID())->setSwitch(true);
 
-            n_arc_inseridos++;
+            inserted_size++;
         }
     }
     g->defineFlows();
-    double capacitor_power = 0.0008;
-    vertexCap1->addCapacitor(1, capacitor_power); // TODO insere capacitor para teste
-    if(vertexCap2 != NULL) vertexCap2->addCapacitor(2, capacitor_power);
-    if(vertexCap3 != NULL) vertexCap3->addCapacitor(3, capacitor_power);
+    vertexCap1->addCapacitor( g->getCapacitorType(1) ); // TODO insere capacitor para teste
+    if(vertexCap2 != NULL) vertexCap2->addCapacitor( g->getCapacitorType(1) );
+    if(vertexCap3 != NULL) vertexCap3->addCapacitor( g->getCapacitorType(1) );
 
     g->evaluateLossesAndFlows(1e-8); /** calcula fluxos e perda com erro informado **/
 

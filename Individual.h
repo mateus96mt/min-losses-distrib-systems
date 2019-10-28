@@ -30,7 +30,7 @@ class Individual{
 
         void mutation();
 
-        void calculate_fitness(Graph *g);
+        void calculate_fitness(Graph *graph);
 
     Individual();
 };

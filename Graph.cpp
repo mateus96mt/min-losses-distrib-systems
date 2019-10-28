@@ -1,8 +1,9 @@
 #include "Graph.h"
-#include <fstream>
-#include <math.h>
 #include "time.h"
+#include <math.h>
+#include <fstream>
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 
@@ -16,7 +17,7 @@ Graph::Graph(){
     this->totalReactiveLoss = 0.0;
     this->num_markeds = 0;
     this->maxCapacitorsBus = 0;
-    this->maxCapacitorNetwork = 0;
+    this->loads = vector<LoadLevel>();
 }
 
 Graph::~Graph(){
@@ -62,17 +63,18 @@ Edge *Graph::findEdge( int originID, int destinyID ){
     }
     return NULL;
 }
+//TODO Pode ser geográfico os fatores de carga por isso o último param
+void Graph::insertVertex( int id, double activePower, double reactivePower, double voltage, int idLoadFactor ){
 
-void Graph::insertVertex(int id, double activePower, double reactivePower, double voltage){
-
-    Vertex *no=new Vertex(id);
-    no->setActivePower(activePower);
-    no->setReactivePower(reactivePower);
-    no->setVoltage(voltage);
+    Vertex *vertex=new Vertex(id);
+    vertex->setActivePower(activePower);
+    vertex->setReactivePower(reactivePower);
+    vertex->setVoltage(voltage);
+    vertex->setLoadFactors( this->loads );
 
     //insere No no inicio da lista
-    no->setNext(verticesList);
-    this->verticesList=no;
+    vertex->setNext(verticesList);
+    this->verticesList = vertex;
 
     this->verticesSize++;
 }
@@ -85,7 +87,7 @@ void Graph::insertEdge(int originID, int destinyID, int id, double resist, doubl
     newEdge->setDestiny(destinyVertex);
     newEdge->setOrigin(originVertex);
 
-    //insere Arco no inicio da lista
+    // Insere Arco no inicio da lista
     newEdge->setNext(originVertex->getEdgesList());
     originVertex->setEdgesList(newEdge);
 
@@ -93,24 +95,64 @@ void Graph::insertEdge(int originID, int destinyID, int id, double resist, doubl
     newEdge->setReactance(react);
     newEdge->setSwitch(swit);
 
-
     originVertex->setOutdegree(originVertex->getIndegree() + 1);
     destinyVertex->setIndegree(destinyVertex->getOutdegree() + 1);
 
     this->edgesSize++;
 }
 
-void Graph::input_read(string name){
+/**
+ * Create types for capacitors in the network
+ * @params  id:     capacitor tyoe identifier
+ *          power:  reactive power of the capacitor in kVar
+ *          cost:   cost in US$/kVar
+ */
+void Graph::createCapacitorType(int id, double reactive_power, double cost_per_KVAr, int step){
+    cout << "Capacitor Created with pot: " << reactive_power/(PB*1000) << endl;
+    double cost = cost_per_KVAr * reactive_power;
+    this->capacitorType.insert( this->capacitorType.begin(), Capacitor( id, reactive_power/(PB*1000), cost ) );
+};
+
+/**
+ * Return an array with the total losses in kVar and in US$ in that order
+ */
+double * Graph::getTotalLoss(){
+    double * total_loss = new double[2];
+    total_loss[0] = 0.0;
+    total_loss[1] = 0.0;
+    for(int i = 0; i < this->loads.size() ; i++) {
+        double lvl_loss = 100 * 1000 * this->evaluateLossesAndFlows(1e-12, i);
+        total_loss[0] += lvl_loss;
+        total_loss[1] += lvl_loss * this->loads[i].time * this->loads[i].cost;
+    }
+    return total_loss;
+}
+
+void Graph::show_losses( double powerLoss, double minTension, int idLoad ){
+
+    if(idLoad == -1) {
+        double total_time = 0.0;
+        for(int i = 0; i < 3; i++)
+            total_time += this->loads[i].time;
+        printf(" Total \t\t|  %9.6f \t| \t%9.2f US$ \t|\t  -  \n", powerLoss, this->getTotalLoss()[1]  );
+    }
+    else {
+        double effective_loss = powerLoss * this->loads[idLoad].time;
+        double loss_cost = effective_loss * this->loads[idLoad].cost;
+        printf(" #%d \t\t|  %9.6f \t| \t%9.2f US$ \t|\t %.6f \n", idLoad, powerLoss, loss_cost, minTension);
+    }
+    printf("--------------------------------------------------------------------\n");
+};
+
+//TODO: MELHORAR ESSA MERDA
+void Graph::input_read( string name ){
 
     cout << name << endl;
-    int idArco = 0;
-    double VB, PB, ZB, mw_factor = 1e-3;
+    int edgeId = 0;
     double power, resistance, reactance, reactive_power, voltage;
 
     ifstream input;
     input.open(name);
-//    string line;
-//    while( getline(input, line) ) cout << line << endl;
 
     string aux;
 
@@ -124,10 +166,9 @@ void Graph::input_read(string name){
     input >> aux;input >> aux;
     input >> ZB;
 
-
     input.close();
     input.open(name);
-    int idNo, idOrig, idDest;
+    int vertexId, originId, destinyId;
 
     do{
         input >> aux;
@@ -137,25 +178,21 @@ void Graph::input_read(string name){
     input >> num_nos;
     for(int i=1 ; i<=num_nos*n_col_v; i++){
         if(i % n_col_v == 1){
-            input >> idNo;
-//            cout << "idNo: " << idNo;
+            input >> vertexId;
         }
         else if(i % n_col_v == 4){
             input >> voltage;
-//            cout << "      V: " << voltage;
         }
         else if(i % n_col_v == 10){
             input >> power;
             power /= PB;
             power *= mw_factor;
-//            cout << "      pot at=power: " << power;
         }
         else if(i % n_col_v == 11){
             input >> reactive_power;
             reactive_power /=PB;
             reactive_power *= mw_factor;
-//            cout << "      pot reat: " << reactive_power << endl;
-            insertVertex(idNo, power, reactive_power, voltage);
+            insertVertex(vertexId, power, reactive_power, voltage);
         }
         else
             input >> aux;
@@ -163,34 +200,29 @@ void Graph::input_read(string name){
 
     do{
         input >> aux;
-    }while(aux != "num_arestas");///pula mais lixo ate chegar na parte de informacoes da aresta
+    }while(aux != "num_arestas");
 
-    int num_arestas;
-    input >> num_arestas;
+    int n_edges;
+    input >> n_edges;
 
-    for(int i=1 ; i<=num_arestas*n_col_e; i++){
+    for(int i=1 ; i<=n_edges*n_col_e; i++){
         if(i % n_col_e == 1){
-            input >> idOrig;
-//            cout << "idOrig: " << idOrig;
+            input >> originId;
         }
         else if(i % n_col_e == 2){
-            input >> idDest;
-//            cout << "      idDest: " << idDest;
+            input >> destinyId;
         }
         else if(i % n_col_e == 3){
             input >> resistance;
             resistance /= ZB;
-//            cout << "      r: " << resistance;
         }
         else if(i % n_col_e == 4){
             input >> reactance;
             reactance /= ZB;
-//            cout << "      reat: " << reactance << endl;;
-            //insere arco i-j e j-i
 
-            idArco++;
-            insertEdge(idOrig, idDest, idArco, resistance, reactance, true);
-            insertEdge(idDest, idOrig, idArco, resistance, reactance, true);
+            edgeId++;
+            insertEdge(originId, destinyId, edgeId, resistance, reactance, true);
+            insertEdge(destinyId, originId, edgeId, resistance, reactance, true);
         }
         else
             input >> aux;
@@ -198,18 +230,14 @@ void Graph::input_read(string name){
     cout << "\n" << name << " lida!" << endl;
 }
 
-void Graph::printGraph(){
-    printf("\n\n\nGRAFO  num_Nos: %d    num_arcos: %d \n\n\n", this->verticesSize, this->edgesSize);
-    for(Vertex *no = this->verticesList; no!=NULL; no = no->getNext())
-        no->show();
-}
-
+//TODO: MELHORAR ESSA MERDA
 double Graph::branchActiveLoss(Vertex *no){
-    double soma = no->getActivePower();
-    auxBranchActiveLoss(no, soma);
-    return soma;
+    double sum = no->getActivePower();
+    auxBranchActiveLoss(no, sum);
+    return sum;
 }
 
+//TODO: MELHORAR ESSA MERDA
 void Graph::auxBranchActiveLoss(Vertex *no, double &soma){
     for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
 
@@ -232,149 +260,152 @@ void Graph::auxBranchActiveLoss(Vertex *no, double &soma){
     }
 }
 
-double Graph::branchReactiveLoss(Vertex *no){
-    double soma= no->getReactivePower();
-    auxBranchReactiveLoss(no, soma);
-    return soma;
+//TODO: MELHORAR ESSA MERDA
+double Graph::branchReactiveLoss(Vertex *v){
+    double sum = v->getReactivePower();
+    auxBranchReactiveLoss(v, sum);
+    return sum;
 }
 
-void Graph::auxBranchReactiveLoss(Vertex *no, double &soma){
-    for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+//TODO: MELHORAR ESSA MERDA
+void Graph::auxBranchReactiveLoss(Vertex *v, double &sum){
+    for(Edge *e = v->getEdgesList(); e!=NULL; e = e->getNext()){
 
         //nao descer por arcos com chave aberta
-        while(a!=NULL && a->isClosed() == false){
+        while(e!=NULL && e->isClosed() == false){
 
             //nao tem fluxo nem perda em arcos abertos
-            a->setActiveFlow(0.0);
-            a->setReactiveFlow(0.0);
-            a->setActiveLoss(0.0);
-            a->setReactiveLoss(0.0);
+            e->setActiveFlow(0.0);
+            e->setReactiveFlow(0.0);
+            e->setActiveLoss(0.0);
+            e->setReactiveLoss(0.0);
 
-            a = a->getNext();
+            e = e->getNext();
         }
-        if(a==NULL)
+        if(e==NULL)
             break;
 
-        soma+= a->getDestiny()->getReactivePower() + a->getReactiveLoss();
-        auxBranchReactiveLoss(a->getDestiny(), soma);
+        sum+= e->getDestiny()->getReactivePower() + e->getReactiveLoss();
+        auxBranchReactiveLoss(e->getDestiny(), sum);
     }
 }
 
-//FOWARD
+//TODO: MELHORAR ESSA MERDA
 void Graph::forward(int it){
     this->verticesList->setVoltage(1.0);//voltagem controlada na estacao
     auxForward(this->verticesList, this->verticesList->getEdgesList(), it);
 }
 
-void Graph::auxForward(Vertex *no, Edge *ak, int it){
-    if(no == NULL)
+//TODO: MELHORAR ESSA MERDA
+void Graph::auxForward(Vertex *vertex, Edge *edge, int it){
+    if(vertex == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+        for(Edge *e = vertex->getEdgesList(); e!=NULL; e= e->getNext()){
 
-            double perda_ativ = 0.0;
-            double perda_reat = 0.0;
+            double active_power     = 0.0;
+            double reactive_power   = 0.0;
 
-            //nao descer por arcos com chave aberta
-            while(a!=NULL && a->isClosed() == false){
+            /// set open edges with flow-free
+            while(e!=NULL && !e->isClosed() ){
 
-                //nao tem fluxo nem perda em arcos abertos
-                a->setActiveFlow(0.0);
-                a->setReactiveFlow(0.0);
-                a->setActiveLoss(0.0);
-                a->setReactiveLoss(0.0);
+                e->setActiveFlow(0.0);
+                e->setReactiveFlow(0.0);
+                e->setActiveLoss(0.0);
+                e->setReactiveLoss(0.0);
 
-                a = a->getNext();
+                e = e->getNext();
             }
-            if(a==NULL)
+            if(e==NULL)
                 break;
 
-            //----forward----
+            /// ---- Forward ----
 
             //chute inicial para o fluxo nas arests que partem do no terminal
-            if(no==this->verticesList){
-                double carcasPerdasAtivRamo = branchActiveLoss(a->getDestiny());
-                double carcasPerdasReativRamo = branchReactiveLoss(a->getDestiny());
+            if( vertex==this->verticesList ) {
+                double activeLossCharge = branchActiveLoss(e->getDestiny());
+                double reactiveLossCharge = branchReactiveLoss(e->getDestiny());
 
-                a->setActiveFlow(carcasPerdasAtivRamo + a->getActiveLoss());
-                a->setReactiveFlow(carcasPerdasReativRamo + a->getReactiveLoss());
+                e->setActiveFlow(activeLossCharge + e->getActiveLoss());
+                e->setReactiveFlow(reactiveLossCharge + e->getReactiveLoss());
 
-            }else{
-
-                //a partir da primeira iteracao considerase a perda calculada na iteracao anterior
+            } else {
+                //a partir da primeira iteracao considera-se a perda calculada na iteracao anterior
                 if(it>0){
-                    perda_ativ = ak->getResistance()*(pow(ak->getActivePowerFlow(), 2) + pow(ak->getReactivePowerFlow(), 2)) / pow(
-                            ak->getOrigin()->getVoltage(), 2);
-                    perda_reat =
-                            ak->getReactance()*(pow(ak->getActivePowerFlow(), 2) + pow(ak->getReactivePowerFlow(), 2)) / pow(
-                                    ak->getOrigin()->getVoltage(), 2);
+                    active_power = edge->getResistance()*(pow(edge->getActivePowerFlow(), 2) + pow(edge->getReactivePowerFlow(), 2)) / pow(
+                            edge->getOrigin()->getVoltage(), 2);    // Q = R*P^2 + Q^2/V^2
+                    reactive_power =
+                            edge->getReactance()*(pow(edge->getActivePowerFlow(), 2) + pow(edge->getReactivePowerFlow(), 2)) / pow(
+                                    edge->getOrigin()->getVoltage(), 2);
                 }
 
-                a->setActiveFlow(ak->getActivePowerFlow() - perda_ativ - no->getActivePower());
-                a->setReactiveFlow(ak->getReactivePowerFlow() - perda_reat - no->getReactivePower());
+                e->setActiveFlow(edge->getActivePowerFlow() - active_power - vertex->getActivePower());
+                e->setReactiveFlow(edge->getReactivePowerFlow() - reactive_power - vertex->getReactivePower());
 
                 //bifurcacao - o fluxo que seque para o arco 'a' deve-se subtrair a soma de cargas e perdas dos ramos de bifurcacoes
-                if(a->getOrigin()->getIndegree()>1){
+                if(e->getOrigin()->getIndegree()>1){
                     double somaAtiv=0.0, somaReAtiv=0.0;
-                    for(Edge *aux= no->getEdgesList(); aux!=NULL; aux= aux->getNext()){
-                        if(aux!=a && aux->isClosed()==true){
+                    for(Edge *aux= vertex->getEdgesList(); aux!=NULL; aux= aux->getNext()){
+                        if(aux!=e && aux->isClosed()==true){
                             somaAtiv+= aux->getActiveLoss() + branchActiveLoss(aux->getDestiny());
                             somaReAtiv+= aux->getReactiveLoss() + branchReactiveLoss(aux->getDestiny());
                         }
                     }
 
-                    a->setActiveFlow(a->getActivePowerFlow() - somaAtiv);
-                    a->setReactiveFlow(a->getReactivePowerFlow() - somaReAtiv);
+                    e->setActiveFlow(e->getActivePowerFlow() - somaAtiv);
+                    e->setReactiveFlow(e->getReactivePowerFlow() - somaReAtiv);
                 }
             }
 
-            auxForward(a->getDestiny(), a, it);
+            auxForward(e->getDestiny(), e, it);
         }
     }
 }
 
+//TODO: MELHORAR ESSA MERDA
 void Graph::backward(){
-    this->verticesList->setVoltage(1.0);//voltagem controlada na estacao
+    this->verticesList->setVoltage(1.0); // voltagem controlada na estacao
     auxBackward(this->verticesList);
 }
 
-void Graph::auxBackward(Vertex *no){
-    if(no == NULL)
+//TODO: MELHORAR ESSA MERDA
+void Graph::auxBackward(Vertex *vertex){
+    if(vertex == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+        for(Edge *e= vertex->getEdgesList(); e!=NULL; e= e->getNext()){
 
             //nao descer por arcos com chave aberta
-            while(a!=NULL && a->isClosed() == false){
+            while(e!=NULL && e->isClosed() == false){
 
                 //nao tem fluxo nem perda em arcos abertos
-                a->setActiveFlow(0.0);
-                a->setReactiveFlow(0.0);
-                a->setActiveLoss(0.0);
-                a->setReactiveLoss(0.0);
+                e->setActiveFlow(0.0);
+                e->setReactiveFlow(0.0);
+                e->setActiveLoss(0.0);
+                e->setReactiveLoss(0.0);
 
-                a = a->getNext();
+                e = e->getNext();
             }
-            if(a==NULL)
+            if(e==NULL)
                 break;
 
             //----backward----
-            Vertex *noDest = a->getDestiny();
-            Vertex *noOrig = a->getOrigin();
+            Vertex *destiny = e->getDestiny();
+            Vertex *origin = e->getOrigin();
 
-            noDest->setVoltage(pow(noOrig->getVoltage(), 2) - 2 * (a->getResistance() * a->getActivePowerFlow() +
-                    a->getReactance() * a->getReactivePowerFlow()) + (pow(a->getResistance(), 2) + pow(a->getReactance(), 2)) *
-                               (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2)) / pow(noOrig->getVoltage(), 2));
+            destiny->setVoltage(pow(origin->getVoltage(), 2) - 2 * (e->getResistance() * e->getActivePowerFlow() +
+                    e->getReactance() * e->getReactivePowerFlow()) + (pow(e->getResistance(), 2) + pow(e->getReactance(), 2)) *
+                               (pow(e->getActivePowerFlow(), 2) + pow(e->getReactivePowerFlow(), 2)) / pow(origin->getVoltage(), 2));
 
-            noDest->setVoltage(sqrt(noDest->getVoltage()));
+            destiny->setVoltage(sqrt(destiny->getVoltage()));
 
-            a->setActiveLoss(a->getResistance() * (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2))
-                             / pow(noOrig->getVoltage(), 2));
-            a->setReactiveLoss(a->getReactance() * (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2))
-                               / pow(noOrig->getVoltage(), 2));
+            e->setActiveLoss(e->getResistance() * (pow(e->getActivePowerFlow(), 2) + pow(e->getReactivePowerFlow(), 2))
+                             / pow(origin->getVoltage(), 2));
+            e->setReactiveLoss(e->getReactance() * (pow(e->getActivePowerFlow(), 2) + pow(e->getReactivePowerFlow(), 2))
+                               / pow(origin->getVoltage(), 2));
             //-------------
 
-            auxBackward(a->getDestiny());
+            auxBackward(e->getDestiny());
         }
     }
 }
@@ -392,7 +423,10 @@ double * Graph::getLosses(){
     return loss;
 }
 
-void Graph::evaluateLossesAndFlows(double tol){
+double Graph::evaluateLossesAndFlows(double tol, int idLoadFactorGlobal){
+    this->resetFlowAndLoss();
+    Vertex::idLF = idLoadFactorGlobal; /// Static Param. Muda rede toda
+
     double *last_total_loss, *current_total_loss , error = 1.0;
 
     last_total_loss = this->getLosses();
@@ -403,11 +437,35 @@ void Graph::evaluateLossesAndFlows(double tol){
         current_total_loss = this->getLosses();
         error = current_total_loss[0] - last_total_loss[0];
         delete last_total_loss;
-//        cout << "\n\nPerda total: (" << current_total_loss[0] << " , " << current_total_loss[1] << ")" << endl;
 
         last_total_loss = current_total_loss;
     }
+    return this->getLosses()[0];
 }
+
+Vertex *Graph::greedyCapacitorAllocation(){
+    double tol = 1e-7;
+    Vertex *vertex = this->verticesList;
+    while(vertex != NULL){
+//        cout << endl << " Origin  Vertex #" << vertex->getID() << endl << " Destinations |";
+        Edge *edgeChoice = vertex->getEdgesList();
+        double criteria = edgeChoice->getReactivePowerFlow();
+//        cout << " Vertex #" << edgeChoice->getDestiny()->getID() << ": " << edgeChoice->getReactivePowerFlow() << "\t|";
+        for( Edge *e = edgeChoice->getNext(); e != NULL; e = e->getNext()) {
+//            cout << " Vertex #" << e->getDestiny()->getID() << ": " << e->getReactivePowerFlow() << "\t|";
+            if( (criteria) < (e->getReactivePowerFlow()) ){
+                edgeChoice = e;
+                criteria = edgeChoice->getReactivePowerFlow();
+            }
+
+        }
+//        cout << endl << " BEST #" << edgeChoice->getDestiny()->getID() << ":    " << edgeChoice->getReactivePowerFlow() << endl;
+        if( fabs(criteria) < tol) break;
+        vertex = edgeChoice->getDestiny();
+    }
+//    cout <<  "              ALLOCATION VERTEX #" << vertex->getID() << endl;
+    return vertex;
+};
 
 void Graph::unmarkVertices(){
     for(Vertex *i = this->verticesList; i != NULL; i = i->getNext())
@@ -417,24 +475,24 @@ void Graph::unmarkVertices(){
 
 bool Graph::isConected(){
     this->unmarkVertices();
-    int n_marcados = 0;
-    auxIsConnected(this->verticesList, n_marcados);
+    int n_markeds = 0;
+    auxIsConnected(this->verticesList, n_markeds);
 
-    if(n_marcados == this->verticesSize)
+    if(n_markeds == this->verticesSize)
         return true;
     else
         return false;
 }
 
-void Graph::auxIsConnected(Vertex *no, int &n_marcados){
-    if(no == NULL)
+void Graph::auxIsConnected(Vertex *v, int &n_markeds){
+    if(v == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        if(no->getMarked() == false){
-            no->setMarked(true);
-            n_marcados++;
+        if(v->getMarked() == false){
+            v->setMarked(true);
+            n_markeds++;
 
-            for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+            for(Edge *a= v->getEdgesList(); a!=NULL; a= a->getNext()){
 
                 //nao descer por arcos com chave aberta
                 while(a!=NULL && a->isClosed() == false){
@@ -444,7 +502,7 @@ void Graph::auxIsConnected(Vertex *no, int &n_marcados){
                 if(a==NULL)
                     break;
 
-                auxIsConnected(a->getDestiny(), n_marcados);
+                auxIsConnected(a->getDestiny(), n_markeds);
             }
         }
     }
@@ -453,31 +511,31 @@ void Graph::auxIsConnected(Vertex *no, int &n_marcados){
 bool Graph::isTree(){
     unmarkVertices();
 
-    bool ciclo = false;
-    int marcados = 0;
+    bool isCycle = false;
+    int markeds = 0;
 
-    auxIsTree(verticesList, marcados, ciclo);
+    auxIsTree(verticesList, markeds, isCycle);
 
-    if(ciclo==true)
+    if(isCycle==true)
         cout << "\nFECHOU CICLO!!" << endl;
-    if(marcados<verticesSize)
+    if(markeds<verticesSize)
         cout << "\nARVORE NAO COBRE TODOS OS NOS!!";
 
-    if(ciclo==false && marcados==verticesSize)
+    if(isCycle==false && markeds==verticesSize)
         return true;
     else
         return false;
 }
 
-void Graph::auxIsTree(Vertex *no, int &marcados, bool &ciclo){
-    if(no == NULL)
+void Graph::auxIsTree(Vertex *v, int &markeds, bool &isCycle){
+    if(v == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        if(no->getMarked() == false){
-            no->setMarked(true);
-            marcados++;
+        if(v->getMarked() == false){
+            v->setMarked(true);
+            markeds++;
 
-            for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+            for(Edge *a= v->getEdgesList(); a!=NULL; a= a->getNext()){
 
                 //nao descer por arcos com chave aberta
                 while(a!=NULL && a->isClosed() == false){
@@ -487,52 +545,51 @@ void Graph::auxIsTree(Vertex *no, int &marcados, bool &ciclo){
                 if(a==NULL)
                     break;
 
-                auxIsTree(a->getDestiny(), marcados, ciclo);
+                auxIsTree(a->getDestiny(), markeds, isCycle);
             }
         }
         else
-            ciclo = true;
+            isCycle = true;
     }
 }
 
 double Graph::minVoltage(){
-    double tensao_mim = 1.0;
+    double tension_minimum = 1.0;
     for(Vertex *no=this->verticesList; no!=NULL; no= no->getNext()){
-        if(no->getVoltage() < tensao_mim)
-            tensao_mim = no->getVoltage();
+        if(no->getVoltage() < tension_minimum)
+            tension_minimum = no->getVoltage();
     }
-    return tensao_mim;
+    return tension_minimum;
 }
 
 void Graph::defineFlows(){
     auxDefineFlows(this->verticesList, this->verticesList);
-//    printf("\nsentido de fluxo das arestas definido!\n");
 }
-
-void Graph::auxDefineFlows(Vertex *no, Vertex *noAnterior){
-    if(no == NULL)
+//TODO: MELHORAR ESSA MERDA
+void Graph::auxDefineFlows(Vertex *v, Vertex *v_previous){
+    if(v == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+        for(Edge *e= v->getEdgesList(); e!=NULL; e= e->getNext()){
 
             //nao descer por arcos com chave aberta e descer no sentido correto
-            //a->getNoDestino()==no e o arco de volta do arco 'a' assim nao passamos por ele
-            while(a!=NULL && (a->isClosed() == false || a->getDestiny()==noAnterior) ){
+            //e->getNoDestino()==v e o arco de volta do arco 'a' assim nao passamos por ele
+            while(e!=NULL && (e->isClosed() == false || e->getDestiny()==v_previous) ){
 
                 //nao tem fluxo nem perda em arcos abertos
-                a->setActiveFlow(0.0);
-                a->setReactiveFlow(0.0);
-                a->setActiveLoss(0.0);
-                a->setReactiveLoss(0.0);
+                e->setActiveFlow(0.0);
+                e->setReactiveFlow(0.0);
+                e->setActiveLoss(0.0);
+                e->setReactiveLoss(0.0);
 
-                if(a->getDestiny()==noAnterior)
-                    a->setSwitch(false);
+                if(e->getDestiny()==v_previous)
+                    e->setSwitch(false);
 
-                a = a->getNext();
+                e = e->getNext();
             }
-            if(a==NULL)     break;
+            if(e==NULL)     break;
 
-            auxDefineFlows(a->getDestiny(), no);
+            auxDefineFlows(e->getDestiny(), v);
         }
     }
 }
@@ -545,18 +602,18 @@ void Graph::defineModifiables(){
 
         //procura arcos que conectam nos folha, esses arcos nao sao modificaveis(nao podem ser abertos)
         for(Vertex *no=this->verticesList; no!=NULL; no= no->getNext()){
-            for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
+            for(Edge *e= no->getEdgesList(); e!=NULL; e= e->getNext()){
 
-                if(a->getDestiny()->getAuxDegree()==1 && a->isClosed()==true && a->getModifiable()==true){
+                if(e->getDestiny()->getAuxDegree()==1 && e->isClosed()==true && e->getModifiable()==true){
 
 //                    printf("\ndefinindo como nao modif A{%d}...", a->getID());
 
-                    a->setModifiable(false);
-                    Edge *aVolta = this->findEdge(a->getDestiny()->getID(), a->getOrigin()->getID());
-                    aVolta->setModifiable(false);
+                    e->setModifiable(false);
+                    Edge *e_reverse = this->findEdge(e->getDestiny()->getID(), e->getOrigin()->getID());
+                    e_reverse->setModifiable(false);
 
-                    a->getOrigin()->setAuxDegree(a->getOrigin()->getAuxDegree() - 1);
-                    a->getDestiny()->setAuxDegree(a->getDestiny()->getAuxDegree() - 1);
+                    e->getOrigin()->setAuxDegree(e->getOrigin()->getAuxDegree() - 1);
+                    e->getDestiny()->setAuxDegree(e->getDestiny()->getAuxDegree() - 1);
 
 //                    printf("done!");
 
@@ -570,85 +627,83 @@ void Graph::defineModifiables(){
 
 Graph *Graph::returnCopy(){
     Graph *g = new Graph();
-    int idOrig, idDest, idArco, idNo;
-    double resistencia, reatancia, potAtiva, potReativa, voltagem;
+    int originId, destinyId, edgeId, vertexId;
+    double resist, react, activePower, reactivePower, voltage;
 
     for(Vertex *no= this->verticesList->getNext(); no!=NULL; no= no->getNext()){
-        idNo = no->getID();
-        potAtiva = no->getActivePower();
-        potReativa = no->getReactivePower();
-        voltagem = no->getVoltage();
+        vertexId = no->getID();
+        activePower = no->getActivePower();
+        reactivePower = no->getReactivePower();
+        voltage = no->getVoltage();
 
-        g->insertVertex(idNo, potAtiva, potReativa, voltagem);
+        g->insertVertex(vertexId, activePower, reactivePower, voltage);
     }
 
-    //inserindo no fonte por ultimo pos a funcao que insere nos insere sempre no inicio da lista, assim o no fonte fica no inicio da lista
-    Vertex *noFonte = this->verticesList;
-    g->insertVertex(noFonte->getID(), noFonte->getActivePower(), noFonte->getReactivePower(), noFonte->getVoltage());
+    //inserindo no fonte por ultimo pos a funcao que insere nós insere sempre no inicio da lista, assim o nó fonte fica no inicio da lista
+    Vertex *source = this->verticesList;
+    g->insertVertex(source->getID(), source->getActivePower(), source->getReactivePower(), source->getVoltage());
 
-    for(Vertex *no=this->verticesList; no!=NULL; no= no->getNext()){
-         for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
-            idOrig = a->getOrigin()->getID();
-            idDest = a->getDestiny()->getID();
-            idArco = a->getID();
-            resistencia = a->getResistance();
-            reatancia = a->getReactance();
+    for(Vertex *v=this->verticesList; v!=NULL; v= v->getNext()){
+         for(Edge *e= v->getEdgesList(); e!=NULL; e= e->getNext()){
+            originId = e->getOrigin()->getID();
+            destinyId = e->getDestiny()->getID();
+            edgeId = e->getID();
+            resist = e->getResistance();
+            react = e->getReactance();
 
-             g->insertEdge(idOrig, idDest, idArco, resistencia, reatancia, a->isClosed());
+             g->insertEdge(originId, destinyId, edgeId, resist, react, e->isClosed());
         }
     }
-
     return g;
 }
 
 /*Algoritmo de Kruskal randomizado*/
 void Graph::randomSolution(){
-    vector<Edge*> vetArcos;
-    for(Vertex *no = this->get_verticesList(); no!=NULL; no = no->getNext()){
-        for(Edge *a = no->getEdgesList(); a!=NULL; a = a->getNext()){
-            a->setSwitch(false);
-            vetArcos.push_back(a);
+    vector<Edge*> vec_edges;
+    for(Vertex *v = this->get_verticesList(); v!=NULL; v = v->getNext()){
+        for(Edge *e = v->getEdgesList(); e!=NULL; e = e->getNext()){
+            e->setSwitch(false);
+            vec_edges.push_back(e);
         }
     }
 
-    random_shuffle(vetArcos.begin(), vetArcos.end());
+    random_shuffle(vec_edges.begin(), vec_edges.end());
 
-    int n_arc_inseridos = 0, n_arcos_inserir = this->verticesSize-1;
-    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
+    int n_inserted_edges = 0, n_to_insert = this->verticesSize-1;
+    for(int i=0; n_inserted_edges < n_to_insert; i++){
 
-        if( (vetArcos.at(i)->getOrigin()->getIdTree() != vetArcos.at(i)->getDestiny()->getIdTree()) &&
-                vetArcos.at(i)->isClosed()==false){
+        if( (vec_edges.at(i)->getOrigin()->getIdTree() != vec_edges.at(i)->getDestiny()->getIdTree()) &&
+                vec_edges.at(i)->isClosed()==false){
 
-            int id = vetArcos.at(i)->getOrigin()->getIdTree();
+            int id = vec_edges.at(i)->getOrigin()->getIdTree();
             for(Vertex *no = this->verticesList; no!=NULL; no = no->getNext()){
                 if(no->getIdTree()==id)
-                    no->setIdTree(vetArcos.at(i)->getDestiny()->getIdTree());
+                    no->setIdTree(vec_edges.at(i)->getDestiny()->getIdTree());
             }
+            vec_edges.at(i)->setSwitch(true);
+            this->findEdge(vec_edges.at(i)->getDestiny()->getID(), vec_edges.at(i)->getOrigin()->getID())->setSwitch(true);
 
-            vetArcos.at(i)->setSwitch(true);
-            this->findEdge(vetArcos.at(i)->getDestiny()->getID(), vetArcos.at(i)->getOrigin()->getID())->setSwitch(true);
-
-            n_arc_inseridos++;
+            n_inserted_edges++;
         }
 
     }
 
     printf("  Aberto:{");
-    for(Vertex *no = this->verticesList; no!=NULL; no = no->getNext()){
-        for(Edge *a = no->getEdgesList(); a!=NULL; a = a->getNext()){
-            if(a->isClosed()==false)
-                printf("%d,", a->getID());
+    for(Vertex *v = this->verticesList; v!=NULL; v = v->getNext()){
+        for(Edge *e = v->getEdgesList(); e!=NULL; e = e->getNext()){
+            if(e->isClosed()==false)
+                printf("%d,", e->getID());
         }
     }
     printf("  }");
 }
 
 void Graph::resetAuxDegrees(){
-    for(Vertex *no = this->verticesList; no!=NULL; no = no->getNext()){
-        for(Edge *a = no->getEdgesList(); a!=NULL; a = a->getNext()){
+    for(Vertex *v = this->verticesList; v!=NULL; v = v->getNext()){
+        for(Edge *e = v->getEdgesList(); e!=NULL; e = e->getNext()){
             Vertex *orig, *dest;
-            orig = a->getOrigin();
-            dest = a->getDestiny();
+            orig = e->getOrigin();
+            dest = e->getDestiny();
 
             orig->setAuxDegree(orig->getOutdegree());
             dest->setAuxDegree(dest->getOutdegree());
@@ -657,18 +712,54 @@ void Graph::resetAuxDegrees(){
 }
 
 void Graph::resetIDTree(){
-    for(Vertex *no = this->verticesList; no!=NULL; no = no->getNext()){
-        no->setIdTree(no->getID());
+    for(Vertex *v = this->verticesList; v!=NULL; v = v->getNext()){
+        v->setIdTree(v->getID());
     }
 }
 
 void Graph::resetFlowAndLoss(){
-    for(Vertex *no=this->verticesList; no!=NULL; no= no->getNext()){
-        for(Edge *a= no->getEdgesList(); a!=NULL; a= a->getNext()){
-            a->setActiveFlow(0.0);
-            a->setReactiveFlow(0.0);
-            a->setActiveLoss(0.0);
-            a->setReactiveLoss(0.0);
+    for(Vertex *v=this->verticesList; v!=NULL; v= v->getNext()){
+        for(Edge *e= v->getEdgesList(); e!=NULL; e= e->getNext()){
+            e->setActiveFlow(0.0);
+            e->setReactiveFlow(0.0);
+            e->setActiveLoss(0.0);
+            e->setReactiveLoss(0.0);
         }
     }
+}
+
+
+void Graph::capacitor_allocation(){
+
+    int idLoad = 1;
+    double capacitor_cost = this->getCapacitorType(1).getCost();   // Custo do capacitor em kW
+
+    this->evaluateLossesAndFlows(1e-12, idLoad);                   // Avalia no nível de carga mais pesado?
+
+    double * last_loss_cost = new double[2];
+    last_loss_cost[0] = this->getTotalLoss()[0];
+    last_loss_cost[1] = this->getTotalLoss()[1];
+    double cost_change = capacitor_cost*2;
+    double loss_change = 0.0;
+
+    uint iter = 0;
+    Vertex * alloc_vertex ;
+    while( capacitor_cost < cost_change ) {
+
+
+        alloc_vertex = this->greedyCapacitorAllocation();
+        alloc_vertex->addCapacitor( this->getCapacitorType(1) );
+        this->evaluateLossesAndFlows(1e-12, idLoad);
+
+        cost_change = last_loss_cost[1] - this->getTotalLoss()[1];
+        loss_change = last_loss_cost[0] - this->getTotalLoss()[0];
+//        cout << "  Total Loss:  " << graph->getTotalLoss()[0] << "KW"  << endl;
+//        cout << "  Total Cost:  " << graph->getTotalLoss()[1] << "US$"  << endl;
+//        cout << "  Loss Change:  " << loss_change << "KW"  << endl;
+//        cout << "  Cost Change: " << cost_change  << " US$"     << endl;
+        last_loss_cost[0] = this->getTotalLoss()[0];
+        last_loss_cost[1] = this->getTotalLoss()[1];
+    }
+
+    alloc_vertex->rmLastCapacitor();
 }

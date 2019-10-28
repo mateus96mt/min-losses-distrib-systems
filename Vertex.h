@@ -1,96 +1,77 @@
-#ifndef NO_H_INCLUDED
-#define NO_H_INCLUDED
+#ifndef VERTEX_H_INCLUDED
+#define VERTEX_H_INCLUDED
 
 #include <vector>
+#include "Capacitor.h"
 
 using namespace std;
 
-class Capacitor {
-private:
-
-    int id;
-    double custo;               // custo do capacitor
-    int maxCapacitoresBarra;    // num. max de capacitores alocados em uma mesma barra
-
-    /** fluxos de potencia utilizados nesta alocacao ao longo do dia sendo que cada periodo do dia ocupa uma posicao
-     * do vetor. Caso n�o seja utilizado chaveamento, o fluxo de potencia utilizado ficar� na posic�o 0 do vetor **/
-    vector<double> powerSteps;
-
-public:
-    Capacitor(int id, double power, int step = 0){
-        this->id = id;
-        this->powerSteps.insert( this->powerSteps.begin(), power);
-    };
-    ~Capacitor(){};
-
-    double getStepPower(int step = 0){                      return powerSteps[step];            }
-
-    int getId() const{                                      return this->id;                    }
-    double getCusto() const{                                return this->custo;                 }
-    int getMaxCapacitoresBarra() const{                     return this->maxCapacitoresBarra;   }
-
-    void setId(int id){                                     this->id = id;                                  }
-    void setCusto(double custo){                            this->custo = custo;                            }
-    void setMaxCapacitoresBarra(int maxCapacitoresBarra){   this->maxCapacitoresBarra = maxCapacitoresBarra;}
+/// Para cálculo do custo em dinheiro por nível de carga
+struct LoadLevel{
+    double level;   // Nível de carga
+    int time;       // Tempo no nível
+    double cost;    // Custo por tempo. Em hora, dia, ano, etc.
 };
 
-
-/** Funcao objetivo:
- * - custo da perda
- * - custo do capacitor
- * - reconfiguracao (chaveamento) **/
-
-class Edge;
+class Edge; // Forward declaration
 
 class Vertex{
 
 private:
     int id;
+    int capacitorMax;
     Vertex *nextVertex;
     Edge *edgesList;
     int outdegree, indegree;
     int auxDegree;
     int idTree;
-    vector<Capacitor*> capacitors; // Vetor de capacitores alocados no vertice
+    vector<Capacitor> capacitorsAlloc; // Vetor de tipos capacitores alocados no vertice
 
     double activePower, reactivePower; // Demandas
     double voltage;
-
     bool marked;
 
+    vector<LoadLevel> loadFactors;
+
 public:
-    Vertex(int id);
+
+    static int idLF; //TODO: Private & Static?
+
+    Vertex(int id, int capacitorMaximumAllocation = 1); // Por padrao sera permitido soh um cap, mas podem colocar varios
     ~Vertex();
     void show();
-    void addCapacitor(int id, double power, int step = 0);
-    void rmCapacitor(int id);
+    void addCapacitor( Capacitor newCap );
+    void rmLastCapacitor();
+    void rm_all_capacitors();
+    void chooseFactor(int idFactor);
 
     //GETS e SETS:
-    int getID(){                            return this->id;            };
-    Vertex *getNext(){                      return this->nextVertex;    };
-    Edge *getEdgesList(){                   return this->edgesList;     };
-    double getActivePower(){                return this->activePower;   };
+    int getID(){                                return this->id;            };
+    Vertex *getNext(){                          return this->nextVertex;    };
+    Edge *getEdgesList(){                       return this->edgesList;     };
+    double getActivePower(); // * this->loadFactors[this->loadFactor].time; }
     double getReactivePower();
-    double getVoltage(){                    return this->voltage;       };
-    int getIndegree(){                      return this->outdegree;     };
-    int getOutdegree(){                     return this->indegree;      };
-    bool getMarked(){                       return this->marked;        };
-    int getAuxDegree(){                     return this->auxDegree;     };
-    int getIdTree(){                        return this->idTree;        };
+    double getVoltage(){                        return this->voltage;       };
+    int getIndegree(){                          return this->outdegree;     };
+    int getOutdegree(){                         return this->indegree;      };
+    bool getMarked(){                           return this->marked;        };
+    int getAuxDegree(){                         return this->auxDegree;     };
+    int getIdTree(){                            return this->idTree;        };
 
-    vector<Capacitor*> getCapacitors(){    return capacitors;         };
+    vector<Capacitor> getCapacitors(){          return capacitorsAlloc;     };
 
 
-    void setID(int id){                     this->id = id;              };
-    void setNext(Vertex *v){                this->nextVertex = v;       };
-    void setEdgesList(Edge *e){             this->edgesList = e;        };
-    void setActivePower(double potAt){      this->activePower = potAt;  };
-    void setReactivePower(double pow){      this->reactivePower = pow;  };
-    void setVoltage(double volt){           this->voltage = volt;       };
-    void setOutdegree(int deg){             this->outdegree = deg;      };
-    void setIndegree(int deg){              this->indegree = deg;       };
-    void setMarked(bool mark){              this->marked = mark;        };
-    void setAuxDegree(int deg){             this->auxDegree = deg;      };
-    void setIdTree(int idTree){             this->idTree = idTree;      };
+    void setID(int id){                         this->id = id;              };
+    void setNext(Vertex *v){                    this->nextVertex = v;       };
+    void setEdgesList(Edge *e){                 this->edgesList = e;        };
+    void setActivePower(double potAt){          this->activePower = potAt;  };
+    void setReactivePower(double pow){          this->reactivePower = pow;  };
+    void setVoltage(double volt){               this->voltage = volt;       };
+    void setLoadFactors(vector<LoadLevel> l){   this->loadFactors = l;      };
+    void setOutdegree(int deg){                 this->outdegree = deg;      };
+    void setIndegree(int deg){                  this->indegree = deg;       };
+    void setMarked(bool mark){                  this->marked = mark;        };
+    void setAuxDegree(int deg){                 this->auxDegree = deg;      };
+    void setIdTree(int idTree){                 this->idTree = idTree;      };
 };
 #endif // NO_H_INCLUDED

@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Capacitor.h
+vector
+-
+
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.h
 stdio.h
 -
@@ -19,46 +23,30 @@ iostream
 -
 fstream
 -
+vector
+-
+algorithm
+-
 Vertex.h
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h
 Edge.h
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Edge.h
-vector
--
-algorithm
--
+Capacitor.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Capacitor.h
+
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.cpp
+Individual.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h
 
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h
 math.h
 -
 Graph.h
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.h
-
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Random_keys.h
-math.h
--
-Individual.h
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Individual.h
 
 /home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Vertex.h
 vector
 -
-
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/main.cpp
-stdio.h
--
-cstdlib
--
-Graph.h
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Graph.h
-Random_keys.h
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Random_keys.h
-time.h
-/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/time.h
-algorithm
--
-math.h
--
-string.h
--
+Capacitor.h
+/home/gbm/Área de Trabalho/DistribuitionNetworks/minimizacao_perdas_sistema_distribuicao/Capacitor.h
 
