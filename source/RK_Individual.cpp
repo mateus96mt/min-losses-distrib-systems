@@ -50,11 +50,11 @@ void RK_Individual::calculaFuncaoObjetivo(Graph_network *g){
     Cromossome *c;
     for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a= a->getNext()){
 
             /**individuo possui somente arcos modificaveis e em um sentido
             (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
-            if(a->getModificavel()==true && a->getMarcado()==true){
+            if(a->getModifiable() == true && a->getMarked() == true){
                 c = new Cromossome();
                 c->arco = a;
                 c->peso = 0;
@@ -74,18 +74,18 @@ void RK_Individual::calculaFuncaoObjetivo(Graph_network *g){
 
     /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
     for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
 
             //arcos nao modificaveis ficam sempre fechados
-            if(a->getModificavel()==false)
-                a->setChave(true);
+            if(a->getModifiable() == false)
+                a->setSwitch(true);
             else
-                a->setChave(false);
+                a->setSwitch(false);
 
-            a->setFLuxoPAtiva(0.0);
-            a->setFLuxoPReativa(0.0);
-            a->setPerdaAtiva(0.0);
-            a->setPerdaReativa(0.0);
+            a->setActiveFlow(0.0);
+            a->setReactiveFlow(0.0);
+            a->setActiveLoss(0.0);
+            a->setReactiveLoss(0.0);
         }
     }
 
@@ -95,16 +95,18 @@ void RK_Individual::calculaFuncaoObjetivo(Graph_network *g){
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
 
-        if( (cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && cromossomos.at(i)->arco->getChave()==false){
+        if((cromossomos.at(i)->arco->getOrigin()->getIdArv() != cromossomos.at(i)->arco->getDestiny()->getIdArv()) &&
+                cromossomos.at(i)->arco->isClosed() == false){
 
-            int id = cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
+            int id = cromossomos.at(i)->arco->getOrigin()->getIdArv();
             for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
-                    no->setIdArv(cromossomos.at(i)->arco->getNoDestino()->getIdArv());
+                    no->setIdArv(cromossomos.at(i)->arco->getDestiny()->getIdArv());
             }
 
-            cromossomos.at(i)->arco->setChave(true);
-            g->buscaArco(cromossomos.at(i)->arco->getNoDestino()->getID(), cromossomos.at(i)->arco->getNoOrigem()->getID())->setChave(true);
+            cromossomos.at(i)->arco->setSwitch(true);
+            g->buscaArco(cromossomos.at(i)->arco->getDestiny()->getID(),
+                         cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
 
             n_arc_inseridos++;
         }
@@ -149,9 +151,9 @@ void RK_Individual::geraPesosConfInicial(int *idsAbertos, int n, Graph_network *
     int j=0;
     for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a= a->getNext()){
 
-            if(a->getModificavel()==true && a->getMarcado()==true){
+            if(a->getModifiable() == true && a->getMarked() == true){
                 for(int i=0; i<n; i++){
                     if(a->getID()==idsAbertos[i]){
                         this->pesos[j] = 0.0;
@@ -194,11 +196,11 @@ void RK_Individual::criaCromossomos(Graph_network *g){
     int i = 0;
     for(Vertex *no = g->getListaNos(); no != NULL; no=no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a= a->getNext()){
 
             /**individuo possui somente arcos modificaveis e em um sentido
             (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
-            if(a->getModificavel()==true && a->getMarcado()==true){
+            if(a->getModifiable() == true && a->getMarked() == true){
                 c = new Cromossome();
                 c->arco = a;
                 c->peso = 0;
@@ -228,16 +230,18 @@ void RK_Individual::calculaFuncaoObjetivoOtimizado(Graph_network *g){
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
 
-        if( (cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && cromossomos.at(i)->arco->getChave()==false){
+        if((cromossomos.at(i)->arco->getOrigin()->getIdArv() != cromossomos.at(i)->arco->getDestiny()->getIdArv()) &&
+                cromossomos.at(i)->arco->isClosed() == false){
 
-            int id = cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
+            int id = cromossomos.at(i)->arco->getOrigin()->getIdArv();
             for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
-                    no->setIdArv(cromossomos.at(i)->arco->getNoDestino()->getIdArv());
+                    no->setIdArv(cromossomos.at(i)->arco->getDestiny()->getIdArv());
             }
 
-            cromossomos.at(i)->arco->setChave(true);
-            g->buscaArco(cromossomos.at(i)->arco->getNoDestino()->getID(), cromossomos.at(i)->arco->getNoOrigem()->getID())->setChave(true);
+            cromossomos.at(i)->arco->setSwitch(true);
+            g->buscaArco(cromossomos.at(i)->arco->getDestiny()->getID(),
+                         cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
 
             n_arc_inseridos++;
         }

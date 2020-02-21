@@ -20,7 +20,7 @@ Graph_network::~Graph_network(){
     Vertex *aux = new Vertex(0);
     for(Vertex *no=this->listaNos; no != NULL; no=no->getProxNo()){
         delete aux;
-        for(Edge *arco=no->getListaArcos(); arco != NULL; arco=arco->getProxArco()){
+        for(Edge *arco=no->getListaArcos(); arco != NULL; arco= arco->getNext()){
             delete arco;
         }
         aux = no;
@@ -42,7 +42,7 @@ Vertex *Graph_network::buscaNo(int id){
 
 Edge *Graph_network::buscaArco(int id){
     for(Vertex *no=getListaNos(); no != NULL; no=no->getProxNo()){
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
             if(a->getID() == id)
                 return a;
         }
@@ -52,8 +52,8 @@ Edge *Graph_network::buscaArco(int id){
 
 Edge *Graph_network::buscaArco(int idOrigem, int idDestino){
     for(Vertex *no=getListaNos(); no != NULL; no=no->getProxNo()){
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
-            if(a->getNoOrigem()->getID() == idOrigem && a->getNoDestino()->getID() == idDestino)
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
+            if(a->getOrigin()->getID() == idOrigem && a->getDestiny()->getID() == idDestino)
                 return a;
         }
     }
@@ -80,16 +80,16 @@ void Graph_network::insereArco(int idOrigem, int idDestino, int id, double res, 
     Vertex *noDestino = buscaNo(idDestino);
 
     Edge *novaArco = new Edge(id);
-    novaArco->setNoDestino(noDestino);
-    novaArco->setNoOrigem(noOrigem);
+    novaArco->setDestiny(noDestino);
+    novaArco->setOrigin(noOrigem);
 
     //insere Arco no inicio da lista
-    novaArco->setProxArco(noOrigem->getListaArcos());
+    novaArco->setNext(noOrigem->getListaArcos());
     noOrigem->setListaArcos(novaArco);
 
-    novaArco->setResistencia(res);
-    novaArco->setReatancia(reat);
-    novaArco->setChave(chave);
+    novaArco->setResistance(res);
+    novaArco->setReactance(reat);
+    novaArco->setSwitch(chave);
 
 
     noOrigem->setGrauSaida(noOrigem->getGrauSaida()+1);
@@ -211,24 +211,24 @@ double Graph_network::cargasPerdasRamoAtiv(Vertex *no){
 }
 
 void Graph_network::auxcargasPerdasRamoAtiv(Vertex *no, double &soma){
-    for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+    for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
         //nao descer por arcos com chave aberta
-        while(a!=NULL && a->getChave() == false){
+        while(a!=NULL && a->isClosed() == false){
 
             //nao tem fluxo nem perda em arcos abertos
-            a->setFLuxoPAtiva(0.0);
-            a->setFLuxoPReativa(0.0);
-            a->setPerdaAtiva(0.0);
-            a->setPerdaReativa(0.0);
+            a->setActiveFlow(0.0);
+            a->setReactiveFlow(0.0);
+            a->setActiveLoss(0.0);
+            a->setReactiveLoss(0.0);
 
-            a = a->getProxArco();
+            a = a->getNext();
         }
         if(a==NULL)
             break;
 
-        soma+=a->getNoDestino()->getPotAtiva() + a->getPerdaAtiva();
-        auxcargasPerdasRamoAtiv(a->getNoDestino(), soma);
+        soma+= a->getDestiny()->getPotAtiva() + a->getActiveLoss();
+        auxcargasPerdasRamoAtiv(a->getDestiny(), soma);
     }
 }
 
@@ -239,24 +239,24 @@ double Graph_network::cargasPerdasRamoReAtiv(Vertex *no){
 }
 
 void Graph_network::auxcargasPerdasRamoReAtiv(Vertex *no, double &soma){
-    for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+    for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
         //nao descer por arcos com chave aberta
-        while(a!=NULL && a->getChave() == false){
+        while(a!=NULL && a->isClosed() == false){
 
             //nao tem fluxo nem perda em arcos abertos
-            a->setFLuxoPAtiva(0.0);
-            a->setFLuxoPReativa(0.0);
-            a->setPerdaAtiva(0.0);
-            a->setPerdaReativa(0.0);
+            a->setActiveFlow(0.0);
+            a->setReactiveFlow(0.0);
+            a->setActiveLoss(0.0);
+            a->setReactiveLoss(0.0);
 
-            a = a->getProxArco();
+            a = a->getNext();
         }
         if(a==NULL)
             break;
 
-        soma+=a->getNoDestino()->getPotReativa() + a->getPerdaReativa();
-        auxcargasPerdasRamoReAtiv(a->getNoDestino(), soma);
+        soma+= a->getDestiny()->getPotReativa() + a->getReactiveLoss();
+        auxcargasPerdasRamoReAtiv(a->getDestiny(), soma);
     }
 }
 
@@ -270,21 +270,21 @@ void Graph_network::Auxfoward(Vertex *no, Edge *ak, int it){
     if(no == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
             double perda_ativ = 0.0;
             double perda_reat = 0.0;
 
             //nao descer por arcos com chave aberta
-            while(a!=NULL && a->getChave() == false){
+            while(a!=NULL && a->isClosed() == false){
 
                 //nao tem fluxo nem perda em arcos abertos
-                a->setFLuxoPAtiva(0.0);
-                a->setFLuxoPReativa(0.0);
-                a->setPerdaAtiva(0.0);
-                a->setPerdaReativa(0.0);
+                a->setActiveFlow(0.0);
+                a->setReactiveFlow(0.0);
+                a->setActiveLoss(0.0);
+                a->setReactiveLoss(0.0);
 
-                a = a->getProxArco();
+                a = a->getNext();
             }
             if(a==NULL)
                 break;
@@ -293,40 +293,43 @@ void Graph_network::Auxfoward(Vertex *no, Edge *ak, int it){
 
             //chute inicial para o fluxo nas arests que partem do no terminal
             if(no==this->listaNos){
-                double carcasPerdasAtivRamo = cargasPerdasRamoAtiv(a->getNoDestino());
-                double carcasPerdasReativRamo = cargasPerdasRamoReAtiv(a->getNoDestino());
+                double carcasPerdasAtivRamo = cargasPerdasRamoAtiv(a->getDestiny());
+                double carcasPerdasReativRamo = cargasPerdasRamoReAtiv(a->getDestiny());
 
-                a->setFLuxoPAtiva(carcasPerdasAtivRamo + a->getPerdaAtiva());
-                a->setFLuxoPReativa(carcasPerdasReativRamo + a->getPerdaReativa());
+                a->setActiveFlow(carcasPerdasAtivRamo + a->getActiveLoss());
+                a->setReactiveFlow(carcasPerdasReativRamo + a->getReactiveLoss());
 
             }else{
 
                 //a partir da primeira iteracao considerase a perda calculada na iteracao anterior
                 if(it>0){
-                    perda_ativ = ak->getResistencia()*(pow(ak->getFLuxoPAtiva(), 2) + pow(ak->getFLuxoReativa(), 2)) / pow(ak->getNoOrigem()->getVoltagem(), 2);
-                    perda_reat = ak->getReatancia()*(pow(ak->getFLuxoPAtiva(), 2) + pow(ak->getFLuxoReativa(), 2)) / pow(ak->getNoOrigem()->getVoltagem(), 2);
+                    perda_ativ = ak->getResistance() * (pow(ak->getActivePowerFlow(), 2) + pow(
+                            ak->getReactivePowerFlow(), 2)) / pow(
+                            ak->getOrigin()->getVoltagem(), 2);
+                    perda_reat = ak->getReactance() * (pow(ak->getActivePowerFlow(), 2) + pow(ak->getReactivePowerFlow(), 2)) / pow(
+                            ak->getOrigin()->getVoltagem(), 2);
                 }
 
-                a->setFLuxoPAtiva(ak->getFLuxoPAtiva() - perda_ativ - no->getPotAtiva());
-                a->setFLuxoPReativa(ak->getFLuxoReativa() - perda_reat - no->getPotReativa());
+                a->setActiveFlow(ak->getActivePowerFlow() - perda_ativ - no->getPotAtiva());
+                a->setReactiveFlow(ak->getReactivePowerFlow() - perda_reat - no->getPotReativa());
 
                 //bifurcacao - o fluxo que seque para o arco 'a' deve-se subtrair a soma de cargas e perdas dos ramos de bifurcacoes
-                if(a->getNoOrigem()->getGrauSaida()>1){
+                if(a->getOrigin()->getGrauSaida() > 1){
                     double somaAtiv=0.0, somaReAtiv=0.0;
-                    for(Edge *aux=no->getListaArcos(); aux != NULL; aux=aux->getProxArco()){
-                        if(aux!=a && aux->getChave()==true){
-                            somaAtiv+=aux->getPerdaAtiva() + cargasPerdasRamoAtiv(aux->getNoDestino());
-                            somaReAtiv+=aux->getPerdaReativa() + cargasPerdasRamoReAtiv(aux->getNoDestino());
+                    for(Edge *aux=no->getListaArcos(); aux != NULL; aux= aux->getNext()){
+                        if(aux!=a && aux->isClosed() == true){
+                            somaAtiv+= aux->getActiveLoss() + cargasPerdasRamoAtiv(aux->getDestiny());
+                            somaReAtiv+= aux->getReactiveLoss() + cargasPerdasRamoReAtiv(aux->getDestiny());
                         }
                     }
 
-                    a->setFLuxoPAtiva(a->getFLuxoPAtiva() - somaAtiv);
-                    a->setFLuxoPReativa(a->getFLuxoReativa() - somaReAtiv);
+                    a->setActiveFlow(a->getActivePowerFlow() - somaAtiv);
+                    a->setReactiveFlow(a->getReactivePowerFlow() - somaReAtiv);
                 }
             }
             //--------------
 
-            Auxfoward(a->getNoDestino(), a, it);
+            Auxfoward(a->getDestiny(), a, it);
         }
     }
 }
@@ -340,40 +343,41 @@ void Graph_network::Auxbackward(Vertex *no){
     if(no == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
             //nao descer por arcos com chave aberta
-            while(a!=NULL && a->getChave() == false){
+            while(a!=NULL && a->isClosed() == false){
 
                 //nao tem fluxo nem perda em arcos abertos
-                a->setFLuxoPAtiva(0.0);
-                a->setFLuxoPReativa(0.0);
-                a->setPerdaAtiva(0.0);
-                a->setPerdaReativa(0.0);
+                a->setActiveFlow(0.0);
+                a->setReactiveFlow(0.0);
+                a->setActiveLoss(0.0);
+                a->setReactiveLoss(0.0);
 
-                a = a->getProxArco();
+                a = a->getNext();
             }
             if(a==NULL)
                 break;
 
             //----backward----
-            Vertex *noDest = a->getNoDestino();
-            Vertex *noOrig = a->getNoOrigem();
+            Vertex *noDest = a->getDestiny();
+            Vertex *noOrig = a->getOrigin();
 
             noDest->setVoltagem(pow(noOrig->getVoltagem(), 2)
-            - 2*(a->getResistencia()*a->getFLuxoPAtiva() + a->getReatancia()*a->getFLuxoReativa()) +
-            (pow(a->getResistencia(), 2) + pow(a->getReatancia(), 2))*
-            (pow(a->getFLuxoPAtiva(), 2) + pow(a->getFLuxoReativa(), 2))/pow(noOrig->getVoltagem(), 2));
+                                - 2*(a->getResistance() * a->getActivePowerFlow() + a->getReactance() *
+                                                                                    a->getReactivePowerFlow()) +
+                                (pow(a->getResistance(), 2) + pow(a->getReactance(), 2)) *
+                                (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2)) / pow(noOrig->getVoltagem(), 2));
 
             noDest->setVoltagem(sqrt(noDest->getVoltagem()));
 
-            a->setPerdaAtiva(a->getResistencia()*(pow(a->getFLuxoPAtiva(), 2) + pow(a->getFLuxoReativa(), 2))
-            /pow(noOrig->getVoltagem(), 2));
-            a->setPerdaReativa(a->getReatancia()*(pow(a->getFLuxoPAtiva(), 2) + pow(a->getFLuxoReativa(), 2))
-            /pow(noOrig->getVoltagem(), 2));
+            a->setActiveLoss(a->getResistance() * (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2))
+                             / pow(noOrig->getVoltagem(), 2));
+            a->setReactiveLoss(a->getReactance() * (pow(a->getActivePowerFlow(), 2) + pow(a->getReactivePowerFlow(), 2))
+                               / pow(noOrig->getVoltagem(), 2));
             //-------------
 
-            Auxbackward(a->getNoDestino());
+            Auxbackward(a->getDestiny());
         }
     }
 }
@@ -381,9 +385,9 @@ void Graph_network::Auxbackward(Vertex *no){
 double *Graph_network::soma_perdas(){
     double *perda = new double[2]; perda[0] = perda[1] = 0.0;
     for(Vertex *no=listaNos; no != NULL; no = no->getProxNo()){
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            perda[0] += a->getPerdaAtiva();
-            perda[1] += a->getPerdaReativa();
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            perda[0] += a->getActiveLoss();
+            perda[1] += a->getReactiveLoss();
         }
     }
     return perda;
@@ -393,20 +397,20 @@ double *Graph_network::soma_perdasResetando(){
     double *perda = new double[2]; perda[0] = perda[1] = 0.0;
     for(Vertex *no=listaNos; no != NULL; no = no->getProxNo()){
         no->setIdArv(no->getID());
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            perda[0] += a->getPerdaAtiva();
-            perda[1] += a->getPerdaReativa();
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            perda[0] += a->getActiveLoss();
+            perda[1] += a->getReactiveLoss();
 
             //arcos nao modificaveis ficam sempre fechados
-            if(a->getModificavel()==false)
-                a->setChave(true);
+            if(a->getModifiable() == false)
+                a->setSwitch(true);
             else
-                a->setChave(false);
+                a->setSwitch(false);
 
-            a->setFLuxoPAtiva(0.0);
-            a->setFLuxoPReativa(0.0);
-            a->setPerdaAtiva(0.0);
-            a->setPerdaReativa(0.0);
+            a->setActiveFlow(0.0);
+            a->setReactiveFlow(0.0);
+            a->setActiveLoss(0.0);
+            a->setReactiveLoss(0.0);
         }
     }
     return perda;
@@ -467,17 +471,17 @@ void Graph_network::auxehConexo(Vertex *no, int &n_marcados){
             no->setMarcado(true);
             n_marcados++;
 
-            for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+            for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
                 //nao descer por arcos com chave aberta
-                while(a!=NULL && a->getChave() == false){
-                    a = a->getProxArco();
+                while(a!=NULL && a->isClosed() == false){
+                    a = a->getNext();
                 }
 
                 if(a==NULL)
                     break;
 
-                auxehConexo(a->getNoDestino(), n_marcados);
+                auxehConexo(a->getDestiny(), n_marcados);
             }
         }
     }
@@ -510,17 +514,17 @@ void Graph_network::auxehArvore(Vertex *no, int &marcados, bool &ciclo){
             no->setMarcado(true);
             marcados++;
 
-            for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+            for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
                 //nao descer por arcos com chave aberta
-                while(a!=NULL && a->getChave() == false){
-                    a = a->getProxArco();
+                while(a!=NULL && a->isClosed() == false){
+                    a = a->getNext();
                 }
 
                 if(a==NULL)
                     break;
 
-                auxehArvore(a->getNoDestino(), marcados, ciclo);
+                auxehArvore(a->getDestiny(), marcados, ciclo);
             }
         }
         else
@@ -546,28 +550,28 @@ void Graph_network::auxDefine_sentido_fluxos(Vertex *no, Vertex *noAnterior){
     if(no == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
             //nao descer por arcos com chave aberta e descer no sentido correto
             //a->getNoDestino()==no e o arco de volta do arco 'a' assim nao passamos por ele
-            while(a!=NULL && (a->getChave() == false || a->getNoDestino()==noAnterior) ){
+            while(a!=NULL && (a->isClosed() == false || a->getDestiny() == noAnterior) ){
 
                 //nao tem fluxo nem perda em arcos abertos
-                a->setFLuxoPAtiva(0.0);
-                a->setFLuxoPReativa(0.0);
-                a->setPerdaAtiva(0.0);
-                a->setPerdaReativa(0.0);
+                a->setActiveFlow(0.0);
+                a->setReactiveFlow(0.0);
+                a->setActiveLoss(0.0);
+                a->setReactiveLoss(0.0);
 
-                if(a->getNoDestino()==noAnterior)
-                    a->setChave(false);
+                if(a->getDestiny() == noAnterior)
+                    a->setSwitch(false);
 
-                a = a->getProxArco();
+                a = a->getNext();
             }
             if(a==NULL)
                 break;
 
 //            printf("\nno{%d}", no->getID());
-            auxDefine_sentido_fluxos(a->getNoDestino(), no);
+            auxDefine_sentido_fluxos(a->getDestiny(), no);
         }
     }
 }
@@ -581,20 +585,20 @@ void Graph_network::defineArestasModificaveis(){
 
         //procura arcos que conectam nos folha, esses arcos nao sao modificaveis(nao podem ser abertos)
         for(Vertex *no=this->listaNos; no != NULL; no=no->getProxNo()){
-            for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
+            for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
 
-                if(a->getNoDestino()->getGrauAux()==1 && a->getChave()==true && a->getModificavel()==true){
+                if(a->getDestiny()->getGrauAux() == 1 && a->isClosed() == true && a->getModifiable() == true){
 
 //                    printf("\ndefinindo como nao modif A{%d}...", a->getID());
 
-                    a->setModificavel(false);
-                    a->setChave(true);//nao modificavel: chave sempre fechad
+                    a->setModifiable(false);
+                    a->setSwitch(true);//nao modificavel: chave sempre fechad
 
-                    Edge *aVolta = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-                    aVolta->setModificavel(false);
+                    Edge *aVolta = this->buscaArco(a->getDestiny()->getID(), a->getOrigin()->getID());
+                    aVolta->setModifiable(false);
 
-                    a->getNoOrigem()->setGrauAux(a->getNoOrigem()->getGrauAux()-1);
-                    a->getNoDestino()->setGrauAux(a->getNoDestino()->getGrauAux()-1);
+                    a->getOrigin()->setGrauAux(a->getOrigin()->getGrauAux() - 1);
+                    a->getDestiny()->setGrauAux(a->getDestiny()->getGrauAux() - 1);
 
                     //arcos nao modificaveis ficam sempre fechados
 
@@ -629,14 +633,14 @@ Graph_network *Graph_network::retornaCopia(){
     g->insereNo(noFonte->getID(), noFonte->getPotAtiva(), noFonte->getPotReativa(), noFonte->getVoltagem());
 
     for(Vertex *no=this->listaNos; no != NULL; no=no->getProxNo()){
-         for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
-            idOrig = a->getNoOrigem()->getID();
-            idDest = a->getNoDestino()->getID();
+         for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
+            idOrig = a->getOrigin()->getID();
+            idDest = a->getDestiny()->getID();
             idArco = a->getID();
-            resistencia = a->getResistencia();
-            reatancia = a->getReatancia();
+            resistencia = a->getResistance();
+            reatancia = a->getReactance();
 
-            g->insereArco(idOrig, idDest, idArco, resistencia, reatancia, a->getChave());
+            g->insereArco(idOrig, idDest, idArco, resistencia, reatancia, a->isClosed());
         }
     }
 
@@ -647,8 +651,8 @@ Graph_network *Graph_network::retornaCopia(){
 void Graph_network::solucaoAleatoria(){
     vector<Edge*> vetArcos;
     for(Vertex *no = this->getListaNos(); no != NULL; no = no->getProxNo()){
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            a->setChave(false);
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            a->setSwitch(false);
             vetArcos.push_back(a);
         }
     }
@@ -658,16 +662,18 @@ void Graph_network::solucaoAleatoria(){
     int n_arc_inseridos = 0, n_arcos_inserir = this->numeroNos-1;
     for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
 
-        if( (vetArcos.at(i)->getNoOrigem()->getIdArv() != vetArcos.at(i)->getNoDestino()->getIdArv()) && vetArcos.at(i)->getChave()==false){
+        if((vetArcos.at(i)->getOrigin()->getIdArv() != vetArcos.at(i)->getDestiny()->getIdArv()) &&
+                vetArcos.at(i)->isClosed() == false){
 
-            int id = vetArcos.at(i)->getNoOrigem()->getIdArv();
+            int id = vetArcos.at(i)->getOrigin()->getIdArv();
             for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
-                    no->setIdArv(vetArcos.at(i)->getNoDestino()->getIdArv());
+                    no->setIdArv(vetArcos.at(i)->getDestiny()->getIdArv());
             }
 
-            vetArcos.at(i)->setChave(true);
-            this->buscaArco(vetArcos.at(i)->getNoDestino()->getID(), vetArcos.at(i)->getNoOrigem()->getID())->setChave(true);
+            vetArcos.at(i)->setSwitch(true);
+            this->buscaArco(vetArcos.at(i)->getDestiny()->getID(), vetArcos.at(i)->getOrigin()->getID())->setSwitch(
+                    true);
 
             n_arc_inseridos++;
         }
@@ -676,8 +682,8 @@ void Graph_network::solucaoAleatoria(){
 
     printf("  Aberto:{");
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            if(a->getChave()==false)
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            if(a->isClosed() == false)
                 printf("%d,", a->getID());
         }
     }
@@ -686,10 +692,10 @@ void Graph_network::solucaoAleatoria(){
 
 void Graph_network::resetaGrausAuxiliares(){
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
             Vertex *orig, *dest;
-            orig = a->getNoOrigem();
-            dest = a->getNoDestino();
+            orig = a->getOrigin();
+            dest = a->getDestiny();
 
             orig->setGrauAux(orig->getGrauEntrada());
             dest->setGrauAux(dest->getGrauEntrada());
@@ -705,11 +711,11 @@ void Graph_network::resetaIdArv(){
 
 void Graph_network::zeraFluxosEPerdas(){
     for(Vertex *no=this->listaNos; no != NULL; no=no->getProxNo()){
-        for(Edge *a=no->getListaArcos(); a != NULL; a=a->getProxArco()){
-            a->setFLuxoPAtiva(0.0);
-            a->setFLuxoPReativa(0.0);
-            a->setPerdaAtiva(0.0);
-            a->setPerdaReativa(0.0);
+        for(Edge *a=no->getListaArcos(); a != NULL; a= a->getNext()){
+            a->setActiveFlow(0.0);
+            a->setReactiveFlow(0.0);
+            a->setActiveLoss(0.0);
+            a->setReactiveLoss(0.0);
         }
     }
 }
@@ -717,9 +723,9 @@ void Graph_network::zeraFluxosEPerdas(){
 void Graph_network::fechaArcosNaoModificaveis(){
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            if(a->getModificavel() == false){
-                a->setChave(true);
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            if(a->getModifiable() == false){
+                a->setSwitch(true);
             }
         }
 
@@ -729,8 +735,8 @@ void Graph_network::fechaArcosNaoModificaveis(){
 void Graph_network::resetaModificaveis(){
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            a->setModificavel(true);
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            a->setModifiable(true);
         }
     }
 }
@@ -738,8 +744,8 @@ void Graph_network::resetaModificaveis(){
 void Graph_network::resetaArcosMarcados(){
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
-            a->setMarcado(false);
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
+            a->setMarked(false);
         }
     }
 }
@@ -751,12 +757,12 @@ void Graph_network::marcaUmsentidoArcos(){
     Edge *aux;
     for(Vertex *no = this->listaNos; no != NULL; no = no->getProxNo()){
 
-        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()){
+        for(Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()){
 
-            if(a->getMarcado()==false){
-                a->setMarcado(false);
-                aux = this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-                aux->setMarcado(true);
+            if(a->getMarked() == false){
+                a->setMarked(false);
+                aux = this->buscaArco(a->getDestiny()->getID(), a->getOrigin()->getID());
+                aux->setMarked(true);
             }
 
         }
@@ -771,14 +777,14 @@ void Graph_network::aux_marcaComponenteConexa(Vertex *start, Vertex *previous, i
     if(start == NULL)
         cout<<"\n No NULL \n"<<endl;
     else{
-        for(Edge *a=start->getListaArcos(); a != NULL; a=a->getProxArco()){
+        for(Edge *a=start->getListaArcos(); a != NULL; a= a->getNext()){
 
-            if(a->getChave()==true) {
-                this->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID())->setChave(false);
+            if(a->isClosed() == true) {
+                this->buscaArco(a->getDestiny()->getID(), a->getOrigin()->getID())->setSwitch(false);
 //                start->setIdArv(value);
-                a->getNoOrigem()->setIdArv(value);
-                a->getNoDestino()->setIdArv(value);
-                this->aux_marcaComponenteConexa(a->getNoDestino(), start, value);
+                a->getOrigin()->setIdArv(value);
+                a->getDestiny()->setIdArv(value);
+                this->aux_marcaComponenteConexa(a->getDestiny(), start, value);
             }
         }
     }
@@ -788,10 +794,10 @@ void Graph_network::percursoPronfundidade(Vertex *start, int value) {
     if(start==NULL)
         printf("inicio NULL\n");
     else{
-        for(Edge *e = start->getListaArcos(); e!=NULL; e = e->getProxArco()){
+        for(Edge *e = start->getListaArcos(); e!=NULL; e = e->getNext()){
             start->setIdArv(value);
             printf("no: %d\t", start->getID());
-            this->percursoPronfundidade(e->getNoDestino(), value);
+            this->percursoPronfundidade(e->getDestiny(), value);
         }
     }
 }

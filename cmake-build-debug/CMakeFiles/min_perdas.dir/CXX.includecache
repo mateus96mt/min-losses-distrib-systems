@@ -42,14 +42,6 @@ include/Graph_network.h
 RK_Individual.h
 ../include/RK_Individual.h
 
-../include/RKGA.h
-math.h
--
-include/RK_Individual.h
-../include/include/RK_Individual.h
-include/Evolutionary_path_relinking.h
-../include/include/Evolutionary_path_relinking.h
-
 ../include/RK_Individual.h
 math.h
 -
@@ -139,24 +131,4 @@ algorithm
 /home/mateus/MIN_PERDAS/source/OS_Individual.cpp
 include/OS_Individual.h
 /home/mateus/MIN_PERDAS/source/include/OS_Individual.h
-
-/home/mateus/MIN_PERDAS/source/RKGA.cpp
-include/RKGA.h
-/home/mateus/MIN_PERDAS/source/include/RKGA.h
-unistd.h
--
-random
--
-
-/home/mateus/MIN_PERDAS/source/RK_Individual.cpp
-include/RK_Individual.h
-/home/mateus/MIN_PERDAS/source/include/RK_Individual.h
-
-/home/mateus/MIN_PERDAS/source/Vertex.cpp
-stdio.h
--
-include/Vertex.h
-/home/mateus/MIN_PERDAS/source/include/Vertex.h
-include/Edge.h
-/home/mateus/MIN_PERDAS/source/include/Edge.h
 

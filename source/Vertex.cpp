@@ -31,9 +31,9 @@ void Vertex::imprime(){
     printf("< No{%d}  idArv = %d  grauS = %d  grauE = %d  grauAUX = %d  pA = %.5f  pR = %.5f  vol = %.5f >",
     this->id, this->idArv, this->grauSaida, this->grauEntrada, this->grauAux, this->potAtiva, this->potReativa, this->voltagem);
 
-    for(Edge *a = this->listaArcos; a != NULL; a=a->getProxArco()){
+    for(Edge *a = this->listaArcos; a != NULL; a= a->getNext()){
         printf("\n\n");
-        a->imprime();
+        a->show();
     }
     printf("\n------------------------------------------------------------------------");
     printf("\n\n");

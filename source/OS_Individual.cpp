@@ -25,20 +25,24 @@ OS_Individual::OS_Individual(RK_Individual *ind, Graph_network *g) {
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; i<RK_Individual::cromossomos.size(); i++){
 
-        if( (RK_Individual::cromossomos.at(i)->arco->getNoOrigem()->getIdArv() != RK_Individual::cromossomos.at(i)->arco->getNoDestino()->getIdArv()) && RK_Individual::cromossomos.at(i)->arco->getChave()==false){
+        if((RK_Individual::cromossomos.at(i)->arco->getOrigin()->getIdArv() !=
+                RK_Individual::cromossomos.at(i)->arco->getDestiny()->getIdArv()) &&
+                RK_Individual::cromossomos.at(i)->arco->isClosed() == false){
 
-            int id = RK_Individual::cromossomos.at(i)->arco->getNoOrigem()->getIdArv();
+            int id = RK_Individual::cromossomos.at(i)->arco->getOrigin()->getIdArv();
             for(Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()){
                 if(no->getIdArv()==id)
-                    no->setIdArv(RK_Individual::cromossomos.at(i)->arco->getNoDestino()->getIdArv());
+                    no->setIdArv(RK_Individual::cromossomos.at(i)->arco->getDestiny()->getIdArv());
             }
 
-            RK_Individual::cromossomos.at(i)->arco->setChave(true);
-            g->buscaArco(RK_Individual::cromossomos.at(i)->arco->getNoDestino()->getID(), RK_Individual::cromossomos.at(i)->arco->getNoOrigem()->getID())->setChave(true);
+            RK_Individual::cromossomos.at(i)->arco->setSwitch(true);
+            g->buscaArco(RK_Individual::cromossomos.at(i)->arco->getDestiny()->getID(),
+                         RK_Individual::cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
 
             n_arc_inseridos++;
         }
-        else if(RK_Individual::cromossomos.at(i)->arco->getChave()==false && RK_Individual::cromossomos.at(i)->arco->getMarcado()==true){
+        else if(RK_Individual::cromossomos.at(i)->arco->isClosed() == false &&
+                RK_Individual::cromossomos.at(i)->arco->getMarked() == true){
             //opened edge that creates circle
             this->getOpenedSwitches().push_back(RK_Individual::cromossomos.at(i)->arco);
         }
@@ -103,16 +107,16 @@ vector<int> OS_Individual::evaluate(Edge *e, Graph_network *g) {
 
     this->openSwitchesInNetwork(g);
 
-    e->setChave(false);
-    g->buscaArco(e->getNoDestino()->getID(), e->getNoOrigem()->getID())->setChave(false);
+    e->setSwitch(false);
+    g->buscaArco(e->getDestiny()->getID(), e->getOrigin()->getID())->setSwitch(false);
 
 //    printf("inicio: %d\n", g->getListaNos()->getID());
 //    g->define_sentido_fluxos();
 //    g->percursoPronfundidade(g->getListaNos(), 1);
 
     int flag1 = 1, flag2 = 2;
-    g->marcaComponenteConexa(e->getNoOrigem(), flag1);
-    g->marcaComponenteConexa(e->getNoDestino(), flag2);
+    g->marcaComponenteConexa(e->getOrigin(), flag1);
+    g->marcaComponenteConexa(e->getDestiny(), flag2);
 
 //    int num = 0;
 ////    printf("\n(aberto: %d)idsArv:\t", e->getID());
@@ -139,7 +143,7 @@ vector<int> OS_Individual::evaluate(Edge *e, Graph_network *g) {
 
         //if openedSwitch connect components
         //do not open fixed edges
-        if(this->getOpenedSwitches().at(i)->getNoOrigem()->getIdArv() != this->getOpenedSwitches().at(i)->getNoDestino()->getIdArv() && this->getOpenedSwitches().at(i)->getFixed()==false){
+        if(this->getOpenedSwitches().at(i)->getOrigin()->getIdArv() != this->getOpenedSwitches().at(i)->getDestiny()->getIdArv() && this->getOpenedSwitches().at(i)->getFixed() == false){
 
             candidates.push_back(i);
         }
@@ -153,8 +157,8 @@ vector<int> OS_Individual::evaluate(Edge *e, Graph_network *g) {
 void OS_Individual::openSwitchesInNetwork(Graph_network *g) {
     ///close all switches
     for(Vertex *v = g->getListaNos(); v!=NULL; v = v->getProxNo()){
-        for(Edge *e = v->getListaArcos(); e!= NULL; e = e->getProxArco()){
-            e->setChave(true);//reset switch
+        for(Edge *e = v->getListaArcos(); e!= NULL; e = e->getNext()){
+            e->setSwitch(true);//reset switch
         }
     }
 
@@ -162,10 +166,11 @@ void OS_Individual::openSwitchesInNetwork(Graph_network *g) {
     for(unsigned long int i = 0; i<this->openedSwitches.size(); i++){
 
         //opens a->b
-        openedSwitches.at(i)->setChave(false);
+        openedSwitches.at(i)->setSwitch(false);
 
         //opens b->a
-        g->buscaArco(openedSwitches.at(i)->getNoDestino()->getID(), openedSwitches.at(i)->getNoOrigem()->getID())->setChave(false);
+        g->buscaArco(openedSwitches.at(i)->getDestiny()->getID(),
+                     openedSwitches.at(i)->getOrigin()->getID())->setSwitch(false);
     }
 }
 

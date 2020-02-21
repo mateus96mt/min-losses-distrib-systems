@@ -305,16 +305,16 @@ void testeArestasModificaveis() {
 
         Edge *a = g->buscaArco(ids[i]);
 
-        Vertex *noOrigem = a->getNoOrigem();
-        Vertex *noDestino = a->getNoDestino();
+        Vertex *noOrigem = a->getOrigin();
+        Vertex *noDestino = a->getDestiny();
 
-        a->setChave(false);
-        a->setModificavel(false);
+        a->setSwitch(false);
+        a->setModifiable(false);
         a = g->buscaArco(noDestino->getID(), noOrigem->getID());
-        a->setChave(false);
-        a->setModificavel(false);
+        a->setSwitch(false);
+        a->setModifiable(false);
 
-        printf("modif = %d", a->getModificavel());
+        printf("modif = %d", a->getModifiable());
 
         noOrigem->setGrauAux(noOrigem->getGrauAux() - 1);
         noDestino->setGrauAux(noDestino->getGrauAux() - 1);
@@ -338,9 +338,9 @@ void testeArestasModificaveis2() {
     vector<int> naoModificaveis;
     for (Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
 
-        for (Edge *a = no->getListaArcos(); a != NULL; a = a->getProxArco()) {
+        for (Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()) {
 
-            if (a->getModificavel() == false) {
+            if (a->getModifiable() == false) {
                 naoModificaveis.push_back(a->getID());
             }
         }
@@ -623,9 +623,9 @@ void abreChaves(Graph_network *g, int *ids, int n) {
     Edge *a;
     for (int i = 0; i < n; i++) {
         a = g->buscaArco(ids[i]);
-        a->setChave(false);
-        a = g->buscaArco(a->getNoDestino()->getID(), a->getNoOrigem()->getID());
-        a->setChave(false);
+        a->setSwitch(false);
+        a = g->buscaArco(a->getDestiny()->getID(), a->getOrigin()->getID());
+        a->setSwitch(false);
     }
 }
 

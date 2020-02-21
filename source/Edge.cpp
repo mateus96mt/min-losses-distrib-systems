@@ -5,23 +5,23 @@ Edge::Edge(int id){
 
     this->id = id;
 
-    this->proxArco = NULL;
-    this->noOrigem =NULL;
-    this->noDestino =NULL;
+    this->nextEdge = NULL;
+    this->origin =NULL;
+    this->destiny =NULL;
 
-    this->chave = true;
+    this->closed = true;
 
-    this->FLuxoPAtiva = 0.0;
-    this->FLuxoPReativa = 0.0;
+    this->activePowerFlow = 0.0;
+    this->reactivePowerFlow = 0.0;
 
-    this->resistencia = 0.0;
-    this->reatancia = 0.0;
+    this->resistance = 0.0;
+    this->reactance = 0.0;
 
-    this->perdaAtiva = 0.0;
-    this->perdaReativa = 0.0;
+    this->activeLoss = 0.0;
+    this->reactiveLoss = 0.0;
 
-    this->modificavel = true;
-    this->marcado = true;
+    this->modifiable = true;
+    this->marked = true;
     this->fixed = false;
 }
 
@@ -29,8 +29,8 @@ Edge::~Edge(){
 
 }
 
-void Edge::imprime(){
+void Edge::show(){
     printf("[ ( %d, %d ) A{%d} chave = %d  modif = %d res = %.5f  reat = %.5f  fA = %.5f  fR = %.5f  peA = %.9f  peR = %.9f ]",
-    this->noOrigem->getID(), this->noDestino->getID(), this->id, this->chave, this->modificavel, this->resistencia, this->reatancia,
-    this->FLuxoPAtiva, this->FLuxoPReativa, this->perdaAtiva, this->perdaReativa);
+           this->origin->getID(), this->destiny->getID(), this->id, this->closed, this->modifiable, this->resistance, this->reactance,
+           this->activePowerFlow, this->reactivePowerFlow, this->activeLoss, this->reactiveLoss);
 }
