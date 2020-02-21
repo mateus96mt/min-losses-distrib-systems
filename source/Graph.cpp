@@ -226,7 +226,7 @@ void Graph::capacitor_allocation(){
 //    cout << "Num caps: " << iter << endl;
 }
 
-void Graph::insertVertex(int id, double activePower, double reactivePower, double voltage, int idLoadFactor = 1 ){
+void Graph::insertVertex(int id, double activePower, double reactivePower, double voltage, int idLoadFactor){
 
     Vertex *no=new Vertex(id);
     no->setActivePower(activePower);
@@ -583,34 +583,24 @@ double *Graph::getLossesReseting(){
     return perda;
 }
 
-void Graph::evaluateLossesAndFlows(double tol){
+double Graph::evaluateLossesAndFlows(double tol, int idLoadFactorGlobal){
+    this->resetFlowAndLoss();
+    Vertex::idLF = idLoadFactorGlobal; /// Static Param. Muda rede toda
 
-    double *perdas_total_anterior, *perdas_total_atual, erro = 1.0;
+    double *last_total_loss, *current_total_loss , error = 1.0;
 
-    //processo iterativo até convergir com erro=tol
-    for(int it=0; erro>tol; it++){
+    last_total_loss = this->getLosses();
+    for( int it = 0; error>tol; it++ ){
+        forward(it);        // Calcula fluxos de potencia nas linhas
+        backward();         // Calcula voltagem nas barras e perdas nas linhas
 
-        perdas_total_anterior = this->getLosses();
+        current_total_loss = this->getLosses();
+        error = current_total_loss[0] - last_total_loss[0];
+        delete last_total_loss;
 
-        //calcula fluxos de potencia nas linhas
-        forward(it);
-
-        //calcula voltagem nas barras e perdas nas linhas
-        backward();
-
-        perdas_total_atual = this->getLosses();
-        erro = perdas_total_atual[0] - perdas_total_anterior[0];
-
-//        cout << "\n\nperda total da rede: (" << perdas_total_atual[0] << " , " << perdas_total_atual[1] << ")" << endl;
-//        cout << "DIFERENCA ENTRE PERDA ATUAL E ANTERIOR CALCULADA: ( " << perdas_total_atual[0] - perdas_total_anterior[0]
-//        << " , " << perdas_total_atual[1] - perdas_total_anterior[1] << " )\n";
-
-        delete perdas_total_anterior;
-        delete perdas_total_atual;
-
+        last_total_loss = current_total_loss;
     }
-
-//    printf("fluxos e perdas calculados!\n");
+    return this->getLosses()[0];
 }
 
 void Graph::unmarkVertices(){

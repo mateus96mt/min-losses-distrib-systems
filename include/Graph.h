@@ -76,7 +76,7 @@ public:
     **/
     double *getLossesReseting();
 
-    void evaluateLossesAndFlows(double tol);
+    double evaluateLossesAndFlows(double tol, int idLoadFactorGlobal = 1);
 
     Vertex *greedyCapacitorAllocation( );
 
@@ -121,6 +121,9 @@ public:
     int getEdgesSizes(){       return this->edgesSize; };
     int getNumMarkeds(){        return this->numberOfMarked; };
     int getNumberOfNonModifiable(){ return this->numberOfNonModifiable;};
+    int getMaxCapacitorsBus(){                      return this->maxCapacitorsBus;                  };
+    Capacitor getCapacitorType( int type ){         return this->capacitorType[type-1];             };
+    vector<LoadLevel> getLoads(){                   return this->loads;                             };
 
     void set_verticesList(Vertex *no){ this->verticesList = no; };
     void markConexeComponent(Vertex *start, int value);
