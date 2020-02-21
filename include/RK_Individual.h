@@ -2,7 +2,7 @@
 #define INDIVIDUO_H_INCLUDED
 
 #include <math.h>
-#include "include/Graph_network.h"
+#include "include/Graph.h"
 
 struct Cromossome{
     Edge *arco;
@@ -19,7 +19,7 @@ class RK_Individual{
         ///--------------------------conection to graph network--------------------------:
 
         static vector<Cromossome*> cromossomos;
-        static void criaCromossomos(Graph_network *g);
+        static void criaCromossomos(Graph *g);
 
         ///--------------------------conection to graph network--------------------------:
 
@@ -35,13 +35,13 @@ class RK_Individual{
 
         void geraPesosAleatorios();
 
-        void geraPesosConfInicial(int *idsAbertos, int n, Graph_network *g);
+        void geraPesosConfInicial(int *idsAbertos, int n, Graph *g);
 
         void resetaPesos(float valor);
 
-        void calculaFuncaoObjetivo(Graph_network *g);
+        void calculaFuncaoObjetivo(Graph *g);
 
-        void calculaFuncaoObjetivoOtimizado(Graph_network *g);
+        void calculaFuncaoObjetivoOtimizado(Graph *g);
 
         void imprimePesos();
 

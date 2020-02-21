@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class RKGA{
+class Random_keys{
     private:
         int numGeracoes, tamPop;
 
@@ -15,7 +15,7 @@ class RKGA{
         vector<RK_Individual*> popAnterior;
 
     public:
-        RKGA(int tamPop, int numGeracoes);
+        Random_keys(int tamPop, int numGeracoes);
 
         /** GET's **/
         vector<RK_Individual*> getPopAtual(){return this->popAtual;}
@@ -24,27 +24,27 @@ class RKGA{
         int getTamPopulacao(){return this->tamPop;}
 
 
-        void geraPopAleatoria(Graph_network *g);
-        void geraPopAleatoriaConfInicial(Graph_network *g, int *idsAbertos, int nAbertos);
+        void geraPopAleatoria(Graph *g);
+        void geraPopAleatoriaConfInicial(Graph *g, int *idsAbertos, int nAbertos);
 
-        ~RKGA(){}
+        ~Random_keys(){}
 
-        void ordenaPopulacaoAtual(Graph_network *g);
+        void ordenaPopulacaoAtual(Graph *g);
 
-        int avancaGeracoes(Graph_network *g);
-        int avancaGeracoes2(Graph_network *g);
-        int avancaGeracoesPRS(Graph_network *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
-        int avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento);
-        int avancaGeracaoesAdaptativo(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
-        int avancaGeracaoesAdaptativo2(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
-
-
-    void prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g);//path relinking simples evolutivo
-        int avancaGeracoesPRSEvolutivoFinal(Graph_network *g);
+        int avancaGeracoes(Graph *g);
+        int avancaGeracoes2(Graph *g);
+        int avancaGeracoesPRS(Graph *g);//avanca geracoes aplicando pathrelinking simples(a cada geracao)
+        int avancaGeracoesGenerico(Graph *g, int tipoCruzamento);
+        int avancaGeracaoesAdaptativo(Graph *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
+        int avancaGeracaoesAdaptativo2(Graph *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut);
 
 
-        RK_Individual *pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph_network *g);
-        int avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
+    void prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph *g);//path relinking simples evolutivo
+        int avancaGeracoesPRSEvolutivoFinal(Graph *g);
+
+
+        RK_Individual *pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph *g);
+        int avancaGeracoesPRE(Graph *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
 
         ///--------------------------RKGA operators--------------------------:
 
@@ -66,6 +66,6 @@ class RKGA{
 
         ///--------------------------RKGA operators--------------------------:
 
-        int avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
+        int avancaGeracoesPRECA(Graph *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite);
 };
 #endif // RANDOM_KEYS_H_INCLUDED

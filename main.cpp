@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "include/Graph_network.h"
-#include "include/RKGA.h"
+#include "include/Graph.h"
+#include "include/Random_keys.h"
 #include "time.h"
-#include "include/OS_Individual.h"
+#include "include/Individual.h"
 
 #include <algorithm>
 #include <math.h>
@@ -24,9 +24,9 @@
 //#define configuracao "literatura2"
 //#define configuracao "ARSD"
 
-void abreChaves(Graph_network *g, int *ids, int n);
+void abreChaves(Graph *g, int *ids, int n);
 
-void defineConfiguracao(Graph_network *g, char *arqIn);
+void defineConfiguracao(Graph *g, char *arqIn);
 
 void testeDestrutor();
 
@@ -40,7 +40,7 @@ void testePopulacaoAleatoria();
 
 void testeEntradas();
 
-bool ordenacao(Graph_network *g1, Graph_network *g2);
+bool ordenacao(Graph *g1, Graph *g2);
 
 void testeMemLeakRandomKeys();
 
@@ -142,23 +142,23 @@ int main(int c, char *argv[]) {
 }
 
 void testeRandomKeys(char arqIn[]) {
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
 //    unsigned int tam = Individuo::cromossomos.size();
 //    cout << "tamanho vector<cromossomos> : " << tam << endl;
 //    cout << "numero de arcos nao modificaveis: " << g->getN_naoModificaveis() << endl;
 
     /** numero de individuos da populacao,numero de geracaoes **/
-    RKGA *rd = new RKGA(100, 1000);
+    Random_keys *rd = new Random_keys(100, 1000);
 
     /** populacao inicial gerada de forma aleatoria **/
 //    rd->geraPopAleatoria(g);
-    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
+    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
 
     /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
 //    int melhorGeracao = rd->avancaGeracoes(g);
@@ -188,7 +188,7 @@ void testeRandomKeys(char arqIn[]) {
 //    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
 
     printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
-    printf("        %.3f  &   ", g->tensaoMinima());
+    printf("        %.3f  &   ", g->minVoltage());
     printf("        %d    &   ", melhorGeracao);
 
 //    /** so para conferir mesmo  e ter certeza da perda do individuo **/
@@ -200,43 +200,43 @@ void testeRandomKeys(char arqIn[]) {
 /** pequeno vazamento de memoria na funcao "calculaFuncaoObjetivo" do individuo novamente no vector **/
 void testeMemLeakRandomKeys() {
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(nome);
 
-    printf("\n num nos: %d         num arcos: %d", g->getNumeroNos(), g->getNumeroArcos());
+    printf("\n num nos: %d         num arcos: %d", g->getVerticesSize(), g->getEdgesSizes());
 
-    RK_Individual *i = new RK_Individual(g->getNumeroArcos());
+    RK_Individual *i = new RK_Individual(g->getEdgesSizes());
 
     i->geraPesosAleatorios();
     while (true) {
         i->calculaFuncaoObjetivo(g);
         printf("\n\nperdaAtiv: %f kw,  perdaReativ: %f kw      eh arvore? %d",
-               1000 * 100 * i->getPerdaAtiva(), 1000 * 100 * i->getPerdaReativa(), g->ehArvore());
+               1000 * 100 * i->getPerdaAtiva(), 1000 * 100 * i->getPerdaReativa(), g->isTree());
     }
 }
 
 void testePopulacaoAleatoria() {
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(nome);
 
     int n_individuos = 500;
-    vector<Graph_network *> h;
+    vector<Graph *> h;
 
     for (int i = 0; i < n_individuos; i++) {
 
         double *perda;
         printf("\n\nsolucao  %d:", i);
-        h.push_back(g->retornaCopia());
-        h.at(i)->solucaoAleatoria();
-        h.at(i)->define_sentido_fluxos();
-        h.at(i)->calcula_fluxos_e_perdas(1e-8);
-        perda = h.at(i)->soma_perdas();
+        h.push_back(g->returnCopy());
+        h.at(i)->randomSolution();
+        h.at(i)->defineFlows();
+        h.at(i)->evaluateLossesAndFlows(1e-8);
+        perda = h.at(i)->getLosses();
 
-        printf("\nvalida? %d", h.at(i)->ehArvore());
-        printf("  tensao minima: %.5f (p.u)", h.at(i)->tensaoMinima());
+        printf("\nvalida? %d", h.at(i)->isTree());
+        printf("  tensao minima: %.5f (p.u)", h.at(i)->minVoltage());
         printf("  perdaTotal: %.5f (kW)", 100 * 1000 * perda[0]);
 
         delete perda;
@@ -246,40 +246,40 @@ void testePopulacaoAleatoria() {
 
 void testeEntradas(char *arqIn) {
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
     g->leEntrada(nome);
 
     defineConfiguracao(g, arqIn);
 
-    g->define_sentido_fluxos();
-    g->calcula_fluxos_e_perdas(1e-8);
+    g->defineFlows();
+    g->evaluateLossesAndFlows(1e-8);
 
 
-    printf("\ntensao minima: %.5f (p.u)", g->tensaoMinima());
-    printf("\nperdaTotal: %.5f (kW)", 100 * 1000 * g->soma_perdas()[0]);
-    printf("\neh Conexo? %d", g->ehConexo());
-    printf("\neh arvore? %d\n\n\n", g->ehArvore());
+    printf("\ntensao minima: %.5f (p.u)", g->minVoltage());
+    printf("\nperdaTotal: %.5f (kW)", 100 * 1000 * g->getLosses()[0]);
+    printf("\neh Conexo? %d", g->isConected());
+    printf("\neh arvore? %d\n\n\n", g->isTree());
 }
 
 void testeCopiaGrafo(char *arqIn) {
     char nome[] = arquivoEntrada;
-    Graph_network *g, *h;
-    g = new Graph_network();
+    Graph *g, *h;
+    g = new Graph();
     g->leEntrada(arqIn);
 
     defineConfiguracao(g, arqIn);
-    g->define_sentido_fluxos();
-    g->calcula_fluxos_e_perdas(1e-8);
+    g->defineFlows();
+    g->evaluateLossesAndFlows(1e-8);
 
 
     for (int i = 0; true; i++) {
-        h = g->retornaCopia();
-        h->calcula_fluxos_e_perdas(1e-8);
+        h = g->returnCopy();
+        h->evaluateLossesAndFlows(1e-8);
 
-        double *perda = h->soma_perdas();
-        printf("\ntensao minima: %.5f (p.u)", h->tensaoMinima());
+        double *perda = h->getLosses();
+        printf("\ntensao minima: %.5f (p.u)", h->minVoltage());
         printf("\nperdaTotal: %.5f (kW)", 100 * 1000 * perda[0]);
-        printf("\neh arvore? %d\n\n\n", h->ehArvore());
+        printf("\neh arvore? %d\n\n\n", h->isTree());
         delete perda;
 
         delete h;
@@ -288,10 +288,10 @@ void testeCopiaGrafo(char *arqIn) {
 
 void testeArestasModificaveis() {
     char nome[] = arquivoEntrada;
-    Graph_network *g;
-    g = new Graph_network();
+    Graph *g;
+    g = new Graph();
     g->leEntrada(nome);
-    g->resetaGrausAuxiliares();
+    g->resetAuxDegrees();
 //    g->imprime();
 
     //TESTE ARESTAS MODIFICAVEIS PARA ARQUIVO DE 33 BARRAS
@@ -303,42 +303,42 @@ void testeArestasModificaveis() {
 
         printf("\nabriu A{%d}", ids[i]);
 
-        Edge *a = g->buscaArco(ids[i]);
+        Edge *a = g->findEdge(ids[i]);
 
         Vertex *noOrigem = a->getOrigin();
         Vertex *noDestino = a->getDestiny();
 
         a->setSwitch(false);
         a->setModifiable(false);
-        a = g->buscaArco(noDestino->getID(), noOrigem->getID());
+        a = g->findEdge(noDestino->getID(), noOrigem->getID());
         a->setSwitch(false);
         a->setModifiable(false);
 
         printf("modif = %d", a->getModifiable());
 
-        noOrigem->setGrauAux(noOrigem->getGrauAux() - 1);
-        noDestino->setGrauAux(noDestino->getGrauAux() - 1);
+        noOrigem->setAuxDegree(noOrigem->getAuxDegree() - 1);
+        noDestino->setAuxDegree(noDestino->getAuxDegree() - 1);
 
-        g->defineArestasModificaveis();
+        g->defineModifiables();
 
     }
-    g->imprime();
+    g->show();
 
 }
 
 void testeArestasModificaveis2() {
     char nome[] = arquivoEntrada;
-    Graph_network *g;
-    g = new Graph_network();
+    Graph *g;
+    g = new Graph();
     g->leEntrada(nome);
-    g->resetaGrausAuxiliares();
+    g->resetAuxDegrees();
 
-    g->defineArestasModificaveis();
+    g->defineModifiables();
 
     vector<int> naoModificaveis;
-    for (Vertex *no = g->getListaNos(); no != NULL; no = no->getProxNo()) {
+    for (Vertex *no = g->get_verticesList(); no != NULL; no = no->getNext()) {
 
-        for (Edge *a = no->getListaArcos(); a != NULL; a = a->getNext()) {
+        for (Edge *a = no->getEdgesList(); a != NULL; a = a->getNext()) {
 
             if (a->getModifiable() == false) {
                 naoModificaveis.push_back(a->getID());
@@ -352,23 +352,23 @@ void testeArestasModificaveis2() {
     for (unsigned int i = 0; i < naoModificaveis.size(); i += 2)
         printf(" %d, ", naoModificaveis.at(i));
     printf("] size = %d\n ", (int) naoModificaveis.size() / 2);
-    printf("%d\n", g->getN_naoModificaveis());
+    printf("%d\n", g->getNumberOfNonModifiable());
 }
 
 void testeDestrutor() {
     char nome[] = arquivoEntrada;
 
     while (true) {
-        Graph_network *g;
-        g = new Graph_network();
+        Graph *g;
+        g = new Graph();
         g->leEntrada(nome);
         delete g;
     }
 }
 
-void defineConfiguracao(Graph_network *g, char *arqIn) {
+void defineConfiguracao(Graph *g, char *arqIn) {
 
-    int *ids = configuracaoInicial(arqIn), n = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int *ids = configuracaoInicial(arqIn), n = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
     abreChaves(g, ids, n);
 }
 
@@ -619,51 +619,51 @@ int *configuracaoInicial(char *arqIn) {
     return ids;
 }
 
-void abreChaves(Graph_network *g, int *ids, int n) {
+void abreChaves(Graph *g, int *ids, int n) {
     Edge *a;
     for (int i = 0; i < n; i++) {
-        a = g->buscaArco(ids[i]);
+        a = g->findEdge(ids[i]);
         a->setSwitch(false);
-        a = g->buscaArco(a->getDestiny()->getID(), a->getOrigin()->getID());
+        a = g->findEdge(a->getDestiny()->getID(), a->getOrigin()->getID());
         a->setSwitch(false);
     }
 }
 
 void testeConfInicial(char *arqIn) {
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
-    RK_Individual *ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *ind = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
 
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
 
     int *abertos = configuracaoInicial(arqIn);
     ind->geraPesosConfInicial(abertos, nAbertos, g);
     ind->calculaFuncaoObjetivoOtimizado(g);
 
     printf("PerdaAtiva: %f (kw)\n", 100 * 1000 * ind->getPerdaAtiva());
-    printf("Tensao minima: %f (pu)\n\n\n", g->tensaoMinima());
+    printf("Tensao minima: %f (pu)\n\n\n", g->minVoltage());
 }
 
 void testeFuncaoObjetivoOtimizada() {
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(nome);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
 
     int num = 10;
 
-    RK_Individual *ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *ind = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
 
     for (int i = 0; i < 10000; i++) {
         ind->geraPesosAleatorios();
@@ -674,16 +674,16 @@ void testeFuncaoObjetivoOtimizada() {
 
 void testeprs() {
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(nome);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
 
-    RK_Individual *i1 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    RK_Individual *i2 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *i1 = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
+    RK_Individual *i2 = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
     RK_Individual *indRef;
 
 
@@ -718,20 +718,20 @@ void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
         inicio = clock();
 
         char *nome = arqIn;
-        Graph_network *g = new Graph_network();
+        Graph *g = new Graph();
 
         g->leEntrada(nome);
-        g->defineArestasModificaveis();
-        g->resetaArcosMarcados();
-        g->marcaUmsentidoArcos();
+        g->defineModifiables();
+        g->resetEdgesMarking();
+        g->markOneDirectionInEdges();
         RK_Individual::criaCromossomos(g);
 
         /** numero de individuos da populacao,numero de geracaoes **/
-        RKGA *rd = new RKGA(tamPop, numGeracoes);
+        Random_keys *rd = new Random_keys(tamPop, numGeracoes);
 
         /** populacao inicial gerada de forma aleatoria **/
         rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(nome),
-                                        g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
+                                        g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
 
         /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
 
@@ -754,7 +754,7 @@ void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
 
         printf("        %.2lf &  ", (float) (fim - inicio) / CLOCKS_PER_SEC);
         printf("        %.3f  &  ", 100 * 1000 * best->getPerdaAtiva());
-        printf("        %.3f  &  ", g->tensaoMinima());
+        printf("        %.3f  &  ", g->minVoltage());
         printf("        %d\n\n\n", melhorGeracao);
     }
 }
@@ -762,16 +762,16 @@ void testeprsEvolutivo(int prs, int tamPop, int numGeracoes, char *arqIn) {
 void testeprs2(){
 
     char nome[] = arquivoEntrada;
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(nome);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
 
-    RK_Individual *i1 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    RK_Individual *i2 = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+    RK_Individual *i1 = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
+    RK_Individual *i2 = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
 
     i1->geraPesosAleatorios();
     i2->geraPesosAleatorios();
@@ -793,22 +793,22 @@ void testeprs2(){
 
 void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     //inicializacoes
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     //fim inicializacoes
 
 //    printf("\n\ntamanho do individuo (arestas modificaveis): %d\n\n", g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
 
-    RKGA *rd = new RKGA(100, 1);
+    Random_keys *rd = new Random_keys(100, 1);
 
-    RK_Individual *inicial = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
-    inicial->geraPesosConfInicial(configuracaoInicial(arqIn),  g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1), g);
+    RK_Individual *inicial = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
+    inicial->geraPesosConfInicial(configuracaoInicial(arqIn), g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1), g);
     inicial->calculaFuncaoObjetivoOtimizado(g);
 //    printf("i 0:   %f\n", 100*1000*inicial->getPerdaAtiva());
 
@@ -817,7 +817,7 @@ void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
 
     RK_Individual *ind;
     for(int i=1; i<tam_pool; i++){
-        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
         ind->geraPesosAleatorios();
         ind->calculaFuncaoObjetivoOtimizado(g);
         //populacao inicial de individuos aleatorios validos
@@ -839,21 +839,21 @@ void testePRE(char *arqIn, int tam_pool, int max_it, float pct_pr_elite){
 
 void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int tam_pool, int max_it, float pct_pr_elite){
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     //inicializacoes
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     //fim inicializacoes
 
 
-    RKGA *rd = new RKGA(tampop, numgeracoes);
+    Random_keys *rd = new Random_keys(tampop, numgeracoes);
 
     /** populacao inicial gerada de forma aleatoria **/
-    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1));
+    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(arqIn), g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
 
     /** faz cruzamentos e mutacoes para gerar individuos da nova populacao **/
     int melhorGeracao = rd->avancaGeracoesPRE(g, it_s_melhora, tam_pool, max_it, pct_pr_elite);
@@ -863,30 +863,30 @@ void testeAG_PRE(char *arqIn, int it_s_melhora, int tampop, int numgeracoes, int
 
 
     printf(" %.3f ", 100 * 1000 * best->getPerdaAtiva());
-    printf("%.3f ", g->tensaoMinima());
+    printf("%.3f ", g->minVoltage());
     printf("%d ", melhorGeracao);
 }
 
 void testeFO_OS_INDIVIDUAL(char *arqIn) {
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     RK_Individual *ind = new RK_Individual(tam);
 
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
 
     int *abertos = configuracaoInicial(arqIn);
     ind->geraPesosConfInicial(abertos, nAbertos, g);
     ind->calculaFuncaoObjetivoOtimizado(g);
 
-    OS_Individual *os = new OS_Individual(ind, g);
+    Individual *os = new Individual(ind, g);
 
     printf("%f\n%f", 100 * 1000 * ind->getPerdaAtiva(), 100 * 1000 * os->getActiveLoss());
 
@@ -936,24 +936,24 @@ void testeFO_OS_INDIVIDUAL(char *arqIn) {
 }
 
 void testeOSPR(char *arqIn) {
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     RK_Individual *ind = new RK_Individual(tam);
 
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
 
     int *abertos = configuracaoInicial(arqIn);
     ind->geraPesosConfInicial(abertos, nAbertos, g);
     ind->calculaFuncaoObjetivoOtimizado(g);
 
-    OS_Individual *os = new OS_Individual(ind, g);
+    Individual *os = new Individual(ind, g);
 
     printf("\n\nos:");
     for(unsigned long int i = 0; i<os->getOpenedSwitches().size(); i++)
@@ -966,7 +966,7 @@ void testeOSPR(char *arqIn) {
         ind->calculaFuncaoObjetivoOtimizado(g);
     }
 
-    OS_Individual *os2 = new OS_Individual(ind, g);
+    Individual *os2 = new Individual(ind, g);
 
     printf("\n\nos2:");
     for(unsigned long int i = 0; i<os2->getOpenedSwitches().size(); i++)
@@ -984,11 +984,11 @@ void testeOSPR(char *arqIn) {
 }
 
 void testeContrutorOS(char *arqIn) {
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1000,9 +1000,9 @@ void testeContrutorOS(char *arqIn) {
     cin>>n;
     for (int j = 0; j < n; ++j) {
         rk->geraPesosAleatorios();
-        OS_Individual *os = new OS_Individual(rk, g);
+        Individual *os = new Individual(rk, g);
         os->calcObjectiveF(g);
-        if(os->getSize()!=(g->getNumeroArcos()/2) - (g->getNumeroNos()-1) || 100*1000*os->getActiveLoss()<valor)
+        if(os->getSize()!= (g->getEdgesSizes() / 2) - (g->getVerticesSize() - 1) || 100 * 1000 * os->getActiveLoss() < valor)
             printf("falha! perda: %f\n", os->getActiveLoss());
 //        cout << 100*1000*os->getActiveLoss() << endl;
 //        printf("\n\n\nsize: %d\tperda:%.6f\t", 100*1000*os->getActiveLoss(), os->getSize());
@@ -1016,12 +1016,12 @@ void testeEvaluate(char *arqIn) {
 
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1029,16 +1029,16 @@ void testeEvaluate(char *arqIn) {
 
     RK_Individual *rk = new RK_Individual(tam);
 
-    OS_Individual *os1, *os2, *pr;
+    Individual *os1, *os2, *pr;
 
     Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
 
 
     rk->geraPesosAleatorios();
-    os1 = new OS_Individual(rk, g);
+    os1 = new Individual(rk, g);
 
     rk->geraPesosAleatorios();
-    os2 = new OS_Individual(rk, g);
+    os2 = new Individual(rk, g);
 
     printf("\n\nos1\tactiveLoss: %.2f\t", 100*1000*os1->getActiveLoss());
     os1->imprime();
@@ -1131,19 +1131,19 @@ void testeEvaluate(char *arqIn) {
 void testeConstructorOSRK(char *arqIn) {
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     ///-------------initialization-------------
 
     RK_Individual *rk;
-    OS_Individual *os;
+    Individual *os;
 
     int m;
     cin >> m;
@@ -1152,7 +1152,7 @@ void testeConstructorOSRK(char *arqIn) {
         rk = new RK_Individual(tam);
         rk->geraPesosAleatorios();
 
-        os = new OS_Individual(rk, g);
+        os = new Individual(rk, g);
 
         printf("%.2f\n", 100*1000*os->getActiveLoss());
 
@@ -1166,12 +1166,12 @@ void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite) {
 
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1191,7 +1191,7 @@ void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite) {
     }
 
     //initial configuration individual in pool
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
     int *abertos = configuracaoInicial(arqIn);
     ind[0] = new RK_Individual(tam);
     ind[0]->geraPesosConfInicial(abertos, nAbertos, g);
@@ -1200,7 +1200,7 @@ void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite) {
     ///-------------creating pool of RK individuals----------
 
     Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
-    OS_Individual *best = evp->run(pool_RK, max_it, pctElite, g);
+    Individual *best = evp->run(pool_RK, max_it, pctElite, g);
 
     clock_t fim = clock();
 
@@ -1210,12 +1210,12 @@ void testeEVP(char *arqIn, int tamPool, int max_it, float pctElite) {
 void testePATHRELINKING(char *arqIn, int m) {
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1225,15 +1225,15 @@ void testePATHRELINKING(char *arqIn, int m) {
 //    cin >> m;
 
     RK_Individual*rk = new RK_Individual(tam);
-    OS_Individual *o1, *o2, *pr;
+    Individual *o1, *o2, *pr;
     Evolutionary_path_relinking *evp = new Evolutionary_path_relinking();
     for (int i = 0; i < m; ++i) {
 
         rk->geraPesosAleatorios();
-        o1 = new OS_Individual(rk, g);
+        o1 = new Individual(rk, g);
 
         rk->geraPesosAleatorios();
-        o2 = new OS_Individual(rk, g);
+        o2 = new Individual(rk, g);
 
 //        printf("\n----------------------0---------------------------");
         pr = evp->path_relingking(o1, o2, g);
@@ -1253,25 +1253,25 @@ void testeAGgenerico(char *arqIn, int tamPop, int numGeracoes, int tipoCruzament
 
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     ///-------------initialization-------------
 
-    RKGA *ga = new RKGA(tamPop, numGeracoes);
+    Random_keys *ga = new Random_keys(tamPop, numGeracoes);
 
     int *abertos = configuracaoInicial(arqIn);
-    ga->geraPopAleatoriaConfInicial(g, abertos, g->getNumeroArcos()/2 - (g->getNumeroNos() -1));
+    ga->geraPopAleatoriaConfInicial(g, abertos, g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
 
     ga->avancaGeracoesGenerico(g, tipoCruzamento);
 
-    OS_Individual *os = new OS_Individual(ga->getPopAtual().at(ga->getPopAtual().size()-1), g);
+    Individual *os = new Individual(ga->getPopAtual().at(ga->getPopAtual().size() - 1), g);
 //    os->imprime();
 
 
@@ -1284,12 +1284,12 @@ void testeAGgenerico(char *arqIn, int tamPop, int numGeracoes, int tipoCruzament
 void testeConversoes(char *arqIn) {
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1299,7 +1299,7 @@ void testeConversoes(char *arqIn) {
     rk->geraPesosAleatorios();
     rk->calculaFuncaoObjetivoOtimizado(g);
 
-    OS_Individual *os = new OS_Individual(rk, g);
+    Individual *os = new Individual(rk, g);
 
     RK_Individual *rk2 = os->OS_to_RK(g);
 
@@ -1311,26 +1311,26 @@ void testeAGPRCA(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int
 
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     ///-------------initialization-------------
 
-    RKGA *ga = new RKGA(tamPop, numGeracoes);
+    Random_keys *ga = new Random_keys(tamPop, numGeracoes);
 
     int *abertos = configuracaoInicial(arqIn);
-    ga->geraPopAleatoriaConfInicial(g, abertos, g->getNumeroArcos()/2 - (g->getNumeroNos() -1));
+    ga->geraPopAleatoriaConfInicial(g, abertos, g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
 
     int geracao = ga->avancaGeracoesPRECA(g, it_s_melhora, tamPool, max_it, pct_elite);
 //    ga->avancaGeracoes2(g);
 
-    OS_Individual *os = new OS_Individual(ga->getPopAtual().at(ga->getPopAtual().size()-1), g);
+    Individual *os = new Individual(ga->getPopAtual().at(ga->getPopAtual().size() - 1), g);
 //    os->imprime();
 
 
@@ -1344,12 +1344,12 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
 
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
@@ -1367,7 +1367,7 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
     }
 
     //initial configuration individual in pool
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
     int *abertos = configuracaoInicial(arqIn);
     ind[0] = new RK_Individual(tam);
     ind[0]->geraPesosConfInicial(abertos, nAbertos, g);
@@ -1378,12 +1378,12 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
 
     //PRE_RK
     if(execucao==1){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         RK_Individual *best = rkga->pre(pool_RK, max_it, pct_elite, g);
         clock_t fim = clock();
         printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
@@ -1391,7 +1391,7 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
     if(execucao==2){
         Evolutionary_path_relinking *evpos = new Evolutionary_path_relinking(pool_RK, max_it, pct_elite);
         clock_t inicio = clock();
-        OS_Individual *best = evpos->run(pool_RK, max_it, pct_elite, g);
+        Individual *best = evpos->run(pool_RK, max_it, pct_elite, g);
         clock_t fim = clock();
         printf("- %f %f %d %d ", 100*1000*best->getActiveLoss(), (double)(fim - inicio)/CLOCKS_PER_SEC, 0, semente);
         best->imprime();
@@ -1399,72 +1399,72 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
     }
     //AG
     if(execucao==3){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracoes2(g);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
         printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
     //AG_RK
     if(execucao==4){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracoesPRE(g, it_s_melhora, tamPool, max_it, pct_elite);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
         printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
     //AG_OS
     if(execucao==5){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracoesPRECA(g, it_s_melhora, tamPool, max_it, pct_elite);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
         printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
     //AG_AD
     if(execucao==6){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracaoesAdaptativo(g, it_s_melhora, 0.5, 1.0, taxaTamMut, taxaPctMut);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
         printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
     //AG_AD 2
     if(execucao==7){
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracaoesAdaptativo2(g, it_s_melhora, 0.5, 1.0, taxaTamMut, taxaPctMut);
         clock_t fim = clock();
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
         printf(" %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
     //AG Operador cruzamento media
     if(execucao>=8 && execucao<=13) {
-        RKGA *rkga = new RKGA(tamPop, numGeracoes);
+        Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
         clock_t inicio = clock();
         rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
         int geracao = rkga->avancaGeracoesGenerico(g, 0);
@@ -1472,7 +1472,7 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
         RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size() - 1);
         printf(" %f %f %d %d ", 100 * 1000 * best->getPerdaAtiva(), (double) (fim - inicio) / CLOCKS_PER_SEC, geracao,
                semente);
-        OS_Individual *os = new OS_Individual(best, g);
+        Individual *os = new Individual(best, g);
         os->imprime();
         printf("\n");
     }
@@ -1481,28 +1481,28 @@ void testeGERAL(char *arqIn, int tamPop, int numGeracoes, int it_s_melhora, int 
 void testeOperadoresCruzamentoAG(char *arqIn, int tamPop, int numGeracoes, int tipoCruzamento) {
     ///-------------initialization-------------
 
-    Graph_network *g = new Graph_network();
+    Graph *g = new Graph();
 
     g->leEntrada(arqIn);
-    g->defineArestasModificaveis();
-    g->resetaArcosMarcados();
-    g->marcaUmsentidoArcos();
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
     RK_Individual::criaCromossomos(g);
     unsigned int tam = RK_Individual::cromossomos.size();
 
     ///-------------initialization-------------
 
-    int nAbertos = g->getNumeroArcos() / 2 - (g->getNumeroNos() - 1);
+    int nAbertos = g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1);
     int *abertos = configuracaoInicial(arqIn);
 
-    RKGA *rkga = new RKGA(tamPop, numGeracoes);
+    Random_keys *rkga = new Random_keys(tamPop, numGeracoes);
     clock_t inicio = clock();
     rkga->geraPopAleatoriaConfInicial(g, abertos, nAbertos);
     int geracao = rkga->avancaGeracoesGenerico(g, tipoCruzamento);
     clock_t fim = clock();
     RK_Individual *best = rkga->getPopAtual().at(rkga->getPopAtual().size()-1);
     printf("- %f %f %d %d ", 100*1000*best->getPerdaAtiva(), (double)(fim - inicio)/CLOCKS_PER_SEC, geracao, semente);
-    OS_Individual *os = new OS_Individual(best, g);
+    Individual *os = new Individual(best, g);
     os->imprime();
     printf("\n");
 }

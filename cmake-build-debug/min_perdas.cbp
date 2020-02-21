@@ -92,16 +92,16 @@
 		<Unit filename="/home/mateus/MIN_PERDAS/include/Evolutionary_path_relinking.h">
 			<Option target="min_perdas"/>
 		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/include/Graph_network.h">
+		<Unit filename="/home/mateus/MIN_PERDAS/include/Graph.h">
 			<Option target="min_perdas"/>
 		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/include/OS_Individual.h">
-			<Option target="min_perdas"/>
-		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/include/RKGA.h">
+		<Unit filename="/home/mateus/MIN_PERDAS/include/Individual.h">
 			<Option target="min_perdas"/>
 		</Unit>
 		<Unit filename="/home/mateus/MIN_PERDAS/include/RK_Individual.h">
+			<Option target="min_perdas"/>
+		</Unit>
+		<Unit filename="/home/mateus/MIN_PERDAS/include/Random_keys.h">
 			<Option target="min_perdas"/>
 		</Unit>
 		<Unit filename="/home/mateus/MIN_PERDAS/include/Vertex.h">
@@ -116,16 +116,16 @@
 		<Unit filename="/home/mateus/MIN_PERDAS/source/Evolutionary_path_relinking.cpp">
 			<Option target="min_perdas"/>
 		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/source/Graph_network.cpp">
+		<Unit filename="/home/mateus/MIN_PERDAS/source/Graph.cpp">
 			<Option target="min_perdas"/>
 		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/source/OS_Individual.cpp">
-			<Option target="min_perdas"/>
-		</Unit>
-		<Unit filename="/home/mateus/MIN_PERDAS/source/RKGA.cpp">
+		<Unit filename="/home/mateus/MIN_PERDAS/source/Individual.cpp">
 			<Option target="min_perdas"/>
 		</Unit>
 		<Unit filename="/home/mateus/MIN_PERDAS/source/RK_Individual.cpp">
+			<Option target="min_perdas"/>
+		</Unit>
+		<Unit filename="/home/mateus/MIN_PERDAS/source/Random_keys.cpp">
 			<Option target="min_perdas"/>
 		</Unit>
 		<Unit filename="/home/mateus/MIN_PERDAS/source/Vertex.cpp">

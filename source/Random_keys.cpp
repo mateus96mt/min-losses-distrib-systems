@@ -1,4 +1,4 @@
-#include "include/RKGA.h"
+#include "include/Random_keys.h"
 #include <unistd.h>
 #include <random>
 
@@ -8,18 +8,18 @@ using namespace std;
 
 bool ordenacaoIndividuo(RK_Individual *i1, RK_Individual *i2){return i1->getPerdaAtiva() > i2->getPerdaAtiva();}
 
-RKGA::RKGA(int tamPop, int numGeracoes){
+Random_keys::Random_keys(int tamPop, int numGeracoes){
     this->tamPop = tamPop;
     this->numGeracoes = numGeracoes;
 }
 
-void RKGA::geraPopAleatoria(Graph_network *g){
+void Random_keys::geraPopAleatoria(Graph *g){
 
-    g->marcaUmsentidoArcos();
+    g->markOneDirectionInEdges();
     RK_Individual *ind;
     for(int i=0; i<this->tamPop; i++){
 
-        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
         ind->geraPesosAleatorios();
 
         popAtual.push_back(ind);
@@ -27,13 +27,13 @@ void RKGA::geraPopAleatoria(Graph_network *g){
     popAnterior = popAtual;
 }
 
-void RKGA::geraPopAleatoriaConfInicial(Graph_network *g, int *idsAbertos, int nAbertos){
+void Random_keys::geraPopAleatoriaConfInicial(Graph *g, int *idsAbertos, int nAbertos){
 
-    g->marcaUmsentidoArcos();
+    g->markOneDirectionInEdges();
     RK_Individual *ind;
     for(int i=0; i<this->tamPop; i++){
 
-        ind = new RK_Individual(g->getNumeroArcos() / 2 - g->getN_naoModificaveis());
+        ind = new RK_Individual(g->getEdgesSizes() / 2 - g->getNumberOfNonModifiable());
         if(i==0){
             ind->geraPesosConfInicial(idsAbertos, nAbertos, g);
         }
@@ -49,7 +49,7 @@ void RKGA::geraPopAleatoriaConfInicial(Graph_network *g, int *idsAbertos, int nA
 /** ordena populacao em ordem decrescente por valor da funcao objetivo
 dado que queremos minimizar a perda os piores individuos ficam no inicio(perda maior)
 queremos os melhore (menor perda, fim da lista) **/
-void RKGA::ordenaPopulacaoAtual(Graph_network *g){
+void Random_keys::ordenaPopulacaoAtual(Graph *g){
     for(unsigned int i=0; i<popAtual.size(); i++)
         popAtual.at(i)->calculaFuncaoObjetivoOtimizado(g);
 //        popAtual.at(i)->calculaFuncaoObjetivo(g);
@@ -57,7 +57,7 @@ void RKGA::ordenaPopulacaoAtual(Graph_network *g){
     sort(popAtual.begin(), popAtual.end(), ordenacaoIndividuo);
 }
 
-int RKGA::avancaGeracoes(Graph_network *g){
+int Random_keys::avancaGeracoes(Graph *g){
 
     int melhorGeracao = 0;
     RK_Individual *best = popAtual.at(this->tamPop - 1);
@@ -124,7 +124,7 @@ int RKGA::avancaGeracoes(Graph_network *g){
     return melhorGeracao;
 }
 
-int RKGA::avancaGeracoes2(Graph_network *g){
+int Random_keys::avancaGeracoes2(Graph *g){
 
     int melhorGeracao = 0;
     RK_Individual *best = popAtual.at(this->tamPop - 1);
@@ -200,7 +200,7 @@ int RKGA::avancaGeracoes2(Graph_network *g){
 }
 
     ///OLD IMPLEMENTATION OF AG+PR
-int RKGA::avancaGeracoesPRS(Graph_network *g){
+int Random_keys::avancaGeracoesPRS(Graph *g){
 
     int melhorGeracao = 0;
     RK_Individual *best = popAtual.at(this->tamPop - 1);
@@ -293,7 +293,7 @@ int RKGA::avancaGeracoesPRS(Graph_network *g){
     return melhorGeracao;
 }
 
-void RKGA::prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph_network *g){
+void Random_keys::prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &populacao, Graph *g){
 
     RK_Individual *indRef, *ind;
 
@@ -334,7 +334,7 @@ void RKGA::prsEvolutivo(vector<RK_Individual*> pool, vector<RK_Individual*> &pop
 
 }
 
-RK_Individual *RKGA::pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph_network *g){
+RK_Individual *Random_keys::pre(vector<RK_Individual*> pool, int max_it, float pct_pr_elite, Graph *g){
 
     unsigned int tam_pool = pool.size();
 
@@ -384,7 +384,7 @@ RK_Individual *RKGA::pre(vector<RK_Individual*> pool, int max_it, float pct_pr_e
 
 }
 
-int RKGA::avancaGeracoesPRSEvolutivoFinal(Graph_network *g){
+int Random_keys::avancaGeracoesPRSEvolutivoFinal(Graph *g){
 
     int num_piores, num_melhores;
     int melhorGeracao = 0;
@@ -469,7 +469,7 @@ int RKGA::avancaGeracoesPRSEvolutivoFinal(Graph_network *g){
 }
 
     //OLD IMPLEMENTATION
-int RKGA::avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite){
+int Random_keys::avancaGeracoesPRE(Graph *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite){
 
 //    cout << "avanca geracoes\n";
     vector<int> chamadaGeracao;
@@ -599,12 +599,12 @@ int RKGA::avancaGeracoesPRE(Graph_network *g, int it_s_melhora, int tam_pool, in
 }
 
 
-void RKGA::cruzamento1(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
+void Random_keys::cruzamento1(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++)
         filho->getPesos()[i] = (pai1->getPesos()[i] + pai2->getPesos()[i])/2.0;
 }
 
-void RKGA::mutacao(RK_Individual *ind){
+void Random_keys::mutacao(RK_Individual *ind){
     int i = rand() % 100;
     if(i<=5){
         int j = rand() % ind->getNumArcos();
@@ -623,7 +623,7 @@ void RKGA::mutacao(RK_Individual *ind){
     }
 }
 
-void RKGA::cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
+void Random_keys::cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
     for(int i=0; i<filho->getNumArcos(); i++){
         int j = rand() % 1000;
         if (j>=800){
@@ -638,7 +638,7 @@ void RKGA::cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *
     }
 }
 
-void RKGA::cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void Random_keys::cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     for(unsigned long int i=0; i<RK_Individual::cromossomos.size()/2; i++)
@@ -649,7 +649,7 @@ void RKGA::cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *
 
 }
 
-int RKGA::avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento) {
+int Random_keys::avancaGeracoesGenerico(Graph *g, int tipoCruzamento) {
 
     int melhorGeracao = 0;
     RK_Individual *best = popAtual.at(this->tamPop - 1);
@@ -737,7 +737,7 @@ int RKGA::avancaGeracoesGenerico(Graph_network *g, int tipoCruzamento) {
     return melhorGeracao;
 }
 
-void RKGA::cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void Random_keys::cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     int tam = RK_Individual::cromossomos.size();
@@ -759,7 +759,7 @@ void RKGA::cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *
         filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = piorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
 }
 
-void RKGA::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void Random_keys::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     int tam = RK_Individual::cromossomos.size();
@@ -780,7 +780,7 @@ void RKGA::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *
 
 }
 
-void RKGA::cruzamento6(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
+void Random_keys::cruzamento6(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
     int i = rand() % 5;
 
     if(i==0)
@@ -796,7 +796,7 @@ void RKGA::cruzamento6(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *
 
 }
 
-int RKGA::avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite) {
+int Random_keys::avancaGeracoesPRECA(Graph *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite) {
 
     int numChamadasPr = 0;
     vector<int> chamadaGeracao;
@@ -924,7 +924,7 @@ int RKGA::avancaGeracoesPRECA(Graph_network *g, int it_s_melhora, int tam_pool, 
     return melhorGeracao;
 }
 
-int RKGA::avancaGeracaoesAdaptativo(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut) {
+int Random_keys::avancaGeracaoesAdaptativo(Graph *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut, float taxaPctMut) {
 
     int it=0;
     vector<int> chamadaGeracao;
@@ -1026,7 +1026,7 @@ int RKGA::avancaGeracaoesAdaptativo(Graph_network *g, int it_s_melhora, float ma
     return melhorGeracao;
 }
 
-void RKGA::mutacaoAdaptavitva(RK_Individual *ind, float pctTam, float pctChance) {
+void Random_keys::mutacaoAdaptavitva(RK_Individual *ind, float pctTam, float pctChance) {
 
     int tam = round(pctTam*ind->getNumArcos());
     int n = round(pctChance*100);
@@ -1042,8 +1042,8 @@ void RKGA::mutacaoAdaptavitva(RK_Individual *ind, float pctTam, float pctChance)
 }
 
 int
-RKGA::avancaGeracaoesAdaptativo2(Graph_network *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut,
-                                 float taxaPctMut) {
+Random_keys::avancaGeracaoesAdaptativo2(Graph *g, int it_s_melhora, float maxMutacao, float max_pct, float taxaTamMut,
+                                        float taxaPctMut) {
 
     int it=0;
     vector<int> chamadaGeracao;

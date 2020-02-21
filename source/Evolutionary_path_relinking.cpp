@@ -11,7 +11,7 @@ Evolutionary_path_relinking::Evolutionary_path_relinking(vector<RK_Individual*> 
 
 }
 
-RK_Individual *Evolutionary_path_relinking::pre(Graph_network *g){
+RK_Individual *Evolutionary_path_relinking::pre(Graph *g){
 
     unsigned int tam_pool = pool.size();
 
@@ -61,7 +61,7 @@ RK_Individual *Evolutionary_path_relinking::pre(Graph_network *g){
 }
 
 //path relinking "guloso", se nenhum individuo do path foi melhor que this e guia entao retorna um individuo aleatorio
-RK_Individual *Evolutionary_path_relinking::prs(RK_Individual *inicio, RK_Individual *guia, Graph_network *g, RK_Individual *indRef){
+RK_Individual *Evolutionary_path_relinking::prs(RK_Individual *inicio, RK_Individual *guia, Graph *g, RK_Individual *indRef){
 
     vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
 
@@ -115,7 +115,7 @@ RK_Individual *Evolutionary_path_relinking::prs(RK_Individual *inicio, RK_Indivi
 }
 
 
-RK_Individual *Evolutionary_path_relinking::prs2(RK_Individual *inicio, RK_Individual *guia, Graph_network *g){
+RK_Individual *Evolutionary_path_relinking::prs2(RK_Individual *inicio, RK_Individual *guia, Graph *g){
 
 //    printf("Niveis:\n\n");
 
@@ -214,7 +214,7 @@ typedef struct{
     int in, out;//
 }operation;
 
-OS_Individual *Evolutionary_path_relinking::path_relingking(OS_Individual *start, OS_Individual *end, Graph_network *g) {
+Individual *Evolutionary_path_relinking::path_relingking(Individual *start, Individual *end, Graph *g) {
 
     //Edges of 'end' to be inserted on 'start'
     vector<int> candidates_in;
@@ -224,7 +224,7 @@ OS_Individual *Evolutionary_path_relinking::path_relingking(OS_Individual *start
 
     double bestLocal = 9999999999, bestGlobal = 9999999999;
 
-    OS_Individual *aux = new OS_Individual(); //to run the path
+    Individual *aux = new Individual(); //to run the path
 
     bool fixed;
     //defining fixed edges
@@ -373,19 +373,19 @@ OS_Individual *Evolutionary_path_relinking::path_relingking(OS_Individual *start
     return aux;
 }
 
-bool OS_sort(OS_Individual *os1, OS_Individual *os2){return os1->getActiveLoss()>os2->getActiveLoss();}
+bool OS_sort(Individual *os1, Individual *os2){return os1->getActiveLoss() > os2->getActiveLoss();}
 
-OS_Individual *Evolutionary_path_relinking::run(vector<RK_Individual *> pool_RK, int max_it, float pctElite, Graph_network *g) {
+Individual *Evolutionary_path_relinking::run(vector<RK_Individual *> pool_RK, int max_it, float pctElite, Graph *g) {
 
     int tam_elite = round(pctElite*pool_RK.size());
     int tam_pool = pool_RK.size();
 
-    vector<OS_Individual*> pool_OS;
-    OS_Individual *aux, **oss = new OS_Individual*[tam_pool];
+    vector<Individual*> pool_OS;
+    Individual *aux, **oss = new Individual*[tam_pool];
 
     //convert RK pool to OS pool
     for(unsigned long int i=0; i<pool_RK.size(); i++){
-        oss[i] = new OS_Individual(pool_RK.at(i), g);
+        oss[i] = new Individual(pool_RK.at(i), g);
         pool_OS.push_back(oss[i]);
     }
 
