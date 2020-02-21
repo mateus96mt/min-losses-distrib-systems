@@ -1,0 +1,5 @@
+for ((a=0; a <= 10000 ; a++))
+do
+   ./main networks/sis33.m 1
+done
+echo "\n"

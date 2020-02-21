@@ -1,0 +1,25 @@
+numExec=10
+
+pasta="00caralhinhos"
+
+for arq_entrada in networks/sis*;
+do
+    
+    arq_saida=$(echo $arq_entrada | cut -d "/" -f 2)
+
+    for x in `seq 3 3`;
+    do
+        executavel="main"
+        mkdir -p "$pasta"
+        mkdir -p "$pasta"/"$x"
+
+        for execucao in `seq 1 $numExec`;
+        do
+            echo execucao $execucao "(""$arq_saida"")"
+            ./"$executavel" "$arq_entrada" >> "$pasta"/"$x"/"$arq_saida""$execucao".csv
+            
+        done;
+
+    done;
+    
+done;

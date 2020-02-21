@@ -1,0 +1,26 @@
+numExec=50
+
+pasta="t5_100_Execucao_"$(date +%F)_$(date +%T)
+
+for arq_entrada in networks_teste/sis*;
+do
+    
+    arq_saida=$(echo $arq_entrada | cut -d "/" -f 2)
+
+    for x in `seq 5 5`;
+    do
+        executavel="GERAL"
+        mkdir -p "$pasta"
+        mkdir -p "$pasta"/"$x"
+        
+        echo "Chamadas_geracao Perda_Ativa(kw) Tempo(s) Geracao Semente ChavesAbertas" >>  "$pasta"/"$x"/"$arq_saida".csv
+        for execucao in `seq 1 $numExec`;
+        do
+            echo execucao $execucao "(""$arq_saida"")"
+            ./"$executavel" "$arq_entrada" 100 500 50 100 50 0.3 "$x" 0 0 >> "$pasta"/"$x"/"$arq_saida".csv
+            
+        done;
+
+    done;
+    
+done;

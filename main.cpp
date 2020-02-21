@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "Graph_network.h"
-#include "RKGA.h"
+#include "include/Graph_network.h"
+#include "include/RKGA.h"
 #include "time.h"
-#include "OS_Individual.h"
+#include "include/OS_Individual.h"
 
 #include <algorithm>
 #include <math.h>

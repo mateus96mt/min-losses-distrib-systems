@@ -1,0 +1,29 @@
+#x                1         2           3           4           5           6
+#               PR_RK     PR_OS        AG       AG_PR_RK    AG_PR_OS     AG_ADAP
+
+numExec=30
+
+pasta="Execucao_"$(date +%F)_$(date +%T)
+
+for arq_entrada in networks_teste/sis*;
+do
+    
+    arq_saida=$(echo $arq_entrada | cut -d "/" -f 2)
+
+    for x in `seq 2 3`;
+    do
+        executavel="GERAL"
+        mkdir -p "$pasta"
+        mkdir -p "$pasta"/"$x"
+        
+        echo "Chamadas_geracao Perda_Ativa(kw) Tempo(s) Geracao Semente ChavesAbertas" >>  "$pasta"/"$x"/"$arq_saida".csv
+        for execucao in `seq 1 $numExec`;
+        do
+#            echo execucao $execucao "(""$arq_saida"")"
+            ./GERAL networks_teste/sis33.m 100 500 50 10 10 0.3 1 0 0
+            
+        done;
+
+    done;
+    
+done;

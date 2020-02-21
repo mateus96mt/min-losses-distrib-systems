@@ -1,0 +1,6 @@
+for arq_entrada in networks_teste/sis*;
+do
+
+    ./"GERAL" "$arq_entrada" 100 500 50 10 10 0.3 6 1.1 1.1
+    
+done;
