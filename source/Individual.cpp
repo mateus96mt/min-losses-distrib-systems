@@ -4,8 +4,8 @@
 
 #include "include/Individual.h"
 
-bool crit1(Cromossome *c1, Cromossome *c2){ return c1->posicao < c2->posicao;}
-bool crit2(Cromossome *c1, Cromossome *c2){return c1->peso > c2->peso;}
+bool crit1(Chromosome *c1, Chromosome *c2){ return c1->position < c2->position;}
+bool crit2(Chromosome *c1, Chromosome *c2){return c1->peso > c2->peso;}
 
 ///constructor that recieves a RK (Random Keys) and convert into OS (Opened Switches)
 Individual::Individual(RK_Individual *ind, Graph *g) {
@@ -14,7 +14,7 @@ Individual::Individual(RK_Individual *ind, Graph *g) {
     sort(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), crit1);
 
     /** copia peso do individio paca cada cromossomo **/
-    for(int i=0; i<ind->getNumArcos(); i++)
+    for(int i=0; i< ind->getNumEdges(); i++)
         RK_Individual::cromossomos.at(i)->peso = ind->getPesos()[i];
 
     sort(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), crit2);

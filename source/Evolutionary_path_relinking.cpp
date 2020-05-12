@@ -65,8 +65,8 @@ RK_Individual *Evolutionary_path_relinking::prs(RK_Individual *inicio, RK_Indivi
 
     vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
 
-    RK_Individual *best = new RK_Individual(inicio->getNumArcos());
-    RK_Individual *aux = new RK_Individual(inicio->getNumArcos());
+    RK_Individual *best = new RK_Individual(inicio->getNumEdges());
+    RK_Individual *aux = new RK_Individual(inicio->getNumEdges());
 
     aux->calculaFuncaoObjetivoOtimizado(g);
     best->calculaFuncaoObjetivoOtimizado(g);
@@ -75,7 +75,7 @@ RK_Individual *Evolutionary_path_relinking::prs(RK_Individual *inicio, RK_Indivi
 
     double bestPerdaAtiva = indRef->getPerdaAtiva();
 
-    for(int i=0; i<inicio->getNumArcos();i++){
+    for(int i=0; i< inicio->getNumEdges(); i++){
 
         candidatos.push_back(i);
         best->getPesos()[i] = inicio->getPesos()[i];
@@ -125,8 +125,8 @@ RK_Individual *Evolutionary_path_relinking::prs2(RK_Individual *inicio, RK_Indiv
     int nivelBest, direcaoBest;//para cada nivel
     int nivelBestGlobal, direcaoBestGlobal;
 
-    RK_Individual *aux = new RK_Individual(inicio->getNumArcos());
-    RK_Individual *best = new RK_Individual(inicio->getNumArcos());
+    RK_Individual *aux = new RK_Individual(inicio->getNumEdges());
+    RK_Individual *best = new RK_Individual(inicio->getNumEdges());
 
     aux->calculaFuncaoObjetivoOtimizado(g);
     best->calculaFuncaoObjetivoOtimizado(g);
@@ -134,7 +134,7 @@ RK_Individual *Evolutionary_path_relinking::prs2(RK_Individual *inicio, RK_Indiv
 
     double minPerdaNivel = 999999999999, minPerdaGlobal = 999999999999;
 
-    for(int i=0; i<inicio->getNumArcos();i++){
+    for(int i=0; i< inicio->getNumEdges(); i++){
 
         candidatos.push_back(i);
         aux->getPesos()[i] = inicio->getPesos()[i];

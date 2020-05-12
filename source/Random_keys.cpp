@@ -600,21 +600,21 @@ int Random_keys::avancaGeracoesPRE(Graph *g, int it_s_melhora, int tam_pool, int
 
 
 void Random_keys::cruzamento1(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
-    for(int i=0; i<filho->getNumArcos(); i++)
+    for(int i=0; i< filho->getNumEdges(); i++)
         filho->getPesos()[i] = (pai1->getPesos()[i] + pai2->getPesos()[i])/2.0;
 }
 
 void Random_keys::mutacao(RK_Individual *ind){
     int i = rand() % 100;
     if(i<=5){
-        int j = rand() % ind->getNumArcos();
+        int j = rand() % ind->getNumEdges();
         double peso = rand() % RANGEPESO;
         ind->getPesos()[j] = peso;
     }
     else{
         if(i<=15){
-            int j = rand() % ind->getNumArcos();
-            int k = rand() % ind->getNumArcos();
+            int j = rand() % ind->getNumEdges();
+            int k = rand() % ind->getNumEdges();
             double peso1 = rand() % RANGEPESO;
             double peso2 = rand() % RANGEPESO;
             ind->getPesos()[j] = peso1;
@@ -624,7 +624,7 @@ void Random_keys::mutacao(RK_Individual *ind){
 }
 
 void Random_keys::cruzamento2(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho){
-    for(int i=0; i<filho->getNumArcos(); i++){
+    for(int i=0; i< filho->getNumEdges(); i++){
         int j = rand() % 1000;
         if (j>=800){
             filho->getPesos()[i] = (pai1->getPesos()[i] + pai2->getPesos()[i])*2.0;
@@ -642,10 +642,10 @@ void Random_keys::cruzamento3(RK_Individual *pai1, RK_Individual *pai2, RK_Indiv
     shuffle(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), std::default_random_engine(time(NULL)));
 
     for(unsigned long int i=0; i<RK_Individual::cromossomos.size()/2; i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->position];
 
     for(unsigned long int i=RK_Individual::cromossomos.size()/2; i<RK_Individual::cromossomos.size(); i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->position];
 
 }
 
@@ -752,11 +752,11 @@ void Random_keys::cruzamento4(RK_Individual *pai1, RK_Individual *pai2, RK_Indiv
 
     //80% vem do melhor pai
     for(unsigned long int i=0; i<tamMelhor; i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = melhorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = melhorPai->getPesos()[RK_Individual::cromossomos.at(i)->position];
 
     //20% vem do pior pai
     for(unsigned long int i=tamMelhor; i<RK_Individual::cromossomos.size(); i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = piorPai->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = piorPai->getPesos()[RK_Individual::cromossomos.at(i)->position];
 }
 
 void Random_keys::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Individual *filho) {
@@ -768,15 +768,15 @@ void Random_keys::cruzamento5(RK_Individual *pai1, RK_Individual *pai2, RK_Indiv
 
     //40% vem do pai1
     for(unsigned long int i=0; i<tam04; i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = pai1->getPesos()[RK_Individual::cromossomos.at(i)->position];
 
     //40% vem do pai12
     for(unsigned long int i=tam04; i<RK_Individual::cromossomos.size()-tam04; i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->posicao];
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = pai2->getPesos()[RK_Individual::cromossomos.at(i)->position];
 
     //20% gerado de forma aleatoria
     for(unsigned long int i=RK_Individual::cromossomos.size()-tam04; i<RK_Individual::cromossomos.size(); i++)
-        filho->getPesos()[RK_Individual::cromossomos.at(i)->posicao] = rand() % 100;
+        filho->getPesos()[RK_Individual::cromossomos.at(i)->position] = rand() % 100;
 
 }
 
@@ -1028,13 +1028,13 @@ int Random_keys::avancaGeracaoesAdaptativo(Graph *g, int it_s_melhora, float max
 
 void Random_keys::mutacaoAdaptavitva(RK_Individual *ind, float pctTam, float pctChance) {
 
-    int tam = round(pctTam*ind->getNumArcos());
+    int tam = round(pctTam* ind->getNumEdges());
     int n = round(pctChance*100);
     int m = rand() % 100;
 
     if(m<=n){
         for(int i=0; i<tam; i++){
-            int j = rand() % ind->getNumArcos();
+            int j = rand() % ind->getNumEdges();
 
             ind->getPesos()[i] = rand() % RANGEPESO;
         }

@@ -1,7 +1,3 @@
-//
-// Created by gbm on 21/09/19.
-//
-
 #ifndef MINIMIZACAO_PERDAS_SISTEMA_DISTRIBUICAO_CAPACITOR_H
 #define MINIMIZACAO_PERDAS_SISTEMA_DISTRIBUICAO_CAPACITOR_H
 
@@ -35,7 +31,5 @@ public:
     void setId(int id){                                     this->id = id;                      }
     void setCost(double cost){                              this->cost = cost;                  }
 };
-
-
 
 #endif //MINIMIZACAO_PERDAS_SISTEMA_DISTRIBUICAO_CAPACITOR_H

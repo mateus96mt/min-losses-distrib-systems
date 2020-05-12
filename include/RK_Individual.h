@@ -4,36 +4,27 @@
 #include <math.h>
 #include "include/Graph.h"
 
-struct Cromossome{
-    Edge *arco;
-    double peso;
-    int posicao;
+struct Chromosome{
+    Edge *edge;
+    double weight;
+    int position;
 };
 
 class RK_Individual{
     private:
-        int numArcos;
-        double *pesos, perdaAtiva, perdaReativa;
+    int number_of_edges;
+        double *weights, active_loss, reactive_loss, objective_function;
     public:
+        RK_Individual(int numEdges);
+        ~RK_Individual(){delete[] weights;}
 
-        ///--------------------------conection to graph network--------------------------:
-
-        static vector<Cromossome*> cromossomos;
-        static void criaCromossomos(Graph *g);
-
-        ///--------------------------conection to graph network--------------------------:
-
-
-        RK_Individual(int numArcos);
-        ~RK_Individual(){delete[] pesos;}
-
-        /** GET's **/
-        int getNumArcos(){return this->numArcos;}
-        double *getPesos(){return this->pesos;}
-        double getPerdaAtiva(){return this->perdaAtiva;}
-        double getPerdaReativa(){return this->perdaReativa;}
-
-        void geraPesosAleatorios();
+        int getNumEdges(){                  return this->number_of_edges;   }
+        double *getWeights(){               return this->weights;           }
+        double getActiveLoss(){             return this->active_loss;       }
+        double getObjectiveFunction(){      return this->objective_function;}
+        double getReactiveLoss(){           return this->reactive_loss;     }
+       
+	void generate_random_weights();
 
         void geraPesosConfInicial(int *idsAbertos, int n, Graph *g);
 
@@ -45,23 +36,14 @@ class RK_Individual{
 
         void imprimePesos();
 
-//        ///--------------------------RKGA operators--------------------------:
-//
-//        void cruzamentoMedia(Individuo *pai, Individuo *filho);
-//
-//        void cruzamentoMedia2(Individuo *pai, Individuo *filho);
-//
-//        void mutacao();
-//
-//        ///--------------------------RKGA operators--------------------------:
+	void calculate_fitness(Graph *graph,  bool theBest = false);
 
+	///--------------------------conection to graph network--------------------------:
 
+        static vector<Chromosome*> cromossomos;
+        static void criaCromossomos(Graph *g);
 
-//        ///----------------------Path-relingking operators-------------------:
-//
-//        Individuo *prs(Individuo *guia, Grafo *g, Individuo *indRef);//path relinking simples path de this para guia
-//        Individuo *prs2(Individuo *guia, Grafo *g);//path relinking com modificacoes sugeridas luciana
-//
-//        ///----------------------Path-relingking operators-------------------:
+        ///--------------------------conection to graph network--------------------------:
+
 };
 #endif // INDIVIDUO_H_INCLUDED

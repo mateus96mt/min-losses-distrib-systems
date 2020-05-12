@@ -3,6 +3,8 @@
 #include "include/Vertex.h"
 #include "include/Edge.h"
 
+int Vertex::idLF = 0;
+
 Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 
     this->id = id;
@@ -23,17 +25,16 @@ Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 Vertex::~Vertex(){
 }
 
-void Vertex::show(){
-    printf("------------------------------------------------------------------------\n");
-    printf("< No{%d}  idArv = %d  grauS = %d  grauE = %d  grauAUX = %d  pA = %.5f  pR = %.5f  vol = %.5f >",
-           this->id, this->idTree, this->outdegree, this->indegree, this->auxDegree, this->activePower, this->reactivePower, this->voltage);
+double Vertex::getActivePower(){{
+    return this->loadFactors[ idLF ].level * this->activePower; }
+}
 
-    for(Edge *a = this->edgesList; a != NULL; a= a->getNext()){
-        printf("\n\n");
-        a->show();
+double Vertex::getReactivePower(){
+    double reactPower = this->loadFactors[ idLF ].level * this->reactivePower;
+    for( unsigned int i = 0; i < capacitorsAlloc.size(); i++ ) {
+        reactPower -= capacitorsAlloc[i].getPower();
     }
-    printf("\n------------------------------------------------------------------------");
-    printf("\n\n");
+    return reactPower;
 }
 
 void Vertex::addCapacitor( Capacitor newCap ){
@@ -47,4 +48,26 @@ void Vertex::rmLastCapacitor(){
 void Vertex::rm_all_capacitors(){
     while(!capacitorsAlloc.empty())
         this->rmLastCapacitor();
+}
+
+void Vertex::show(){
+    double capPower = 0;
+    for( unsigned int i = 0; i < capacitorsAlloc.size(); i++ )
+        capPower += capacitorsAlloc[i].getPower(0);
+
+    printf("------------------------------------------------------------------------\n");
+    printf("<No{%d}:  idArv = %d,  grauS = %d,  grauE = %d,  grauAUX = %d,  pA = %.5f,  pR = %.5f",
+            this->id,this->idTree,this->outdegree,this->indegree,this->auxDegree,this->activePower,this->reactivePower);
+    if( capPower > 0 )
+        cout << "Capacitor :" << capPower << endl;
+    else
+        printf("%.5f", this->reactivePower);
+    printf("  vol = %.5f >", this->voltage);
+
+    for(Edge *a = this->edgesList; a!=NULL; a= a->getNext()){
+        printf("\n\n");
+        a->show();
+    }
+    printf("\n------------------------------------------------------------------------");
+    printf("\n\n");
 }

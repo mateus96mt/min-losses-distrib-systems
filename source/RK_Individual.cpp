@@ -3,139 +3,112 @@
 
 using namespace std;
 
-vector<Cromossome*> RK_Individual::cromossomos = vector<Cromossome*>();
+vector<Chromosome*> RK_Individual::cromossomos = vector<Chromosome*>();
+bool sortChromosome(Chromosome *c1, Chromosome *c2){return c1->weight > c2->weight;}
 
-bool ordenacaoCromossomo(Cromossome *c1, Cromossome *c2){return c1->peso > c2->peso;}
-bool ordenaPosicaoCromossomo(Cromossome *c1, Cromossome *c2){ return c1->posicao < c2->posicao;}
-bool ordenaCromossomoPorIdArco(Cromossome *c1, Cromossome *c2){ return c1->arco->getID() < c2->arco->getID(); }
+bool ordenaPosicaoCromossomo(Chromosome *c1, Chromosome *c2){ return c1->position < c2->position;}
+bool ordenaCromossomoPorIdArco(Chromosome *c1, Chromosome *c2){ return c1->edge->getID() < c2->edge->getID(); }
 
-
-RK_Individual::RK_Individual(int numArcos){
-     this->numArcos=numArcos;
-     pesos = new double[this->numArcos];
+RK_Individual::RK_Individual(int numEdges){
+     this->number_of_edges = numEdges;
+     weights = new double[ this->number_of_edges ];
 }
 
-void RK_Individual::geraPesosAleatorios(){
-    for(int i=0; i<this->numArcos; i++)
-        this->pesos[i] = rand() % RANGEPESO;
+void RK_Individual::generate_random_weights(){
+    for(int i=0; i<this->number_of_edges; i++)
+        this->weights[i] = rand() % RANGEPESO;
 }
 
-//void Individuo::cruzamentoMedia(Individuo *pai, Individuo *filho){
-//    for(int i=0; i<this->numArcos; i++)
-//        filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i])/2.0;
-//}
+void RK_Individual::calculate_fitness(Graph *graph , bool theBest ){
+    vector<Chromosome*> chromosomes;
 
-//void Individuo::mutacao(){
-//    int i = rand() % 100;
-//    if(i<=5){
-//        int j = rand() % this->numArcos;
-//        double peso = rand() % RANGEPESO;
-//        this->pesos[j] = peso;
-//    }
-//    else{
-//        if(i<=15){
-//            int j = rand() % this->numArcos;
-//            int k = rand() % this->numArcos;
-//            double peso1 = rand() % RANGEPESO;
-//            double peso2 = rand() % RANGEPESO;
-//            this->pesos[j] = peso1;
-//            this->pesos[k] = peso2;
-//        }
-//    }
-//}
 
-void RK_Individual::calculaFuncaoObjetivo(Graph *g){
-    vector<Cromossome*> cromossomos;
-
-    Cromossome *c;
-    for(Vertex *no = g->get_verticesList(); no != NULL; no= no->getNext()){
-
-        for(Edge *a = no->getEdgesList(); a != NULL; a= a->getNext()){
-
-            /**individuo possui somente arcos modificaveis e em um sentido
-            (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
-            if(a->getModifiable() == true && a->getMarked() == true){
-                c = new Cromossome();
-                c->arco = a;
-                c->peso = 0;
-                cromossomos.push_back(c);
-            }
-        }
+    Chromosome *chromosome;
+    for( Vertex *vertex = graph->get_verticesList(); vertex!=NULL; vertex = vertex->getNext() ){
+        for(Edge *e = vertex->getEdgesList(); e!=NULL; e= e->getNext()){
+		if(e->getModifiable() == true && e->getMarked() == true){
+            chromosome = new Chromosome();
+            chromosome->edge = e;
+            chromosome->weight = 0;
+            chromosomes.push_back(chromosome);
+	        }
+	}
 
     }
 
-    /** copia peso do individio paca cada cromossomo **/
-    for(int i=0; i<this->numArcos; i++)
-        cromossomos.at(i)->peso = this->pesos[i];
+    for(int i=0; i < this->number_of_edges; i++) /// Copia peso do individio paca cada cromossomo
+        chromosomes[i]->weight = this->weights[i];
 
-    sort(cromossomos.begin(), cromossomos.end(), ordenacaoCromossomo);
+    sort(chromosomes.begin(), chromosomes.end(), sortChromosome);
 
-    int n_arc_inseridos = 0, n_arcos_inserir = g->getVerticesSize() - 1 - g->getNumberOfNonModifiable();
+    int inserted_size = 0, toInsert_size = graph->getVerticesSize()-1- graph->getNumberOfNonModifiable();
 
-    /** abre todas as chaves no grafo e zera todos os fluxos e perdas nos arcos**/
-    for(Vertex *no = g->get_verticesList(); no != NULL; no = no->getNext()){
-        for(Edge *a = no->getEdgesList(); a != NULL; a = a->getNext()){
+
+    for(Vertex *vertex = graph->get_verticesList(); vertex!=NULL; vertex = vertex->getNext()){
+        for(Edge *e = vertex->getEdgesList(); e!=NULL; e = e->getNext()){
 
             //arcos nao modificaveis ficam sempre fechados
-            if(a->getModifiable() == false)
-                a->setSwitch(true);
+            if(e->getModifiable() == false)
+                e->setSwitch(true);
             else
-                a->setSwitch(false);
+                e->setSwitch(false);
 
-            a->setActiveFlow(0.0);
-            a->setReactiveFlow(0.0);
-            a->setActiveLoss(0.0);
-            a->setReactiveLoss(0.0);
+            e->setActiveFlow(0.0);
+            e->setReactiveFlow(0.0);
+            e->setActiveLoss(0.0);
+            e->setReactiveLoss(0.0);
         }
     }
 
-    /** reseta os ids de componentes conexas **/
-    g->resetIDTree();
-
-    /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
-    for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
-
-        if((cromossomos.at(i)->arco->getOrigin()->getIdTree() != cromossomos.at(i)->arco->getDestiny()->getIdTree()) &&
-                cromossomos.at(i)->arco->isClosed() == false){
-
-            int id = cromossomos.at(i)->arco->getOrigin()->getIdTree();
-            for(Vertex *no = g->get_verticesList(); no != NULL; no = no->getNext()){
-                if(no->getIdTree() == id)
-                    no->setIdTree(cromossomos.at(i)->arco->getDestiny()->getIdTree());
+    graph->resetIDTree();                               // reseta os ids de componentes conexas para algoritmo de Kruskal
+    for(int i=0; inserted_size<toInsert_size; i++){     // percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal)
+        if( (chromosomes.at(i)->edge->getOrigin()->getIdTree() != chromosomes.at(i)->edge->getDestiny()->getIdTree()) &&
+                chromosomes.at(i)->edge->isClosed()==false){
+            int id = chromosomes.at(i)->edge->getOrigin()->getIdTree();
+            for(Vertex *v = graph->get_verticesList(); v!=NULL; v = v->getNext()){
+                if(v->getIdTree()==id)
+                    v->setIdTree(chromosomes.at(i)->edge->getDestiny()->getIdTree());
             }
-
-            cromossomos.at(i)->arco->setSwitch(true);
-            g->findEdge(cromossomos.at(i)->arco->getDestiny()->getID(),
-                        cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
-
-            n_arc_inseridos++;
+            chromosomes.at(i)->edge->setSwitch(true);
+            graph->findEdge(chromosomes.at(i)->edge->getDestiny()->getID(), chromosomes.at(i)->edge->getOrigin()->getID())->setSwitch(true);
+            inserted_size++;
         }
-
     }
 
-    g->defineFlows();
-    g->evaluateLossesAndFlows(1e-8); /** calcula fluxos e perda com erro de 1e-5 **/
+    graph->defineFlows();
 
-    double *perdas = g->getLosses();/** soma as perdas ativas e reativas em todos os arcos e retorna um double* **/
+    graph->capacitor_allocation();          // TODO: trocar calculo da funcao objetivo para o custo total (todos niveis) em dinheiro US$
 
-    this->perdaAtiva = perdas[0];
-    this->perdaReativa = perdas[1];
+    graph->evaluateLossesAndFlows(1e-8);    // calcula fluxos e perda com erro de 1e-5
 
-    /** no caso de solucoes que possuem configuracao viavel porem sao muito longas **/
-    if(isnan(perdas[0]))
-        this->perdaAtiva = 9999999999;
+    double *losses = graph->getLosses();    // soma as perdas ativas e reativas em todos os arcos e retorna um double
 
-    if(isnan(perdas[1]))
-        this->perdaReativa = 9999999999;
+    this->active_loss           = losses[0];
+    this->reactive_loss         = losses[1];
 
-    delete perdas;
+    // No caso de solucoes que possuem configuracao viavel porem sao muito longas
+    if( isnan(losses[0]) )      this->active_loss   = 9999999999;
+    if( isnan(losses[1]) )      this->reactive_loss = 9999999999;
 
-    cromossomos.clear();///deletar vetor de cromossomos(nao esta deletando memoria)
+    this->objective_function    = graph->getTotalLoss()[1];
+    if(isnan( this->objective_function ) )    this->objective_function = 9999999999;
+
+//    cout << "Perda Total:    " << graph->getTotalLoss()[0] << endl;
+//    cout << "Custo Total:    " << graph->getTotalLoss()[1] << endl;
+
+    delete losses;
+
+    if( !theBest )
+    for (Vertex *vertex_caps = graph->get_verticesList(); vertex_caps != NULL; vertex_caps = vertex_caps->getNext()) {
+        vertex_caps->rm_all_capacitors();
+    }
+
+    chromosomes.clear();    // Deletar vetor de cromossomos(nao esta deletando memoria)
 }
 
 void RK_Individual::resetaPesos(float valor){
-    for(int i=0; i<this->numArcos; i++)
-        this->pesos[i] = valor;
+    for(int i=0; i< this->getNumEdges(); i++)
+        this->weights[i] = valor;
 }
 
 void RK_Individual::geraPesosConfInicial(int *idsAbertos, int n, Graph *g){
@@ -156,7 +129,7 @@ void RK_Individual::geraPesosConfInicial(int *idsAbertos, int n, Graph *g){
             if(a->getModifiable() == true && a->getMarked() == true){
                 for(int i=0; i<n; i++){
                     if(a->getID()==idsAbertos[i]){
-                        this->pesos[j] = 0.0;
+                        this->weights[j] = 0.0;
 //                            cout << "A{" <<a->getID() << "}" << endl;
                     }
                 }
@@ -170,41 +143,25 @@ void RK_Individual::geraPesosConfInicial(int *idsAbertos, int n, Graph *g){
 
 void RK_Individual::imprimePesos(){
     printf("pesos {");
-    for(int i=0; i<this->numArcos; i++)
-        printf("%.2f, ", this->pesos[i]);
+    for(int i=0; i<this->getNumEdges(); i++)
+        printf("%.2f, ", this->weights[i]);
     printf("}\n");
 }
 
-
-//void Individuo::cruzamentoMedia2(Individuo *pai, Individuo *filho){
-//    for(int i=0; i<this->numArcos; i++){
-//        int j = rand() % 1000;
-//        if (j>=800){
-//            filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i])*2.0;
-//        }else{
-//            if (j >= 100){
-//                filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i])/2.0;
-//            }else{
-//                filho->getPesos()[i] = (this->pesos[i] + pai->getPesos()[i]) * 0.75;
-//            }
-//        }
-//    }
-//}
-
 void RK_Individual::criaCromossomos(Graph *g){
-    Cromossome *c;
+    Chromosome *c;
     int i = 0;
-    for(Vertex *no = g->get_verticesList(); no != NULL; no= no->getNext()){
+    for(Vertex *v = g->get_verticesList(); v != NULL; v= v->getNext()){
 
-        for(Edge *a = no->getEdgesList(); a != NULL; a= a->getNext()){
+        for(Edge *e = v->getEdgesList(); e != NULL; e= e->getNext()){
 
             /**individuo possui somente arcos modificaveis e em um sentido
             (antes tinhamos arcos a-b e b-a, agora usamos somente um deles)**/
-            if(a->getModifiable() == true && a->getMarked() == true){
-                c = new Cromossome();
-                c->arco = a;
-                c->peso = 0;
-                c->posicao = i;
+            if(e->getModifiable() == true && e->getMarked() == true){
+                c = new Chromosome();
+                c->edge = e;
+                c->weight = 0;
+                c->position = i;
                 cromossomos.push_back(c);
                 i++;
             }
@@ -219,10 +176,10 @@ void RK_Individual::calculaFuncaoObjetivoOtimizado(Graph *g){
     sort(cromossomos.begin(), cromossomos.end(), ordenaPosicaoCromossomo);
 
     /** copia peso do individio paca cada cromossomo **/
-    for(int i=0; i<this->numArcos; i++)
-        cromossomos.at(i)->peso = this->pesos[i];
+    for(int i=0; i<this->getNumEdges(); i++)
+        cromossomos.at(i)->weight = this->weights[i];
 
-    sort(cromossomos.begin(), cromossomos.end(), ordenacaoCromossomo);
+    sort(cromossomos.begin(), cromossomos.end(), sortChromosome);
 
     int n_arc_inseridos = 0, n_arcos_inserir = g->getVerticesSize() - 1 - g->getNumberOfNonModifiable();
 
@@ -230,18 +187,18 @@ void RK_Individual::calculaFuncaoObjetivoOtimizado(Graph *g){
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; n_arc_inseridos<n_arcos_inserir; i++){
 
-        if((cromossomos.at(i)->arco->getOrigin()->getIdTree() != cromossomos.at(i)->arco->getDestiny()->getIdTree()) &&
-                cromossomos.at(i)->arco->isClosed() == false){
+        if((cromossomos.at(i)->edge->getOrigin()->getIdTree() != cromossomos.at(i)->edge->getDestiny()->getIdTree()) &&
+                cromossomos.at(i)->edge->isClosed() == false){
 
-            int id = cromossomos.at(i)->arco->getOrigin()->getIdTree();
+            int id = cromossomos.at(i)->edge->getOrigin()->getIdTree();
             for(Vertex *no = g->get_verticesList(); no != NULL; no = no->getNext()){
                 if(no->getIdTree() == id)
-                    no->setIdTree(cromossomos.at(i)->arco->getDestiny()->getIdTree());
+                    no->setIdTree(cromossomos.at(i)->edge->getDestiny()->getIdTree());
             }
 
-            cromossomos.at(i)->arco->setSwitch(true);
-            g->findEdge(cromossomos.at(i)->arco->getDestiny()->getID(),
-                        cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
+            cromossomos.at(i)->edge->setSwitch(true);
+            g->findEdge(cromossomos.at(i)->edge->getDestiny()->getID(),
+                        cromossomos.at(i)->edge->getOrigin()->getID())->setSwitch(true);
 
             n_arc_inseridos++;
         }
@@ -254,165 +211,15 @@ void RK_Individual::calculaFuncaoObjetivoOtimizado(Graph *g){
 
     double *perdas = g->getLossesReseting();/** soma as perdas ativas e reativas em todos os arcos e retorna um double* **/
 
-    this->perdaAtiva = perdas[0];
-    this->perdaReativa = perdas[1];
+    this->active_loss = perdas[0];
+    this->reactive_loss = perdas[1];
 
     /** no caso de solucoes que possuem configuracao viavel porem sao muito longas **/
     if(isnan(perdas[0]))
-        this->perdaAtiva = 9999999999;
+        this->active_loss = 9999999999;
 
     if(isnan(perdas[1]))
-        this->perdaReativa = 9999999999;
+        this->reactive_loss = 9999999999;
 
     delete perdas;
 }
-
-////path relinking "guloso", se nenhum individuo do path foi melhor que this e guia entao retorna um individuo aleatorio
-//Individuo *Individuo::prs(Individuo *guia, Grafo *g, Individuo *indRef){
-//
-//    vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
-//
-//    Individuo *best = new Individuo(this->numArcos);
-//    Individuo *aux = new Individuo(this->numArcos);
-//
-//    aux->calculaFuncaoObjetivoOtimizado(g);
-//    best->calculaFuncaoObjetivoOtimizado(g);
-//    guia->calculaFuncaoObjetivoOtimizado(g);
-//    indRef->calculaFuncaoObjetivoOtimizado(g);//individuo de referencia, o path vai atualizando equanto obtem resultado melhor que o individuo de referencia
-//
-//    double bestPerdaAtiva = indRef->getPerdaAtiva();
-//
-//    for(int i=0; i<this->numArcos;i++){
-//
-//        candidatos.push_back(i);
-//        best->getPesos()[i] = this->pesos[i];
-//        aux->getPesos()[i] = this->pesos[i];
-//
-//    }
-//
-//    for(unsigned int i=0; i<candidatos.size(); i++){
-//
-//        aux->getPesos()[candidatos.at(i)] = guia->getPesos()[candidatos.at(i)];
-//        aux->calculaFuncaoObjetivoOtimizado(g);
-//
-//        if(aux->getPerdaAtiva() < bestPerdaAtiva){
-//
-//            bestPerdaAtiva = aux->getPerdaAtiva();
-//            path.push_back(candidatos.at(i));
-//            candidatos.erase(candidatos.begin() + i);
-//            i = 0;
-//
-//        }else{
-//
-//            aux->getPesos()[candidatos.at(i)] = this->getPesos()[candidatos.at(i)];
-//
-//        }
-//
-//    }
-//
-//
-//    delete aux;
-//
-//    for(unsigned int i=0; i<path.size(); i++)
-//        best->getPesos()[path.at(i)] = guia->getPesos()[path.at(i)];
-//
-//    best->calculaFuncaoObjetivoOtimizado(g);
-//
-//    return best;
-//}
-//
-//
-//Individuo *Individuo::prs2(Individuo *guia, Grafo *g){
-//
-////    printf("Niveis:\n\n");
-//
-//    vector<int> candidatos, path;//ids que representam a ordem que this sera igualado ao guia
-//    vector<vector<int>> nivel;
-//
-//    int nivelBest, direcaoBest;//para cada nivel
-//    int nivelBestGlobal, direcaoBestGlobal;
-//
-//    Individuo *aux = new Individuo(this->numArcos);
-//    Individuo *best = new Individuo(this->numArcos);
-//
-//    aux->calculaFuncaoObjetivoOtimizado(g);
-//    best->calculaFuncaoObjetivoOtimizado(g);
-//    guia->calculaFuncaoObjetivoOtimizado(g);
-//
-//    double minPerdaNivel = 999999999999, minPerdaGlobal = 999999999999;
-//
-//    for(int i=0; i<this->numArcos;i++){
-//
-//        candidatos.push_back(i);
-//        aux->getPesos()[i] = this->pesos[i];
-//        best->getPesos()[i] = this->pesos[i];
-//    }
-//
-//    int nv = 0;
-//    while(candidatos.size()>0){
-//
-//        minPerdaNivel = 999999999999;
-//
-//        vector<int> v;
-//        nivel.push_back(v);
-//
-//        //loop entre os candidatos do nivel
-//        for(unsigned int i=0; i<candidatos.size(); i++){
-//
-//            aux->getPesos()[candidatos.at(i)] = guia->getPesos()[candidatos.at(i)];
-//            aux->calculaFuncaoObjetivoOtimizado(g);
-//
-//            nivel.at(nv).push_back(candidatos.at(i));
-//
-////            printf("%d ", candidatos.at(i));
-//
-//            //melhor individuo no nivel
-//            if(aux->getPerdaAtiva() < minPerdaNivel) {
-//                minPerdaNivel = aux->getPerdaAtiva();
-//                nivelBest = nv;
-//                direcaoBest = i;
-//            }
-//
-//            aux->getPesos()[candidatos.at(i)] = this->getPesos()[candidatos.at(i)];//desfaz alteracao para avaliar proxima
-//
-//        }
-//
-////        printf("{%d}  (nv %d)\n", candidatos.at(direcaoBest), nv);
-//
-//        aux->getPesos()[candidatos.at(direcaoBest)] = guia->getPesos()[candidatos.at(direcaoBest)];//caminha no path na direcao da melhor local
-//
-//        path.push_back(candidatos.at(direcaoBest));
-//        candidatos.erase(candidatos.begin() + direcaoBest);
-//
-//        //verificar melhor individuo entre todos gerados ao longo do path
-//        if(minPerdaNivel < minPerdaGlobal){
-//            minPerdaGlobal = minPerdaNivel;
-//            nivelBestGlobal = nivelBest;
-//            direcaoBestGlobal = direcaoBest;
-//        }
-//
-//        nv++;
-//
-//    }
-//
-////    printf("\n\nbest:\n");
-//    //percorre caminho do path
-//    for(int i=0; i<nivelBestGlobal; i++){
-//        best->getPesos()[path.at(i)] = guia->getPesos()[path.at(i)];
-////        printf("%d\n", path.at(i));
-//    }
-//    best->getPesos()[nivel.at(nivelBestGlobal).at(direcaoBestGlobal)] = guia->getPesos()[nivel.at(nivelBestGlobal).at(direcaoBestGlobal)];
-////    printf("%d\n\n\n", nivel.at(nivelBestGlobal).at(direcaoBestGlobal));
-//
-//    best->calculaFuncaoObjetivoOtimizado(g);
-//
-////    printf("\n\nminPerdaGlobal: %f KW\n", 100*1000*minPerdaGlobal);
-////    printf("best->getPerdaAtiva(): %f KW\n", 100*1000*best->getPerdaAtiva());
-////    printf("nivelBestGLobal: %d \n", nivelBestGlobal);
-////    printf("direcaoBestGLobal: %d \n", nivel.at(nivelBestGlobal).at(direcaoBestGlobal));
-//
-//    delete aux;
-//
-//    return best;
-//
-//}
