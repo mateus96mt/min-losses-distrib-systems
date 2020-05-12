@@ -1,3 +1,0 @@
-/home/mateus/MIN_PERDAS/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/mateus/MIN_PERDAS/cmake-build-debug/CMakeFiles/min_perdas.dir
-/home/mateus/MIN_PERDAS/cmake-build-debug/CMakeFiles/edit_cache.dir
