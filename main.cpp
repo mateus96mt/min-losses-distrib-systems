@@ -27,8 +27,8 @@ void defineConfiguration(Graph *g);
 void testeEntradas(const string savename);
 
 void print_tree(const string savefolder, Graph *g );
-void cap_combination1(const string savefolder, Graph *g, Individual *individual);
-void cap_combination3(const string savefolder, Graph *g, Individual *individual);
+void cap_combination1(const string savefolder, Graph *g, RK_Individual *individual);
+void cap_combination3(const string savefolder, Graph *g, RK_Individual *individual);
 void Capacitor_Test_GA(const string savename);
 void Capacitor_Test_Ivo(const string savename);
 
@@ -113,10 +113,10 @@ void Capacitor_Test_GA(const string savename){
     graph->createCapacitorType(1, 300, 3);                  // Colocar o valor do capacitor como um parametro de leitura pra ser convertido pelo Pb
 
     Random_keys *rd = new Random_keys(100, 1000);           /// numero de individuos da populacao,numero de geracoes
-    rd->generatePopulation(graph);                          /// populacao inicial gerada de forma aleatoria
-    rd->forwardGenerations(graph);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
+    rd->geraPopAleatoria(graph);                          /// populacao inicial gerada de forma aleatoria
+    rd->avancaGeracoes(graph);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
 
-    Individual *best = rd->getCurrentPop().at(rd->getPopulationSize()-1); /// melhor individuo eh o ultimo (menor perda)
+    RK_Individual *best = rd->getPopAtual().at(rd->getTamPopulacao()-1); /// melhor individuo eh o ultimo (menor perda)
     best->calculate_fitness(graph, true); /// abre e fecha os arcos correspondentes do grafo *g para calcular funcao Objetivo
 
     vector<int> openSwitches;
