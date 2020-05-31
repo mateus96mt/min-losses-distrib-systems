@@ -384,89 +384,89 @@ int Random_keys::avancaGeracoes2(Graph *g){
 //
 //}
 
-int Random_keys::avancaGeracoesPRSEvolutivoFinal(Graph *g){
-
-    int num_piores, num_melhores;
-    int melhorGeracao = 0;
-    RK_Individual *best = popAtual.at(this->tamPop-1);
-    this->ordenaPopulacaoAtual(g);
-    double perda = 100*1000*best->getActiveLoss();
-    for(int k=0; k<this->numGeracoes; k++){
-
-        /** calcula a funcao criterio para cada individuo
-         e ordena a populacao da maior perda(pior individuo)
-         pra menor perda(melhor individuo), perdaAtiva**/
-        this->ordenaPopulacaoAtual(g);
-
-        RK_Individual *best = popAtual.at(this->tamPop-1);
-        if (100*1000*best->getActiveLoss() < perda){
-            perda = 100*1000*best->getActiveLoss();
-//            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
-            melhorGeracao = k;
-        }
-
-        popAnterior = popAtual;
-
-        num_piores = 0.05*this->tamPop;
-        num_melhores = 0.1*this->tamPop;
-
-        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
-
-            /** cruzamento entre pai1 e pai2 entre os
-            individuos aleatorios da populacao anterior
-            modificar por uma escolha em roleta no futuro**/
-            int pai1 = rand() % this->tamPop;
-
-            /*torneio com 3*/
-            int cand1, cand2, cand3;
-            cand1 = rand() % this->tamPop;
-            cand2 = rand() % this->tamPop;
-            cand3 = rand() % this->tamPop;
-
-            int aux = cand1;
-
-            if(popAnterior.at(cand1)->getActiveLoss() < popAnterior.at(cand2)->getActiveLoss()){
-                cand2=cand1;
-            }else{aux = cand2;}
-            if(popAnterior.at(cand2)->getActiveLoss() < popAnterior.at(cand3)->getActiveLoss()){
-                cand3=cand2;
-            }else{aux = cand3;}
-            pai1 = aux;
-
-            int pai2 = cand3;
-
-            while(pai2==pai1)
-                pai2 = rand() % this->tamPop;
-
-//            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
-            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
-//            popAtual.at(i)->mutacao();
-            this->mutacao(popAtual.at(i));
-        }
-
-        /**aleatorio ao inves de manter piores**/
-        for(int i=0; i<num_piores; i++)
-            popAtual.at(i)->generate_random_weights();
-    }
-
-    vector<RK_Individual*> pool;
-    for(int i=0; i<num_melhores; i++)
-        pool.push_back(popAtual.at(tamPop - num_melhores + i));
-
-    clock_t inicio = clock();
-
-
-    prsEvolutivo(pool, popAtual, g);//execucao do path reliking evolutivo no final
-
-    clock_t fim = clock();
-    printf("tempo prsEvolutivo(isoladamente) (pool size = %d):  %.2lf\n",  num_melhores, (float)(fim-inicio)/CLOCKS_PER_SEC);
-
-    this->tamPop = popAtual.size();
-
-    this->ordenaPopulacaoAtual(g);
-
-    return melhorGeracao;
-}
+//int Random_keys::avancaGeracoesPRSEvolutivoFinal(Graph *g){
+//
+//    int num_piores, num_melhores;
+//    int melhorGeracao = 0;
+//    RK_Individual *best = popAtual.at(this->tamPop-1);
+//    this->ordenaPopulacaoAtual(g);
+//    double perda = 100*1000*best->getActiveLoss();
+//    for(int k=0; k<this->numGeracoes; k++){
+//
+//        /** calcula a funcao criterio para cada individuo
+//         e ordena a populacao da maior perda(pior individuo)
+//         pra menor perda(melhor individuo), perdaAtiva**/
+//        this->ordenaPopulacaoAtual(g);
+//
+//        RK_Individual *best = popAtual.at(this->tamPop-1);
+//        if (100*1000*best->getActiveLoss() < perda){
+//            perda = 100*1000*best->getActiveLoss();
+////            printf("\ngeracao (%d)  melhor individuo: %lf kw", k, 100*1000*best->getPerdaAtiva());//resultado ja em kw
+//            melhorGeracao = k;
+//        }
+//
+//        popAnterior = popAtual;
+//
+//        num_piores = 0.05*this->tamPop;
+//        num_melhores = 0.1*this->tamPop;
+//
+//        for(int i=num_piores; i<this->tamPop-num_melhores; i++){
+//
+//            /** cruzamento entre pai1 e pai2 entre os
+//            individuos aleatorios da populacao anterior
+//            modificar por uma escolha em roleta no futuro**/
+//            int pai1 = rand() % this->tamPop;
+//
+//            /*torneio com 3*/
+//            int cand1, cand2, cand3;
+//            cand1 = rand() % this->tamPop;
+//            cand2 = rand() % this->tamPop;
+//            cand3 = rand() % this->tamPop;
+//
+//            int aux = cand1;
+//
+//            if(popAnterior.at(cand1)->getActiveLoss() < popAnterior.at(cand2)->getActiveLoss()){
+//                cand2=cand1;
+//            }else{aux = cand2;}
+//            if(popAnterior.at(cand2)->getActiveLoss() < popAnterior.at(cand3)->getActiveLoss()){
+//                cand3=cand2;
+//            }else{aux = cand3;}
+//            pai1 = aux;
+//
+//            int pai2 = cand3;
+//
+//            while(pai2==pai1)
+//                pai2 = rand() % this->tamPop;
+//
+////            popAnterior.at(pai1)->cruzamentoMedia2(popAnterior.at(pai2), popAtual.at(i));
+//            this->cruzamento2(popAnterior.at(pai1), popAnterior.at(pai2), popAtual.at(i));
+////            popAtual.at(i)->mutacao();
+//            this->mutacao(popAtual.at(i));
+//        }
+//
+//        /**aleatorio ao inves de manter piores**/
+//        for(int i=0; i<num_piores; i++)
+//            popAtual.at(i)->generate_random_weights();
+//    }
+//
+//    vector<RK_Individual*> pool;
+//    for(int i=0; i<num_melhores; i++)
+//        pool.push_back(popAtual.at(tamPop - num_melhores + i));
+//
+//    clock_t inicio = clock();
+//
+//
+//    prsEvolutivo(pool, popAtual, g);//execucao do path reliking evolutivo no final
+//
+//    clock_t fim = clock();
+//    printf("tempo prsEvolutivo(isoladamente) (pool size = %d):  %.2lf\n",  num_melhores, (float)(fim-inicio)/CLOCKS_PER_SEC);
+//
+//    this->tamPop = popAtual.size();
+//
+//    this->ordenaPopulacaoAtual(g);
+//
+//    return melhorGeracao;
+//}
 
     //OLD IMPLEMENTATION
 //int Random_keys::avancaGeracoesPRE(Graph *g, int it_s_melhora, int tam_pool, int max_it, float pct_pool_elite){
