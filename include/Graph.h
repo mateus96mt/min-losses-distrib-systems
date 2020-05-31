@@ -35,7 +35,6 @@ private:
     int numberOfNonModifiable;
 
 public:
-    //funcoes do grafo:
     Graph();//construtor
     ~Graph();//destrutor
 
@@ -43,31 +42,27 @@ public:
     Edge *findEdge(int id);
     Edge *findEdge(int originID, int destinyID);
 
-
-    void insertVertex(int id, double activePower, double reactivePower, double voltage, int idLoadFactor = 1 );
-    void insertEdge(int originID, int destinyID, int id, double resist, double react, bool swit);
+    void insertVertex( int id, double activePower, double reactivePower, double voltage, int idLoadFactor = 1 ); //TODO: Pode ser geográfico os fatores de carga por isso o último param
+    void insertEdge( int originID, int destinyID, int id, double resist, double react, bool swit);
     void createCapacitorType(int id, double reactive_power, double cost_per_KVAr,  int step = 0);
 
     void leEntrada(char nome[]);
     void input_read( string name );
 
-    void show();
-
     void show_losses( double powerLoss, double minTension, int idLoad = 0 );
 
-    //calcula o somatorio de cargas e perdas ativas pada todo o ramo abaixo do no "no"
+    //calcula o somatorio de cargas e perdas ativas para o ramo abaixo do no "no"
     double branchActiveLoss(Vertex *no);
     void auxBranchActiveLoss(Vertex *no, double &soma);
 
-    //calcula o somatorio de cargas e perdas reativas pada todo o ramo abaixo do no "no"
-    double branchReactiveLoss(Vertex *no);
-    void auxBranchReactiveLoss(Vertex *no, double &soma);
+    //calcula o somatorio de cargas e perdas reativas para o ramo abaixo do no "no"
+    double branchReactiveLoss(Vertex *v);
+    void auxBranchReactiveLoss(Vertex *v, double &sum);
 
     void forward(int it);
-    void auxForward(Vertex *no, Edge *ak, int it);
-
+    void auxForward(Vertex *vertex, Edge *edge, int it);
     void backward();
-    void auxBackward(Vertex *no);
+    void auxBackward(Vertex *vertex);
 
     double *getLosses();
 
@@ -76,23 +71,22 @@ public:
     **/
     double *getLossesReseting();
 
-    double evaluateLossesAndFlows(double tol, int idLoadFactorGlobal = 1);
+    double evaluateLossesAndFlows(double tol, int idLoadFactorGlobal = 0);
 
     Vertex *greedyCapacitorAllocation( );
 
     double minVoltage();
 
-
-    void unmarkVertices();//util em percursos
+    void unmarkVertices();
 
     bool isTree();
-    void auxIsTree(Vertex *no, int &marcados, bool &ciclo);
+    void auxIsTree(Vertex *v, int &markeds, bool &isCycle);
 
     bool isConected();
-    void auxIsConnected(Vertex *no, int &n_marcados);
+    void auxIsConnected(Vertex *v, int &n_markeds);
 
     void defineFlows();
-    void auxDefineFlows(Vertex *no, Vertex *noAnterior);
+    void auxDefineFlows(Vertex *v, Vertex *v_previous);
 
     void defineModifiables();
 
@@ -116,11 +110,11 @@ public:
     void checkCycle();
 
     //GETS e SETS:
-    Vertex *get_verticesList(){          return this->verticesList; };
-    int getVerticesSize(){         return this->verticesSize; };
-    int getEdgesSizes(){       return this->edgesSize; };
-    int getNumMarkeds(){        return this->numberOfMarked; };
-    int getNumberOfNonModifiable(){ return this->numberOfNonModifiable;};
+    Vertex *get_verticesList(){                     return this->verticesList; };
+    int getVerticesSize(){                          return this->verticesSize; };
+    int getEdgesSizes(){                            return this->edgesSize; };
+    int getNumMarkeds(){                            return this->numberOfMarked; };
+    int getNumberOfNonModifiable(){                 return this->numberOfNonModifiable;};
     int getMaxCapacitorsBus(){                      return this->maxCapacitorsBus;                  };
     Capacitor getCapacitorType( int type ){         return this->capacitorType[type-1];             };
     vector<LoadLevel> getLoads(){                   return this->loads;                             };
@@ -128,6 +122,7 @@ public:
     void set_verticesList(Vertex *no){ this->verticesList = no; };
     void markConexeComponent(Vertex *start, int value);
     void aux_markConexeComponent(Vertex *start, Vertex *previous, int value);
+    double * getTotalLoss();
 
     void setIdFac( int idF ){                       this->idFac = idF;                              };
     void resetIdFac( int idF ){                     this->idFac = 0;                                };

@@ -5,7 +5,7 @@
 #include "include/Individual.h"
 
 bool crit1(Chromosome *c1, Chromosome *c2){ return c1->position < c2->position;}
-bool crit2(Chromosome *c1, Chromosome *c2){return c1->peso > c2->peso;}
+bool crit2(Chromosome *c1, Chromosome *c2){return c1->weight > c2->weight;}
 
 ///constructor that recieves a RK (Random Keys) and convert into OS (Opened Switches)
 Individual::Individual(RK_Individual *ind, Graph *g) {
@@ -15,7 +15,7 @@ Individual::Individual(RK_Individual *ind, Graph *g) {
 
     /** copia peso do individio paca cada cromossomo **/
     for(int i=0; i< ind->getNumEdges(); i++)
-        RK_Individual::cromossomos.at(i)->peso = ind->getPesos()[i];
+        RK_Individual::cromossomos.at(i)->weight = ind->getWeights()[i];
 
     sort(RK_Individual::cromossomos.begin(), RK_Individual::cromossomos.end(), crit2);
 
@@ -25,26 +25,26 @@ Individual::Individual(RK_Individual *ind, Graph *g) {
     /** percorre vetor de cromossomos ordenados e tenta fechar chave(algoritmo de kruskal) **/
     for(int i=0; i<RK_Individual::cromossomos.size(); i++){
 
-        if((RK_Individual::cromossomos.at(i)->arco->getOrigin()->getIdTree() !=
-            RK_Individual::cromossomos.at(i)->arco->getDestiny()->getIdTree()) &&
-                RK_Individual::cromossomos.at(i)->arco->isClosed() == false){
+        if((RK_Individual::cromossomos.at(i)->edge->getOrigin()->getIdTree() !=
+            RK_Individual::cromossomos.at(i)->edge->getDestiny()->getIdTree()) &&
+                RK_Individual::cromossomos.at(i)->edge->isClosed() == false){
 
-            int id = RK_Individual::cromossomos.at(i)->arco->getOrigin()->getIdTree();
+            int id = RK_Individual::cromossomos.at(i)->edge->getOrigin()->getIdTree();
             for(Vertex *no = g->get_verticesList(); no != NULL; no = no->getNext()){
                 if(no->getIdTree() == id)
-                    no->setIdTree(RK_Individual::cromossomos.at(i)->arco->getDestiny()->getIdTree());
+                    no->setIdTree(RK_Individual::cromossomos.at(i)->edge->getDestiny()->getIdTree());
             }
 
-            RK_Individual::cromossomos.at(i)->arco->setSwitch(true);
-            g->findEdge(RK_Individual::cromossomos.at(i)->arco->getDestiny()->getID(),
-                        RK_Individual::cromossomos.at(i)->arco->getOrigin()->getID())->setSwitch(true);
+            RK_Individual::cromossomos.at(i)->edge->setSwitch(true);
+            g->findEdge(RK_Individual::cromossomos.at(i)->edge->getDestiny()->getID(),
+                        RK_Individual::cromossomos.at(i)->edge->getOrigin()->getID())->setSwitch(true);
 
             n_arc_inseridos++;
         }
-        else if(RK_Individual::cromossomos.at(i)->arco->isClosed() == false &&
-                RK_Individual::cromossomos.at(i)->arco->getMarked() == true){
+        else if(RK_Individual::cromossomos.at(i)->edge->isClosed() == false &&
+                RK_Individual::cromossomos.at(i)->edge->getMarked() == true){
             //opened edge that creates circle
-            this->getOpenedSwitches().push_back(RK_Individual::cromossomos.at(i)->arco);
+            this->getOpenedSwitches().push_back(RK_Individual::cromossomos.at(i)->edge);
         }
 
     }
@@ -207,12 +207,12 @@ RK_Individual *Individual::OS_to_RK(Graph *g) {
 
     for(unsigned long int i=0; i<RK_Individual::cromossomos.size();i++){
 
-        ind->getPesos()[i] = 1.0;
+        ind->getWeights()[i] = 1.0;
 
         for(unsigned long int j=0; j<this->size;j++){
 
-            if(RK_Individual::cromossomos.at(i)->arco->getID() == this->openedSwitches.at(j)->getID())
-                ind->getPesos()[i] = 0.0;
+            if(RK_Individual::cromossomos.at(i)->edge->getID() == this->openedSwitches.at(j)->getID())
+                ind->getWeights()[i] = 0.0;
         }
 
     }
