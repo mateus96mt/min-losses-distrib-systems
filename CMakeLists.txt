@@ -22,4 +22,4 @@ add_executable(min_perdas
         source/Random_keys.cpp
         include/Random_keys.h
         source/Vertex.cpp
-        include/Vertex.h)
+        include/Vertex.h tests/basic_tests.h tests/basic_tests.cpp)
