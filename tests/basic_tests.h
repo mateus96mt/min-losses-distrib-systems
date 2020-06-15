@@ -15,6 +15,10 @@ public:
     static void Capacitor_Test_GA(string savename);
 
     static void print_tree(const string savefolder, Graph *g);
+
+    static  void testRandomKeysAG(string networkSourceFile, int populationSize, int numGenerations);
+
+    static void testCalculationOfObjectFunctionOpmized(string networkSourceFile);
 };
 
 #endif //MIN_PERDAS_BASIC_TESTS_H

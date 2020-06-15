@@ -9,7 +9,7 @@ Edge::Edge(int id){
     this->origin            = NULL;
     this->destiny           = NULL;
 
-    this->closed            = true;
+    this->closed            = false;
 
     this->activePowerFlow   = 0.0;
     this->reactivePowerFlow = 0.0;

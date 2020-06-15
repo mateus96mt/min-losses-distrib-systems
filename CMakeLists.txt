@@ -17,8 +17,6 @@ add_executable(min_perdas
         include/Evolutionary_path_relinking.h
         source/RK_Individual.cpp
         include/RK_Individual.h
-        include/Individual.h
-        source/Individual.cpp
         source/Random_keys.cpp
         include/Random_keys.h
         source/Vertex.cpp

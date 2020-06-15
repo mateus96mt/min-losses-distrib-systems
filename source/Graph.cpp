@@ -216,8 +216,8 @@ void Graph::input_read( string name ){
             reactance /= ZB;
 
             edgeId++;
-            insertEdge(originId, destinyId, edgeId, resistance, reactance, true);
-            insertEdge(destinyId, originId, edgeId, resistance, reactance, true);
+            insertEdge(originId, destinyId, edgeId, resistance, reactance, false);
+            insertEdge(destinyId, originId, edgeId, resistance, reactance, false);
         }
         else
             input >> aux;
@@ -763,7 +763,7 @@ void Graph::capacitor_allocation(){
     int idLoad = 1;
     double capacitor_cost = this->getCapacitorType(1).getCost();   // Custo do capacitor em kW
     this->evaluateLossesAndFlows(1e-12, idLoad);                   // Avalia no nível de carga mais pesado?
-    
+
     double * last_loss_cost = new double[2];
     last_loss_cost[0] = this->getTotalLoss()[0];
     last_loss_cost[1] = this->getTotalLoss()[1];
