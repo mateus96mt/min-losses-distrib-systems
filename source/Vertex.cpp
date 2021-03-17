@@ -5,6 +5,7 @@
 
 int Vertex::idLF = 0;
 
+//comentario para dar conflito
 Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 
     this->id = id;
