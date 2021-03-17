@@ -5,6 +5,7 @@
 
 int Vertex::idLF = 0;
 
+//teste do caralho meu cu
 Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 
     this->id = id;
