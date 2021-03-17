@@ -25,6 +25,8 @@ Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 Vertex::~Vertex(){
 }
 
+//comentario mateus
+
 double Vertex::getActivePower(){
     return this->loadFactors[ idLF ].level * this->activePower;
 }
