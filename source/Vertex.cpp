@@ -5,6 +5,7 @@
 
 int Vertex::idLF = 0;
 
+// NAUMMMM
 Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 
     this->id = id;
