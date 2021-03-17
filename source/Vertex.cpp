@@ -22,6 +22,8 @@ Vertex::Vertex(int id, int capacitorMaximumAllocation ){
     this->idTree = this->id;
 }
 
+//COMENTARIO DO MATEUS
+
 Vertex::~Vertex(){
 }
 
