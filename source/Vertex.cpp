@@ -25,8 +25,8 @@ Vertex::Vertex(int id, int capacitorMaximumAllocation ){
 Vertex::~Vertex(){
 }
 
-double Vertex::getActivePower(){{
-    return this->loadFactors[ idLF ].level * this->activePower; }
+double Vertex::getActivePower(){
+    return this->loadFactors[ idLF ].level * this->activePower;
 }
 
 double Vertex::getReactivePower(){

@@ -8,7 +8,7 @@
 
 class BasicTests {
 public:
-    static void readNetworkTest(string networkSourceFile);
+    static void readNetworkTest(char *networkSourceFile);
 
     static void brandaoTest(string input_file);
 
@@ -19,6 +19,8 @@ public:
     static  void testRandomKeysAG(string networkSourceFile, int populationSize, int numGenerations);
 
     static void testCalculationOfObjectFunctionOpmized(string networkSourceFile);
+
+    static void testRandomKeys(char *networkSourceFile);
 };
 
 #endif //MIN_PERDAS_BASIC_TESTS_H

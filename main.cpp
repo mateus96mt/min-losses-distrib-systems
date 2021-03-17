@@ -36,7 +36,9 @@ void Capacitor_Test_GA(const string savename);
 void Capacitor_Test_Ivo(const string savename);
 
 int main() {
-    BasicTests::readNetworkTest("networks/sis33.m");
+//    BasicTests::readNetworkTest("networks/sis33.m");
+//    BasicTests::testRandomKeys("networks/sis33.m");
+    BasicTests::Capacitor_Test_GA("networks/sis33.m");
 }
 
 

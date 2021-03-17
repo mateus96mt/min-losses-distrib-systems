@@ -2,12 +2,47 @@
 // Created by mateus on 31/05/2020.
 //
 
+#include <cstring>
 #include "tests/basic_tests.h"
 #include "include/RK_Individual.h"
 
-void BasicTests::readNetworkTest(string networkSourceFile) {
+#define configuracao "inicial"
+
+int *configuracaoInicial(char *arqIn);
+
+void BasicTests::readNetworkTest(char *networkSourceFile) {
     Graph *g = new Graph();
     g->input_read(networkSourceFile);
+}
+
+void BasicTests::testRandomKeys(char *networkSourceFile) {
+    Graph *g = new Graph();
+
+    g->addChargeLevel(0.50, 1000, 0.06);
+    g->addChargeLevel(1.00, 6760, 0.06);
+    g->addChargeLevel(1.80, 1000, 0.06);
+
+    g->input_read(networkSourceFile);
+    g->defineModifiables();
+    g->resetEdgesMarking();
+    g->markOneDirectionInEdges();
+
+    RK_Individual::criaCromossomos(g);
+
+    Random_keys *rd = new Random_keys(100, 1000);
+
+    rd->geraPopAleatoria(g);
+
+//    rd->geraPopAleatoriaConfInicial(g, configuracaoInicial(networkSourceFile),
+//                                    g->getEdgesSizes() / 2 - (g->getVerticesSize() - 1));
+
+    int melhorGeracao = rd->avancaGeracoes(g);
+
+    RK_Individual *best = rd->getPopAtual().at(rd->getTamPopulacao() - 1);
+
+    printf("        %.3f  &  ", 100 * 1000 * best->getActiveLoss());
+    printf("        %.3f  &   ", g->minVoltage());
+    printf("        %d    &   ", melhorGeracao);
 }
 
 void BasicTests::print_tree(const string savefolder, Graph *g) {
@@ -47,13 +82,20 @@ void BasicTests::Capacitor_Test_GA(string input_file) {
 //    graph->addChargeLevel( 2.45, 1000, 0.06 );
 
     graph->input_read(name);
+
+    ///-----------necessario ter isso agora para funcao objetivo otimizada------------------
+    graph->defineModifiables();
+    graph->resetEdgesMarking();
+    graph->markOneDirectionInEdges();
+    RK_Individual::criaCromossomos(graph);
+    ///-----------necessario ter isso agora para funcao objetivo otimizada------------------
+
     graph->createCapacitorType(1, 300,
                                3);                  // Colocar o valor do capacitor como um parametro de leitura pra ser convertido pelo Pb
 
     Random_keys *rd = new Random_keys(100, 1000);           /// numero de individuos da populacao,numero de geracoes
     rd->geraPopAleatoria(graph);                          /// populacao inicial gerada de forma aleatoria
-    rd->avancaGeracoes(
-            graph);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
+    rd->avancaGeracoes(graph);                          /// faz cruzamentos e mutacoes para gerar individuos da nova populacao
 
     RK_Individual *best = rd->getPopAtual().at(
             rd->getTamPopulacao() - 1); /// melhor individuo eh o ultimo (menor perda)
@@ -133,4 +175,251 @@ void BasicTests::testCalculationOfObjectFunctionOpmized(string networkSourceFile
     rkIndividual->generate_random_weights();
     rkIndividual->calculaFuncaoObjetivoOtimizado(g);
     printf("random weights individual objective funcion: %f", 100 * 1000 * rkIndividual->getActiveLoss());
+}
+
+int *configuracaoInicial(char *arqIn) {
+    int *ids;
+    if (strcmp(arqIn, "networks/sis33.m") == 0) {
+
+        ids = new int[5];
+
+        //CONFIGURACAO INICIAL
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 33;
+            ids[1] = 34;
+            ids[2] = 35;
+            ids[3] = 36;
+            ids[4] = 37;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 32;
+            ids[4] = 37;
+        }
+        //ABORDAGEM ARSD
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 9;
+            ids[2] = 14;
+            ids[3] = 32;
+            ids[4] = 37;
+        }
+
+        return ids;
+    }
+
+    if (strcmp(arqIn, "networks/sis33modif.m") == 0) {
+
+        ids = new int[5];
+
+        //CONFIGURACAO INICIAL
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 33;
+            ids[1] = 34;
+            ids[2] = 35;
+            ids[3] = 36;
+            ids[4] = 37;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 28;
+            ids[4] = 36;
+        }
+        //ABORDAGEM ARSD
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 10;
+            ids[2] = 14;
+            ids[3] = 16;
+            ids[4] = 28;
+        }
+
+        return ids;
+    }
+
+    if (strcmp(arqIn, "networks/sis119.m") == 0) {
+
+        ids = new int[15];
+        //CONFIGURACAO INICIAL
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 119;
+            ids[1] = 120;
+            ids[2] = 121;
+            ids[3] = 122;
+            ids[4] = 123;
+            ids[5] = 124;
+            ids[6] = 125;
+            ids[7] = 126;
+            ids[8] = 127;
+            ids[9] = 128;
+            ids[10] = 129;
+            ids[11] = 130;
+            ids[12] = 131;
+            ids[13] = 132;
+            ids[14] = 133;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 24;
+            ids[1] = 27;
+            ids[2] = 35;
+            ids[3] = 40;
+            ids[4] = 43;
+            ids[5] = 52;
+            ids[6] = 59;
+            ids[7] = 72;
+            ids[8] = 75;
+            ids[9] = 96;
+            ids[10] = 99;
+            ids[11] = 110;
+            ids[12] = 123;
+            ids[13] = 130;
+            ids[14] = 131;
+        }
+        //ABORDAGEM ARSD
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 24;
+            ids[1] = 26;
+            ids[2] = 35;
+            ids[3] = 40;
+            ids[4] = 43;
+            ids[5] = 51;
+            ids[6] = 61;
+            ids[7] = 72;
+            ids[8] = 75;
+            ids[9] = 96;
+            ids[10] = 98;
+            ids[11] = 110;
+            ids[12] = 122;
+            ids[13] = 130;
+            ids[14] = 131;
+        }
+
+        /*
+        esse arquivo tem na verdade 132 arcos ao inves de 133
+        dessa forma os ids dos arcos abertos deve ser subtraido 1.
+        */
+        for (int i = 0; i < 15; i++)
+            ids[i]--;
+
+        return ids;
+    }
+    if (strcmp(arqIn, "networks/sis83.m") == 0) {
+
+        ids = new int[13];
+
+        //CONFIGURACAO INICIAL
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 84;
+            ids[1] = 85;
+            ids[2] = 86;
+            ids[3] = 87;
+            ids[4] = 88;
+            ids[5] = 89;
+            ids[6] = 90;
+            ids[7] = 91;
+            ids[8] = 92;
+            ids[9] = 93;
+            ids[10] = 94;
+            ids[11] = 95;
+            ids[12] = 96;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 39;
+            ids[4] = 42;
+            ids[5] = 55;
+            ids[6] = 62;
+            ids[7] = 72;
+            ids[8] = 83;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
+        }
+
+        return ids;
+    }
+    if (strcmp(arqIn, "networks/sis83modif.m") == 0) {
+
+        ids = new int[13];
+
+        //CONFIGURACAO INICIAL
+        if (strcmp(configuracao, "inicial") == 0) {
+            ids[0] = 84;
+            ids[1] = 85;
+            ids[2] = 86;
+            ids[3] = 87;
+            ids[4] = 88;
+            ids[5] = 89;
+            ids[6] = 90;
+            ids[7] = 91;
+            ids[8] = 92;
+            ids[9] = 93;
+            ids[10] = 94;
+            ids[11] = 95;
+            ids[12] = 96;
+        }
+        //CONFIGURACAO DA LITERATURA
+        if (strcmp(configuracao, "literatura1") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 33;
+            ids[3] = 38;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
+        }
+        if (strcmp(configuracao, "literatura2") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 38;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
+        }
+        if (strcmp(configuracao, "ARSD") == 0) {
+            ids[0] = 7;
+            ids[1] = 13;
+            ids[2] = 34;
+            ids[3] = 39;
+            ids[4] = 42;
+            ids[5] = 63;
+            ids[6] = 72;
+            ids[7] = 83;
+            ids[8] = 84;
+            ids[9] = 86;
+            ids[10] = 89;
+            ids[11] = 90;
+            ids[12] = 92;
+        }
+
+        return ids;
+    }
+
+    ids = new int[1];
+    ids[0] = 0;
+    return ids;
 }

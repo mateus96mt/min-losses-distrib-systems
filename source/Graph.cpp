@@ -622,6 +622,11 @@ void Graph::auxDefineFlows(Vertex *v, Vertex *v_previous){
     }
 }
 
+/*
+ *
+ * Função para definir quais as arestas modificaveis (que podem ser abertas)
+ * agora o random keys usa um vetor menor contendo somente valores para arcos modificaveis
+ * */
 void Graph::defineModifiables(){
 
     this->resetModifiables();//define todos os arcos como sendo modificaveis
@@ -812,6 +817,11 @@ void Graph::resetModifiables(){
     }
 }
 
+/*
+ * Reseta variável "marca" das arestas
+ * essa variável é usada para marcar somente um dos arcos para cada verfice
+ * indivíduo do random keys fica reduzido pela metade, usando um peso para um arco somente
+ * */
 void Graph::resetEdgesMarking(){
     for(Vertex *no = this->verticesList; no != NULL; no = no->getNext()){
 
