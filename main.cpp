@@ -4,6 +4,8 @@
 #include <algorithm>
 #include "tests/basic_tests.h"
 
+//teste
+
 //#define input_file "inputs/sist33barras_Yang.m"
 //#define input_file "inputs/sist33barras_Yang-modificado.m"
 //#define input_file "inputs/SISTEMA119s2.m"
